@@ -60,6 +60,11 @@ export const TROPHIES: Trophy[] = [
   { id: 'pong.rally', game: 'pong', title: 'Long Rally', description: 'Keep a rally going for 20 hits' },
   { id: 'pong.versus', game: 'pong', title: 'Friendly Match', description: 'Finish a two-player match' },
 
+  { id: 'maze.clear', game: 'maze', title: 'Maze Runner', description: 'Clear every dot from a maze' },
+  { id: 'maze.sweep', game: 'maze', title: 'Clean Sweep', description: 'Catch all four chasers on one power cell' },
+  { id: 'maze.level3', game: 'maze', title: 'Deeper In', description: 'Reach level 3 in Neon Maze' },
+  { id: 'maze.score', game: 'maze', title: 'High Voltage', description: 'Score 10,000 in Neon Maze' },
+
   { id: 'arcade.all', game: 'arcade', title: 'Arcade Regular', description: 'Play every game in the arcade' },
   { id: 'arcade.plays', game: 'arcade', title: 'Insert Another Coin', description: 'Play 25 games', counter: 'arcade.plays', target: 25 },
   { id: 'arcade.case', game: 'arcade', title: 'Trophy Case', description: 'Unlock 10 other trophies' },

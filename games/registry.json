@@ -96,5 +96,17 @@
     "accent": "#5ef2d0",
     "controls": "Up / down / drag / gamepad",
     "thumbnail": "thumbs/pong.jpg"
+  },
+  {
+    "slug": "maze",
+    "title": "Neon Maze",
+    "description": "Clear the maze while four chasers with their own tactics close in. Grab a power cell and turn the hunt around.",
+    "tags": [
+      "classic",
+      "arcade"
+    ],
+    "accent": "#ffe45e",
+    "controls": "Arrows / swipe / d-pad",
+    "thumbnail": "thumbs/maze.jpg"
   }
 ]
