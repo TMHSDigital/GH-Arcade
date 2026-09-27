@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, WIDTH } from '../config';
 import { buildMenu } from '../../../shared/scenes';
-import { NEON } from '../../../shared/ui';
+import { NEON, reducedMotion } from '../../../shared/ui';
 
 interface Drifter {
   x: number;
@@ -48,7 +48,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
-    const dt = delta / 1000;
+    const dt = reducedMotion() ? 0 : delta / 1000;
     const g = this.gfx.clear();
     for (const r of this.rocks) {
       r.x = (r.x + r.vx * dt + WIDTH) % WIDTH;

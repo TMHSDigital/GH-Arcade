@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, WIDTH } from '../config';
 import { buildMenu } from '../../../shared/scenes';
-import { drawGrid, NEON } from '../../../shared/ui';
+import { drawGrid, NEON, reducedMotion } from '../../../shared/ui';
 
 const TRAIL = 26;
 
@@ -24,7 +24,8 @@ export class MenuScene extends Phaser.Scene {
   }
 
   /** A decorative snake gliding along a figure-eight behind the title. */
-  update(time: number): void {
+  update(now: number): void {
+    const time = reducedMotion() ? 2600 : now;
     const g = this.trail.clear();
     for (let i = TRAIL - 1; i >= 0; i--) {
       const t = time / 1400 - i * 0.07;

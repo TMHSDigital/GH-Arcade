@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, ROW_COLORS, WIDTH } from '../config';
 import { buildMenu } from '../../../shared/scenes';
+import { reducedMotion } from '../../../shared/ui';
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -15,6 +16,7 @@ export class MenuScene extends Phaser.Scene {
         .setTint(Phaser.Utils.Array.GetRandom(ROW_COLORS))
         .setAlpha(0.15)
         .setAngle(Phaser.Math.Between(-30, 30));
+      if (reducedMotion()) continue;
       this.tweens.add({
         targets: brick,
         y: brick.y + HEIGHT * 1.5,

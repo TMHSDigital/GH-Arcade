@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, PIECE_COLORS, WIDTH } from '../config';
 import { PIECE_TYPES, ROTATIONS } from '../logic';
 import { buildMenu } from '../../../shared/scenes';
-import { NEON } from '../../../shared/ui';
+import { NEON, reducedMotion } from '../../../shared/ui';
 
 const CELL = 22;
 
@@ -21,6 +21,10 @@ export class MenuScene extends Phaser.Scene {
         }),
       );
       const container = this.add.container(60 + ((i * 97) % (WIDTH - 120)), -100 - i * 90, [g]).setAlpha(0.18);
+      if (reducedMotion()) {
+        container.setY(40 + ((i * 131) % (HEIGHT - 80))).setAngle((i % 4) * 90);
+        return;
+      }
       this.tweens.add({
         targets: container,
         y: HEIGHT + 100,

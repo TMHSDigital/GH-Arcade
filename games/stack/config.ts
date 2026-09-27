@@ -1,4 +1,5 @@
 import type { PieceType } from './logic';
+import { NEON } from '../../shared/ui';
 
 export const GAME_ID = 'stack';
 
@@ -24,12 +25,13 @@ export const NEXT_PREVIEW = 3;
 /** Touch drag distance per column moved or row soft-dropped. */
 export const DRAG_STEP = 28;
 
+/** Piece colors from the shared palette, so the colorblind-friendly setting applies here too. */
 export const PIECE_COLORS: Record<PieceType, number> = {
-  I: 0x00f0ff,
-  O: 0xffe45e,
-  T: 0xa45bff,
-  S: 0x3dff8a,
-  Z: 0xff2e97,
-  J: 0x3d7bff,
-  L: 0xff8a3d,
+  I: NEON.cyan,
+  O: NEON.yellow,
+  T: NEON.purple,
+  S: NEON.green,
+  Z: NEON.pink,
+  J: NEON.blue,
+  L: NEON.orange,
 };

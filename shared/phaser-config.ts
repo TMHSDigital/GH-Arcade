@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { registerOffline } from './pwa';
+import { getSettings } from './settings';
 import { PIXEL_FONT } from './ui';
 
 export interface ArcadeGameOptions {
@@ -10,8 +11,24 @@ export interface ArcadeGameOptions {
   physics?: Phaser.Types.Core.PhysicsConfig;
 }
 
+/**
+ * With reduced motion on, camera shake and flash become no-ops for every game, so no game has to
+ * remember to check the setting before each effect.
+ */
+function applyReducedMotion(): void {
+  if (!getSettings().reducedMotion) return;
+  const proto = Phaser.Cameras.Scene2D.Camera.prototype as unknown as Record<'shake' | 'flash', (...args: unknown[]) => unknown>;
+  proto.shake = function (this: unknown) {
+    return this;
+  };
+  proto.flash = function (this: unknown) {
+    return this;
+  };
+}
+
 /** Standard Phaser setup for arcade games: fixed logical resolution scaled to fit any screen. */
 export function createArcadeGame(opts: ArcadeGameOptions): Phaser.Game {
+  applyReducedMotion();
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: 'game',

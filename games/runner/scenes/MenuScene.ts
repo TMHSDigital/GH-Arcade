@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_ID, GROUND_Y, HEIGHT, WIDTH } from '../config';
 import { buildMenu } from '../../../shared/scenes';
-import { NEON } from '../../../shared/ui';
+import { NEON, reducedMotion } from '../../../shared/ui';
 
 export class MenuScene extends Phaser.Scene {
   private floor!: Phaser.GameObjects.Graphics;
@@ -21,7 +21,8 @@ export class MenuScene extends Phaser.Scene {
   }
 
   /** A perspective floor grid rushing toward the viewer. */
-  update(time: number): void {
+  update(now: number): void {
+    const time = reducedMotion() ? 0 : now;
     const g = this.floor.clear();
     g.lineStyle(1, NEON.pink, 0.6);
     const horizon = GROUND_Y - 40;

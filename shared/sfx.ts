@@ -1,11 +1,19 @@
 // Tiny WebAudio synth so games get retro sound effects without shipping audio files.
 // The AudioContext is created lazily on first play, which happens after a user gesture.
+// Volume and mute come from the arcade settings, so they carry across games and visits.
+
+import { getSettings, updateSettings } from './settings';
 
 let ctx: AudioContext | null = null;
-let muted = false;
+
+/** Master volume multiplier, or 0 when muted. */
+function master(): number {
+  const s = getSettings();
+  return s.muted ? 0 : Math.max(0, Math.min(1, s.volume));
+}
 
 function audio(): AudioContext | null {
-  if (muted) return null;
+  if (master() <= 0) return null;
   try {
     ctx ??= new AudioContext();
     if (ctx.state === 'suspended') void ctx.resume();
@@ -33,7 +41,7 @@ export function tone({ freq, toFreq, duration = 0.1, type = 'square', volume = 0
   osc.type = type;
   osc.frequency.setValueAtTime(freq, t);
   if (toFreq) osc.frequency.exponentialRampToValueAtTime(toFreq, t + duration);
-  gain.gain.setValueAtTime(volume, t);
+  gain.gain.setValueAtTime(volume * master(), t);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
   osc.connect(gain).connect(ac.destination);
   osc.start(t);
@@ -51,16 +59,16 @@ export function noise(duration = 0.2, volume = 0.1): void {
   const src = ac.createBufferSource();
   src.buffer = buffer;
   const gain = ac.createGain();
-  gain.gain.setValueAtTime(volume, t);
+  gain.gain.setValueAtTime(volume * master(), t);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
   src.connect(gain).connect(ac.destination);
   src.start(t);
 }
 
 export function setMuted(value: boolean): void {
-  muted = value;
+  updateSettings({ muted: value });
 }
 
 export function isMuted(): boolean {
-  return muted;
+  return getSettings().muted;
 }

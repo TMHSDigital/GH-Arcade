@@ -1,18 +1,21 @@
 import Phaser from 'phaser';
+import { type AccentName, PALETTES } from './palette';
+import { getSettings } from './settings';
 
 export const PIXEL_FONT = '"Press Start 2P", monospace';
 
-export const NEON = {
-  cyan: 0x00f0ff,
-  pink: 0xff2e97,
-  yellow: 0xffe45e,
-  green: 0x3dff8a,
-  orange: 0xff8a3d,
-  purple: 0xa45bff,
+/** The active colors, chosen from the player's palette setting when the page loads. */
+export const NEON: Readonly<Record<AccentName | 'white' | 'muted' | 'bg', number>> = {
+  ...PALETTES[getSettings().palette] ?? PALETTES.neon,
   white: 0xffffff,
   muted: 0x8a8ab8,
   bg: 0x05050d,
-} as const;
+};
+
+/** True when the player asked for reduced motion: skip decorative animation. */
+export function reducedMotion(): boolean {
+  return getSettings().reducedMotion;
+}
 
 export function hex(color: number): string {
   return `#${color.toString(16).padStart(6, '0')}`;
@@ -51,7 +54,7 @@ export function onStart(scene: Phaser.Scene, action: () => void): void {
 /** Blinking "press start" style prompt. */
 export function blinkingPrompt(scene: Phaser.Scene, x: number, y: number, text: string, size = 16): Phaser.GameObjects.Text {
   const prompt = neonText(scene, x, y, text, size, NEON.white);
-  scene.tweens.add({ targets: prompt, alpha: 0.2, duration: 600, yoyo: true, repeat: -1 });
+  if (!reducedMotion()) scene.tweens.add({ targets: prompt, alpha: 0.2, duration: 600, yoyo: true, repeat: -1 });
   return prompt;
 }
 

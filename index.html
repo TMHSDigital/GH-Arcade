@@ -14,6 +14,9 @@
   </head>
   <body>
     <div class="scanlines" aria-hidden="true"></div>
+    <nav class="topbar" aria-label="Arcade options">
+      <button id="open-settings" class="topbar-button" type="button">Settings</button>
+    </nav>
     <header class="marquee">
       <p class="eyebrow">Insert coin</p>
       <h1 class="title">GH<span>Arcade</span></h1>
@@ -32,6 +35,52 @@
     <footer class="footer">
       <a href="https://github.com/TMHSDigital/GH-Arcade">Source on GitHub</a>
     </footer>
+
+    <dialog id="settings" class="panel" aria-labelledby="settings-title">
+      <div class="panel-inner">
+        <div class="panel-head">
+          <h2 id="settings-title">Settings</h2>
+          <button id="close-settings" class="close" type="button" aria-label="Close settings">Close</button>
+        </div>
+
+        <section>
+          <h3>Sound</h3>
+          <label class="row">
+            <span>Volume</span>
+            <input id="volume" type="range" min="0" max="100" step="5" />
+            <output id="volume-value" for="volume"></output>
+          </label>
+          <label class="row check"><input id="muted" type="checkbox" /> <span>Mute all sound</span></label>
+        </section>
+
+        <section>
+          <h3>Accessibility</h3>
+          <label class="row check">
+            <input id="reduced-motion" type="checkbox" />
+            <span>Reduced motion <small>No screen shake, flashes or decorative animation</small></span>
+          </label>
+          <label class="row check">
+            <input id="colorblind" type="checkbox" />
+            <span>Colorblind-friendly colors <small>A palette that stays distinct with color vision deficiencies</small></span>
+          </label>
+          <div id="swatches" class="swatches" aria-hidden="true"></div>
+        </section>
+
+        <section>
+          <h3>Keyboard controls</h3>
+          <p class="hint">Click Change, then press a new key (Esc cancels). Gamepad and game-specific keys stay the same.</p>
+          <table class="bindings">
+            <tbody id="bindings"></tbody>
+          </table>
+          <button id="reset-bindings" class="text-button" type="button">Reset controls</button>
+        </section>
+
+        <div class="panel-foot">
+          <p class="hint">Changes save automatically and apply the next time you start a game.</p>
+          <button id="reset-all" class="text-button" type="button">Reset all settings</button>
+        </div>
+      </div>
+    </dialog>
 
     <script type="module" src="/src/hub/main.ts"></script>
   </body>

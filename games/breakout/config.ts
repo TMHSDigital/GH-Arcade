@@ -1,3 +1,5 @@
+import { NEON } from '../../shared/ui';
+
 export const GAME_ID = 'breakout';
 
 export const WIDTH = 800;
@@ -22,15 +24,8 @@ export const START_LIVES = 3;
 export const POWERUP_CHANCE = 0.14;
 export const WIDE_DURATION_MS = 12000;
 
-export const COLORS = {
-  cyan: 0x00f0ff,
-  pink: 0xff2e97,
-  yellow: 0xffe45e,
-  green: 0x3dff8a,
-  orange: 0xff8a3d,
-  purple: 0xa45bff,
-  white: 0xffffff,
-} as const;
+/** The shared arcade palette (follows the player's colorblind-friendly setting). */
+export const COLORS = NEON;
 
 export const ROW_COLORS = [COLORS.pink, COLORS.orange, COLORS.yellow, COLORS.green, COLORS.cyan, COLORS.purple];
 

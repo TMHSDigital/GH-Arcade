@@ -255,7 +255,8 @@ export class GameScene extends Phaser.Scene {
     this.invulnerable = Math.max(0, this.invulnerable - deltaMs);
     this.fireCooldown -= deltaMs;
     this.warpCooldown -= deltaMs;
-    const wantsFire = c.isDown('action') || c.isDown('fire');
+    // Held keys auto-fire; a quick tap between frames still counts via justPressed.
+    const wantsFire = c.isDown('action') || c.isDown('fire') || c.justPressed('action') || c.justPressed('fire');
     if (wantsFire && this.fireCooldown <= 0 && this.bullets.filter((b) => !b.hostile).length < MAX_BULLETS) this.fire();
     if (c.justPressed('alt') && this.warpCooldown <= 0) this.warp();
   }
@@ -515,9 +516,11 @@ export class GameScene extends Phaser.Scene {
     }
 
     for (const b of this.bullets) {
+      // Enemy shots are hollow rings and yours are solid dots, so they read apart even without color.
       const color = b.hostile ? NEON.green : NEON.pink;
       g.fillStyle(color, 0.25).fillCircle(b.x, b.y, 6);
-      g.fillStyle(color, 1).fillCircle(b.x, b.y, 2.2);
+      if (b.hostile) g.lineStyle(2, color, 1).strokeCircle(b.x, b.y, 4);
+      else g.fillStyle(color, 1).fillCircle(b.x, b.y, 2.2);
     }
 
     if (this.ufo) {
