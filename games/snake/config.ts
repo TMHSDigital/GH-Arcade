@@ -11,6 +11,10 @@ export const FIELD_TOP = HEIGHT - ROWS * CELL;
 
 export const START_LENGTH = 4;
 export const START_STEP_MS = 135;
+/** Versus rounds start a little quicker and share one speed. */
+export const VERSUS_STEP_MS = 115;
+/** Versus is a best-of match: first to this many round wins. */
+export const ROUNDS_TO_WIN = 3;
 export const MIN_STEP_MS = 55;
 /** Each food shaves this much off the step time, down to MIN_STEP_MS. */
 export const STEP_SPEEDUP_MS = 2.5;

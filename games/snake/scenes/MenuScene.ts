@@ -19,7 +19,11 @@ export class MenuScene extends Phaser.Scene {
       gameId: GAME_ID,
       title: ['NEON', 'SNAKE'],
       colors: [NEON.cyan, NEON.green],
-      help: 'Steer: arrows / WASD / swipe / d-pad    Pause: P / Start    Mute: M',
+      help: 'Solo: arrows / WASD / swipe / d-pad    Versus: P1 WASD or pad 1, P2 arrows or pad 2\nPause: P / Start    Mute: M',
+      modes: [
+        { label: '1 PLAYER', data: { players: 1 } },
+        { label: '2 PLAYERS', data: { players: 2 } },
+      ],
     });
   }
 

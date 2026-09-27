@@ -15,38 +15,40 @@ export interface SwipeOptions {
    * e.g. for steering a snake or sliding a block several columns. Taps still fire on release.
    */
   continuous?: boolean;
+  /** Only track touches that start inside this area (e.g. one half of the screen per player). */
+  region?: Phaser.Geom.Rectangle;
 }
 
-/** Calls `handler` with the swipe direction, or 'tap' for a short press without movement. */
+/**
+ * Calls `handler` with the swipe direction, or 'tap' for a short press without movement.
+ * Each finger is tracked separately, so two players can swipe at the same time.
+ */
 export function onSwipe(scene: Phaser.Scene, handler: (dir: SwipeDir) => void, opts: SwipeOptions = {}): void {
   const threshold = opts.threshold ?? 30;
-  let startX = 0;
-  let startY = 0;
-  let active = false;
-  let swiped = false;
+  const active = new Map<number, { x: number; y: number; swiped: boolean }>();
 
   scene.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
-    startX = p.x;
-    startY = p.y;
-    active = true;
-    swiped = false;
+    if (opts.region && !opts.region.contains(p.x, p.y)) return;
+    active.set(p.id, { x: p.x, y: p.y, swiped: false });
   });
   scene.input.on('pointermove', (p: Phaser.Input.Pointer) => {
-    if (!active || !p.isDown || !opts.continuous) return;
-    const dir = direction(p.x - startX, p.y - startY, threshold);
+    const t = active.get(p.id);
+    if (!t || !p.isDown || !opts.continuous) return;
+    const dir = direction(p.x - t.x, p.y - t.y, threshold);
     if (dir) {
       handler(dir);
-      swiped = true;
-      startX = p.x;
-      startY = p.y;
+      t.swiped = true;
+      t.x = p.x;
+      t.y = p.y;
     }
   });
   const release = (p: Phaser.Input.Pointer) => {
-    if (!active) return;
-    active = false;
-    const dir = direction(p.x - startX, p.y - startY, threshold);
+    const t = active.get(p.id);
+    if (!t) return;
+    active.delete(p.id);
+    const dir = direction(p.x - t.x, p.y - t.y, threshold);
     if (dir) handler(dir);
-    else if (!swiped) handler('tap');
+    else if (!t.swiped) handler('tap');
   };
   // A finger that slides off the canvas edge still completes its swipe.
   scene.input.on('pointerup', release);

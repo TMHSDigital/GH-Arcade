@@ -21,7 +21,7 @@ export class PauseController {
 
   constructor(
     private readonly scene: Phaser.Scene,
-    controls: ArcadeControls<string>,
+    controls: ArcadeControls<string> | ArcadeControls<string>[],
     private readonly opts: PauseOptions = {},
   ) {
     const { width, height } = scene.scale.gameSize;
@@ -35,9 +35,11 @@ export class PauseController {
       .setDepth(1000);
     this.updateMuteText();
 
+    // In local multiplayer every player can pause or mute.
+    const all = Array.isArray(controls) ? controls : [controls];
     const onUpdate = () => {
-      if (controls.justPressed('pause')) this.toggle();
-      if (controls.justPressed('mute')) {
+      if (all.some((c) => c.justPressed('pause'))) this.toggle();
+      if (all.some((c) => c.justPressed('mute'))) {
         setMuted(!isMuted());
         this.updateMuteText();
       }

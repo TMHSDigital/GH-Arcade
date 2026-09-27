@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { recordPlay } from './achievements';
+import { ArcadeControls } from './controls';
 import { getHighScore, submitHighScore } from './storage';
 import { isTouchDevice } from './touch';
 import { blinkingPrompt, fadeToScene, NEON, neonText, onStart } from './ui';
@@ -14,6 +15,11 @@ export interface MenuOptions {
   /** Scene to start (defaults to 'Game') and the data to start it with. */
   startScene?: string;
   startData?: object;
+  /**
+   * Optional choices shown instead of the "press start" prompt, e.g. one or two players.
+   * Players pick with left/right (keys, d-pad or stick) and confirm with Space, Enter or A, or click one.
+   */
+  modes?: { label: string; data: object }[];
 }
 
 /**
@@ -30,7 +36,7 @@ export function buildMenu(scene: Phaser.Scene, opts: MenuOptions): void {
   const best = getHighScore(opts.gameId);
   if (best > 0) neonText(scene, width / 2, 320, `BEST ${best.toLocaleString()}`, 16, NEON.yellow);
 
-  blinkingPrompt(scene, width / 2, 410, isTouchDevice() ? 'TAP TO START' : 'CLICK OR PRESS SPACE');
+  if (!opts.modes) blinkingPrompt(scene, width / 2, 410, isTouchDevice() ? 'TAP TO START' : 'CLICK OR PRESS SPACE');
 
   scene.add
     .text(width / 2, height - 60, opts.help, {
@@ -42,7 +48,49 @@ export function buildMenu(scene: Phaser.Scene, opts: MenuOptions): void {
     })
     .setOrigin(0.5);
 
+  if (opts.modes) {
+    buildModePicker(scene, opts.modes, opts.startScene ?? 'Game', 410);
+    return;
+  }
   onStart(scene, () => fadeToScene(scene, opts.startScene ?? 'Game', opts.startData ?? {}));
+}
+
+/** A row of selectable neon options (keyboard, gamepad, mouse and touch). */
+function buildModePicker(scene: Phaser.Scene, modes: { label: string; data: object }[], startScene: string, y: number): void {
+  const { width } = scene.scale.gameSize;
+  const controls = new ArcadeControls(scene);
+  const spacing = 300;
+  let selected = 0;
+  let started = false;
+  const start = (i: number) => {
+    if (started) return;
+    started = true;
+    fadeToScene(scene, startScene, modes[i].data);
+  };
+  const items = modes.map((m, i) => {
+    const x = width / 2 + (i - (modes.length - 1) / 2) * spacing;
+    const text = neonText(scene, x, y, m.label, 16, NEON.white).setInteractive({ useHandCursor: true });
+    text.on('pointerover', () => {
+      selected = i;
+      paint();
+    });
+    text.on('pointerdown', () => start(i));
+    return text;
+  });
+  const marker = neonText(scene, 0, y, '>', 16, NEON.yellow);
+  const paint = () => {
+    items.forEach((t, i) => t.setColor(i === selected ? '#ffe45e' : '#e8e8ff').setAlpha(i === selected ? 1 : 0.6));
+    marker.setPosition(items[selected].x - items[selected].width / 2 - 24, y);
+  };
+  paint();
+  const onUpdate = () => {
+    if (controls.justPressed('left') || controls.justPressed('up')) selected = (selected + modes.length - 1) % modes.length;
+    if (controls.justPressed('right') || controls.justPressed('down')) selected = (selected + 1) % modes.length;
+    paint();
+    if (controls.justPressed('action')) start(selected);
+  };
+  scene.events.on(Phaser.Scenes.Events.UPDATE, onUpdate);
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.events.off(Phaser.Scenes.Events.UPDATE, onUpdate));
 }
 
 export interface GameOverData {
