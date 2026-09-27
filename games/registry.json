@@ -1,0 +1,10 @@
+[
+  {
+    "slug": "breakout",
+    "title": "Neon Breakout",
+    "description": "Smash glowing bricks, chase combos, and clear every level before your lives run out.",
+    "tags": ["arcade", "classic"],
+    "accent": "#00f0ff",
+    "controls": "Mouse / touch / ← →"
+  }
+]

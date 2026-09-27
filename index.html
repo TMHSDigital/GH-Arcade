@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A growing arcade of free browser games." />
+    <meta name="theme-color" content="#05050d" />
+    <title>GH Arcade</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="scanlines" aria-hidden="true"></div>
+    <header class="marquee">
+      <p class="eyebrow">Insert coin</p>
+      <h1 class="title">GH<span>Arcade</span></h1>
+      <p class="tagline">Free browser games. No installs, no accounts. Just play.</p>
+    </header>
+
+    <main>
+      <div class="toolbar">
+        <h2 class="section-title">Cabinets <span id="game-count" class="count"></span></h2>
+        <div id="filters" class="filters" role="group" aria-label="Filter by tag"></div>
+      </div>
+      <ul id="game-grid" class="grid"></ul>
+    </main>
+
+    <footer class="footer">
+      <a href="https://github.com/TMHSDigital/GH-Game-1">Source on GitHub</a>
+    </footer>
+
+    <script type="module" src="/src/hub/main.ts"></script>
+  </body>
+</html>

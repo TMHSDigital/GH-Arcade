@@ -1,0 +1,49 @@
+/* Page chrome shared by every game: full-screen canvas plus a back-to-arcade link. */
+:root {
+  --shell-bg: #05050d;
+  --shell-fg: #e8e8ff;
+  --shell-accent: #00f0ff;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--shell-bg);
+  color: var(--shell-fg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#game {
+  position: fixed;
+  inset: 0;
+}
+
+.back-to-arcade {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--shell-accent) 50%, transparent);
+  border-radius: 999px;
+  background: rgb(5 5 13 / 0.7);
+  color: var(--shell-fg);
+  font-size: 13px;
+  text-decoration: none;
+  backdrop-filter: blur(6px);
+  opacity: 0.7;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.back-to-arcade:hover,
+.back-to-arcade:focus-visible {
+  opacity: 1;
+  border-color: var(--shell-accent);
+}
