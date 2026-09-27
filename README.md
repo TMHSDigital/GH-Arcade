@@ -10,15 +10,15 @@
 [![Play now](https://img.shields.io/badge/PLAY%20NOW-tmhsdigital.github.io%2FGH--Arcade-ff2e97?style=for-the-badge&labelColor=05050d)](https://tmhsdigital.github.io/GH-Arcade/)
 
 [![Deploy](https://img.shields.io/github/actions/workflow/status/TMHSDigital/GH-Arcade/deploy.yml?branch=main&style=flat-square&label=deploy&labelColor=05050d)](https://github.com/TMHSDigital/GH-Arcade/actions/workflows/deploy.yml)
-[![Games](https://img.shields.io/badge/games-1-00f0ff?style=flat-square&labelColor=05050d)](#games)
+[![Games](https://img.shields.io/badge/games-5-00f0ff?style=flat-square&labelColor=05050d)](#games)
+[![PWA](https://img.shields.io/badge/PWA-offline%20ready-3dff8a?style=flat-square&labelColor=05050d)](#features)
 [![Phaser](https://img.shields.io/badge/Phaser-3.90-a45bff?style=flat-square&labelColor=05050d)](https://phaser.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript&logoColor=white&labelColor=05050d)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-6-ffe45e?style=flat-square&logo=vite&logoColor=white&labelColor=05050d)](https://vite.dev)
-[![Last commit](https://img.shields.io/github/last-commit/TMHSDigital/GH-Arcade?style=flat-square&labelColor=05050d&color=3dff8a)](https://github.com/TMHSDigital/GH-Arcade/commits/main)
 [![License: MIT](https://img.shields.io/badge/license-MIT-ff8a3d?style=flat-square&labelColor=05050d)](LICENSE)
 
 **A growing collection of free, open-source arcade games that run in your browser.**<br />
-No installs. No accounts. No ads. Works on desktop and mobile.
+No accounts. No ads. Keyboard, touch or gamepad. Install it and play offline.
 
 [Games](#games) ·
 [Features](#features) ·
@@ -41,40 +41,68 @@ No installs. No accounts. No ads. Works on desktop and mobile.
   <a href="https://tmhsdigital.github.io/GH-Arcade/games/breakout/">
     <img src=".github/assets/breakout.gif" alt="Neon Breakout gameplay: five balls smashing rows of neon bricks" width="640" />
   </a>
-  <br />
-  <sub>Multi-ball on level 2. Click the clip to play.</sub>
 </p>
 
-The classic brick-breaker, rebuilt with a synthwave glow. Aim with the paddle, chain combos between bounces, and catch power-ups as they fall.
+The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels that loop faster each time, armored bricks, a combo multiplier up to ×8 and four power-ups: wide paddle, multi-ball, slow-mo and extra life. **[Play Neon Breakout](https://tmhsdigital.github.io/GH-Arcade/games/breakout/)**
 
-- **5 hand-built levels** that loop with a faster ball each time around
-- **Armored bricks** that take 2 or 3 hits
-- **Combo multiplier** up to ×8
-- **4 power-ups:** wide paddle, multi-ball, slow-mo and extra life
-- **Juice:** particles, screen shake and synthesized retro sound
-
-**[Play Neon Breakout](https://tmhsdigital.github.io/GH-Arcade/games/breakout/)**
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/snake/"><img src=".github/assets/snake.gif" alt="Neon Snake gameplay: a glowing snake chasing food across a grid" width="100%" /></a>
+      <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/snake/">Neon Snake</a></h3>
+      <p>Eat, grow and speed up. Grab the timed bonus stars before they fade. Smooth gliding movement and a turn buffer, so quick double-turns always register.</p>
+    </td>
+    <td width="50%" valign="top">
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/stack/"><img src=".github/assets/stack.gif" alt="Neon Stack gameplay: falling blocks locking into place and clearing lines" width="100%" /></a>
+      <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/stack/">Neon Stack</a></h3>
+      <p>The falling-block puzzler, done properly: wall kicks, a ghost piece, hold, a three-piece preview, lock delay, combos and back-to-back quads.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/astro/"><img src=".github/assets/astro.gif" alt="Astro Blaster gameplay: a vector ship shooting splitting space rocks" width="100%" /></a>
+      <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/astro/">Astro Blaster</a></h3>
+      <p>Thrust, drift and blast through waves of splitting space rocks in glowing vector style. A saucer hunts you from wave 3, and hyperspace gets you out of a jam.</p>
+    </td>
+    <td width="50%" valign="top">
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/runner/"><img src=".github/assets/runner.gif" alt="Neon Runner gameplay: a runner jumping over pits in a synthwave city" width="100%" /></a>
+      <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/runner/">Neon Runner</a></h3>
+      <p>Sprint through a synthwave city. Jump, double jump, slide and dive past barriers, drones and pits while the pace keeps climbing.</p>
+    </td>
+  </tr>
+</table>
 
 <details>
-<summary><b>Controls, power-ups and scoring</b></summary>
+<summary><b>Controls for every game</b></summary>
 
 <br />
 
-| Action | Keyboard | Mouse | Touch |
+Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pause, <kbd>M</kbd> / <kbd>Back</kbd> to mute, and pauses by itself when you switch tabs.
+
+| Game | Keyboard | Gamepad | Touch |
 | --- | --- | --- | --- |
-| Move paddle | <kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd> | Move | Drag |
-| Launch ball | <kbd>Space</kbd> or <kbd>↑</kbd> | Click | Tap |
-| Pause | <kbd>P</kbd> or <kbd>Esc</kbd> | | |
-| Mute | <kbd>M</kbd> | | |
+| **Breakout** | <kbd>←</kbd> <kbd>→</kbd> move, <kbd>Space</kbd> launch (or use the mouse) | Stick or d-pad move, <kbd>A</kbd> launch | Drag to move, tap to launch |
+| **Snake** | Arrows or <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> steer | D-pad or stick steer | Swipe to steer |
+| **Stack** | <kbd>←</kbd> <kbd>→</kbd> move, <kbd>↓</kbd> soft drop, <kbd>↑</kbd> / <kbd>X</kbd> rotate, <kbd>Z</kbd> rotate back, <kbd>Space</kbd> hard drop, <kbd>C</kbd> / <kbd>Shift</kbd> hold | D-pad move, <kbd>A</kbd> / <kbd>B</kbd> rotate, d-pad up hard drop, <kbd>Y</kbd> hold | Drag to move and soft drop, tap to rotate, flick up to hard drop, HOLD button |
+| **Astro Blaster** | <kbd>←</kbd> <kbd>→</kbd> turn, <kbd>↑</kbd> thrust, <kbd>Space</kbd> / <kbd>Z</kbd> fire, <kbd>Shift</kbd> / <kbd>X</kbd> warp | Stick turn and thrust, <kbd>A</kbd> fire, <kbd>B</kbd> warp | On-screen stick, FIRE and WARP buttons |
+| **Runner** | <kbd>Space</kbd> / <kbd>↑</kbd> jump (again in the air to double jump), <kbd>↓</kbd> slide or dive | <kbd>A</kbd> jump, <kbd>B</kbd> or stick down slide | Tap to jump, swipe down to slide or dive |
 
-| Power-up | Pill | Effect |
-| --- | --- | --- |
-| Wide | Green **W** | Paddle grows 50% for 12 seconds |
-| Multi-ball | Purple **M** | Splits into 3 balls |
-| Slow-mo | Yellow **S** | Ball slows to 70% for 8 seconds |
-| Extra life | Pink **+** | One more life (rare) |
+</details>
 
-**Scoring:** each brick is worth `10 × its hit points × combo`. The combo counts bricks broken since the ball last touched the paddle, capped at ×8. Clearing a level adds `250 × level number`. The game pauses by itself when you switch tabs.
+<details>
+<summary><b>Scoring and power-ups</b></summary>
+
+<br />
+
+| Game | How you score |
+| --- | --- |
+| **Breakout** | Each brick is worth `10 × its hit points × combo`. The combo counts bricks broken since the ball last touched the paddle (max ×8). Clearing a level adds `250 × level`. |
+| **Snake** | Food is worth 10, multiplied by 1 more for every 10 eaten. Every 5th food spawns a bonus star worth 50 plus 10 for each second left on its timer. |
+| **Stack** | 1, 2, 3 or 4 lines score 100, 300, 500 or 800 × level. Back-to-back quads score ×1.5, combos add `50 × combo × level`, and drops add 1 point per row (2 for hard drops). Level up every 10 lines. |
+| **Astro Blaster** | Large rocks 20, medium 50, small 100, saucer 500. Extra life every 10,000 points. |
+| **Runner** | 1 point per metre plus 25 per coin. |
+
+**Breakout power-ups:** green **W** widens the paddle for 12 seconds, purple **M** splits the ball into three, yellow **S** slows the ball to 70% for 8 seconds, and the rare pink **+** is an extra life.
 
 </details>
 
@@ -83,15 +111,16 @@ The classic brick-breaker, rebuilt with a synthwave glow. Aim with the paddle, c
 ## Features
 
 <p align="center">
-  <img src=".github/assets/hub.png" alt="The GH Arcade hub page with the Neon Breakout cabinet card" width="100%" />
+  <img src=".github/assets/hub.png" alt="The GH Arcade hub with five game cabinets and tag filters" width="100%" />
   <br />
-  <sub>The hub. Every game gets a cabinet card, and your best score shows on it once you've played.</sub>
+  <sub>The hub: every game gets a cabinet card, filterable by tag, with your best score on it once you've played.</sub>
 </p>
 
 | Feature | Details |
 | --- | --- |
-| **Plays anywhere** | A pure static site on GitHub Pages. Loads straight in the browser on desktop, tablet or phone. |
-| **Touch-ready** | Games scale to fit any screen and support mouse, keyboard and touch. |
+| **Plays anywhere** | A static site on GitHub Pages. Loads straight in the browser on desktop, tablet or phone. |
+| **Installable, works offline** | Install GH Arcade as an app from the hub. After one visit, every game plays with no connection. |
+| **Keyboard, touch or gamepad** | Every game supports all three. Plug in a controller and it just works, including pause on <kbd>Start</kbd>. |
 | **High scores** | Best scores are saved on your device and shown on the hub. No sign-up. |
 | **Zero-asset audio** | Sound effects are synthesized live with the Web Audio API, so there are no audio files to download. |
 | **Fast loads** | Each game is its own page and bundle. Phaser is split into one shared file that your browser caches across games. |
@@ -115,8 +144,8 @@ Then open **http://localhost:5173/GH-Arcade/**.
 | Script | What it does |
 | --- | --- |
 | `npm run dev` | Dev server with hot reload |
-| `npm run build` | Type-check, then production build into `dist/` |
-| `npm run preview` | Serve the production build locally |
+| `npm run build` | Type-check, then production build into `dist/` (including the service worker) |
+| `npm run preview` | Serve the production build locally, to test offline mode and installing |
 | `npm run typecheck` | TypeScript check only |
 | `npm run new-game <slug> ["Title"]` | Scaffold a new game |
 
@@ -135,7 +164,7 @@ Adding a game takes three steps, and no config files.
 npm run new-game space-dodge "Space Dodge"
 ```
 
-This copies `games/_template/` to `games/space-dodge/`. The template is a small, playable Phaser game with movement, collectibles and high scores already wired up. The command also adds a card for it to the hub.
+This copies `games/_template/` to `games/space-dodge/`. The template is a small, playable Phaser game with keyboard, touch and gamepad controls, pause and high scores already wired up. The command also adds a card for it to the hub.
 
 ### 2. Describe it
 
@@ -143,38 +172,56 @@ Edit the new entry in [`games/registry.json`](games/registry.json). This is what
 
 ```jsonc
 {
-  "slug": "space-dodge",            // folder name and URL: /games/space-dodge/
-  "title": "Space Dodge",           // card title
-  "description": "Weave through…",  // card blurb
-  "tags": ["arcade", "shooter"],    // hub filter chips (they appear once 2+ tags exist)
-  "accent": "#a45bff",              // card glow color
-  "controls": "Arrows / touch"      // controls hint on the card
+  "slug": "space-dodge",              // folder name and URL: /games/space-dodge/
+  "title": "Space Dodge",             // card title
+  "description": "Weave through…",    // card blurb
+  "tags": ["arcade", "shooter"],      // hub filter chips
+  "accent": "#a45bff",                // card glow color
+  "controls": "Arrows / touch",       // controls hint on the card
+  "thumbnail": "thumbs/space-dodge.jpg" // optional 16:9 screenshot in public/; without it the card shows a big letter
 }
 ```
 
 ### 3. Build it
 
-Run `npm run dev`, open `/GH-Arcade/games/space-dodge/` and start editing `main.ts`. Vite picks up every `games/*/index.html` automatically. Push to `main` and it's live.
+Run `npm run dev`, open `/GH-Arcade/games/space-dodge/` and start editing `main.ts`. Vite picks up every `games/*/index.html` automatically, and the service worker precaches it for offline play. Push to `main` and it's live.
 
 ### The shared toolkit
 
-Games can import ready-made helpers from [`shared/`](shared):
+Games import ready-made building blocks from [`shared/`](shared), so a new game gets menus, controls, pause and high scores for free:
 
 ```ts
-import { createArcadeGame } from '../../shared/phaser-config';
-import { submitHighScore } from '../../shared/storage';
-import { tone } from '../../shared/sfx';
+import { ArcadeControls } from '../../shared/controls';
+import { PauseController } from '../../shared/pause';
+import { startArcadeGame } from '../../shared/phaser-config';
+import { ArcadeGameOverScene } from '../../shared/scenes';
 
-createArcadeGame({ scenes: [MenuScene, GameScene] });  // fit-to-screen Phaser game
+class GameScene extends Phaser.Scene {
+  create() {
+    this.controls = new ArcadeControls(this);                // keyboard + gamepad + touch in one API
+    this.pause = new PauseController(this, this.controls);   // P / Esc / Start, mute, auto-pause
+  }
+  update() {
+    if (this.pause.isPaused) return;
+    this.player.x += this.controls.axisX * 5;                // analog stick or arrow keys
+    if (this.controls.justPressed('action')) this.jump();    // Space, Enter or gamepad A
+  }
+}
 
-tone({ freq: 660, toFreq: 990, duration: 0.1 });       // rising "coin" blip
-const isNewRecord = submitHighScore('space-dodge', score);
+startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 ```
 
-- **[`phaser-config.ts`](shared/phaser-config.ts)**: `createArcadeGame()` gives you a standard Phaser setup with fit-to-screen scaling, Arcade physics and multi-touch.
-- **[`storage.ts`](shared/storage.ts)**: `getHighScore()`, `submitHighScore()`, `loadJSON()` and `saveJSON()` wrap `localStorage` so it never throws, even in private browsing.
-- **[`sfx.ts`](shared/sfx.ts)**: `tone()`, `noise()` and `setMuted()` play retro sound effects synthesized with Web Audio.
-- **[`game-shell.css`](shared/game-shell.css)**: styles the full-screen canvas page and the "← Arcade" back button.
+| Module | What it provides |
+| --- | --- |
+| [`controls.ts`](shared/controls.ts) | `ArcadeControls`: keyboard, gamepad and on-screen touch input behind `isDown()`, `justPressed()` and `axisX`/`axisY`, with extra per-game bindings. |
+| [`pause.ts`](shared/pause.ts) | `PauseController`: pause and mute keys, a tap-to-resume overlay, and auto-pause when the tab loses focus. |
+| [`touch.ts`](shared/touch.ts) | `onSwipe()` gestures, plus `VirtualStick` and `VirtualButton` that appear only on touch screens. |
+| [`scenes.ts`](shared/scenes.ts) | `buildMenu()` title screens and the shared `ArcadeGameOverScene` with high-score checks. |
+| [`ui.ts`](shared/ui.ts) | Neon text, banners, score popups, particle bursts and the shared color palette. |
+| [`phaser-config.ts`](shared/phaser-config.ts) | `startArcadeGame()`: fit-to-screen Phaser setup with gamepads enabled, once the pixel font has loaded. |
+| [`storage.ts`](shared/storage.ts) | `getHighScore()` and `submitHighScore()`, backed by `localStorage` that never throws. |
+| [`sfx.ts`](shared/sfx.ts) | `tone()` and `noise()`: retro sound effects synthesized with Web Audio. |
+| [`pwa.ts`](shared/pwa.ts) | Registers the service worker that makes every page work offline. |
 
 > [!NOTE]
 > Phaser is the default engine, but it's optional. A game is just an `index.html` with a script, so plain Canvas, Three.js or anything else Vite can bundle will work.
@@ -187,8 +234,8 @@ Every push to `main` publishes the site automatically:
 
 1. **Push** to `main` triggers the [deploy workflow](.github/workflows/deploy.yml).
 2. **GitHub Actions** installs dependencies with `npm ci`, then runs `npm run build`.
-3. **The build** type-checks the code with TypeScript, then Vite bundles the hub plus every `games/*/index.html` into `dist/`.
-4. **GitHub Pages** serves `dist/` at [tmhsdigital.github.io/GH-Arcade](https://tmhsdigital.github.io/GH-Arcade/).
+3. **The build** type-checks the code, bundles the hub plus every `games/*/index.html` with Vite, and generates a service worker that precaches all of it.
+4. **GitHub Pages** serves `dist/` at [tmhsdigital.github.io/GH-Arcade](https://tmhsdigital.github.io/GH-Arcade/). After the first visit, the service worker serves every page and game offline and picks up updates automatically.
 
 <details>
 <summary><b>Project layout</b></summary>
@@ -196,21 +243,23 @@ Every push to `main` publishes the site automatically:
 ```
 GH-Arcade/
 ├── index.html              # Arcade hub page
-├── src/hub/                # Hub script and styles (renders cards from the registry)
+├── src/hub/                # Hub script and styles (cards, filters, install button)
 ├── games/
 │   ├── registry.json       # The list of games shown on the hub
 │   ├── _template/          # Starter game copied by `npm run new-game`
-│   └── breakout/           # Neon Breakout
-│       ├── index.html
-│       ├── main.ts         # Boots Phaser with the game's scenes
-│       ├── config.ts       # Tuning constants and level layouts
-│       └── scenes/         # Boot → Menu → Game → GameOver
-├── shared/                 # Toolkit shared by all games
-├── public/                 # Static files copied as-is (favicon)
+│   ├── breakout/           # Neon Breakout
+│   ├── snake/              # Neon Snake
+│   ├── stack/              # Neon Stack (rules live in logic.ts, separate from rendering)
+│   ├── astro/              # Astro Blaster
+│   └── runner/             # Neon Runner (obstacle patterns in patterns.ts)
+├── shared/                 # Toolkit shared by all games (controls, pause, touch, scenes, ui, ...)
+├── public/                 # Favicon, app icons and hub thumbnails, copied as-is
 ├── scripts/new-game.mjs    # Game scaffolder
-├── vite.config.ts          # Multi-page build with game auto-discovery
+├── vite.config.ts          # Multi-page build, game auto-discovery and the PWA service worker
 └── .github/workflows/      # Build and deploy to GitHub Pages
 ```
+
+Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `config.ts` (tuning constants) and `scenes/` (menu and game).
 
 </details>
 
@@ -221,8 +270,10 @@ GH-Arcade/
 
 - **Vite multi-page build, not a single-page app.** Each game is an independent page, so one game can't break another, and each one loads only its own code.
 - **Shared Phaser chunk.** Phaser is about 340 KB gzipped. It's split into its own file so it downloads once and is cached for every game.
-- **Procedural art and audio.** Neon Breakout draws its textures at runtime and synthesizes its sounds, so the whole game is about 6 KB gzipped on top of Phaser.
-- **Relative links between pages.** The hub and games link to each other with relative paths, so the site works on the dev server, in preview and on Pages.
+- **Procedural art and audio.** Games draw their graphics in code and synthesize their sounds, so each game adds only a few KB on top of Phaser.
+- **One input layer.** Games ask `ArcadeControls` about actions ("left", "action") instead of keys, so keyboard, gamepad and touch all work without per-game plumbing.
+- **Rules separate from rendering where it pays off.** Neon Stack's rules are pure functions in `logic.ts`, which keeps rotation, wall kicks and line clears easy to test.
+- **Offline first.** Everything is precached at build time, and all pages share one font stylesheet so a single visit caches it for every game.
 
 </details>
 
@@ -232,19 +283,21 @@ GH-Arcade/
 
 **Shipped**
 
-- [x] Arcade hub with tag filters and saved high scores
-- [x] Neon Breakout
-- [x] One-command game scaffolding
+- [x] Arcade hub with tag filters, thumbnails and saved high scores
+- [x] Neon Breakout, Neon Snake, Neon Stack, Astro Blaster and Neon Runner
+- [x] Gamepad support in every game
+- [x] Installable PWA with offline play
+- [x] One-command game scaffolding with a shared toolkit
 - [x] Automatic GitHub Pages deploys
 
 **Up next**
 
-- [ ] Snake
-- [ ] Asteroids-style shooter
-- [ ] Falling-block puzzler
-- [ ] Endless runner
-- [ ] Gamepad support
-- [ ] Installable PWA with offline play
+- [ ] Settings screen: volume, colorblind-friendly palette and reduced motion
+- [ ] Rebindable controls
+- [ ] Achievements and per-game stats
+- [ ] Online leaderboards
+- [ ] Two-player modes on one keyboard or two gamepads
+- [ ] More cabinets: an invader-wave shooter and a road-crossing game
 
 Have an idea? [Open an issue](https://github.com/TMHSDigital/GH-Arcade/issues/new).
 
