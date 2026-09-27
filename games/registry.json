@@ -115,7 +115,7 @@
     "description": "A glowing table of bumpers, slingshots, drop targets and rollover lanes. Build the multiplier to x5 across three balls.",
     "tags": [
       "arcade",
-      "physics"
+      "action"
     ],
     "accent": "#ff2e97",
     "controls": "Left / right / hold sides / gamepad",
