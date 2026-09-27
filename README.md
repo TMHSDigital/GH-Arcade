@@ -170,12 +170,10 @@ tone({ freq: 660, toFreq: 990, duration: 0.1 });       // rising "coin" blip
 const isNewRecord = submitHighScore('space-dodge', score);
 ```
 
-| File | What it provides |
-| --- | --- |
-| [`phaser-config.ts`](shared/phaser-config.ts) | `createArcadeGame()`: a standard Phaser setup with fit-to-screen scaling, Arcade physics and multi-touch. |
-| [`storage.ts`](shared/storage.ts) | `getHighScore()`, `submitHighScore()`, `loadJSON()`, `saveJSON()`: `localStorage` helpers that never throw, even in private browsing. |
-| [`sfx.ts`](shared/sfx.ts) | `tone()`, `noise()`, `setMuted()`: retro sound effects synthesized with Web Audio. |
-| [`game-shell.css`](shared/game-shell.css) | The full-screen canvas page and the "← Arcade" back button. |
+- **[`phaser-config.ts`](shared/phaser-config.ts)**: `createArcadeGame()` gives you a standard Phaser setup with fit-to-screen scaling, Arcade physics and multi-touch.
+- **[`storage.ts`](shared/storage.ts)**: `getHighScore()`, `submitHighScore()`, `loadJSON()` and `saveJSON()` wrap `localStorage` so it never throws, even in private browsing.
+- **[`sfx.ts`](shared/sfx.ts)**: `tone()`, `noise()` and `setMuted()` play retro sound effects synthesized with Web Audio.
+- **[`game-shell.css`](shared/game-shell.css)**: styles the full-screen canvas page and the "← Arcade" back button.
 
 > [!NOTE]
 > Phaser is the default engine, but it's optional. A game is just an `index.html` with a script, so plain Canvas, Three.js or anything else Vite can bundle will work.
