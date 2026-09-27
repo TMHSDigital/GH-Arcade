@@ -20,8 +20,10 @@ import {
   WIDE_DURATION_MS,
   WIDTH,
 } from '../config';
-import { isMuted, noise, setMuted, tone } from '../../../shared/sfx';
-import { neonText, PIXEL_FONT } from './ui';
+import { ArcadeControls } from '../../../shared/controls';
+import { PauseController } from '../../../shared/pause';
+import { noise, tone } from '../../../shared/sfx';
+import { floatText, neonText, PIXEL_FONT, showBanner } from '../../../shared/ui';
 
 type Img = Phaser.Physics.Arcade.Image;
 
@@ -64,10 +66,9 @@ export class GameScene extends Phaser.Scene {
   private comboText!: Phaser.GameObjects.Text;
   private levelText!: Phaser.GameObjects.Text;
   private hint!: Phaser.GameObjects.Text;
-  private pauseText!: Phaser.GameObjects.Text;
-  private muteText!: Phaser.GameObjects.Text;
   private lifeIcons: Phaser.GameObjects.Image[] = [];
-  private keys!: Record<'left' | 'right' | 'a' | 'd', Phaser.Input.Keyboard.Key>;
+  private controls!: ArcadeControls;
+  private pause!: PauseController;
 
   private wideTimer?: Phaser.Time.TimerEvent;
   private slowTimer?: Phaser.Time.TimerEvent;
@@ -129,7 +130,7 @@ export class GameScene extends Phaser.Scene {
 
     this.createHud();
     this.bindInput();
-    this.showBanner(`LEVEL ${this.level + 1}`);
+    showBanner(this, `LEVEL ${this.level + 1}`);
   }
 
   // ---------------------------------------------------------------- setup
@@ -211,56 +212,36 @@ export class GameScene extends Phaser.Scene {
     this.scoreText = this.add.text(WIDTH / 2, 24, '', style).setOrigin(0.5);
     this.comboText = this.add.text(WIDTH / 2, 50, '', { ...style, fontSize: '12px', color: '#ffe45e' }).setOrigin(0.5);
     this.levelText = this.add.text(WIDTH - 20, 24, `LV ${this.level + 1}`, style).setOrigin(1, 0.5);
-    this.muteText = this.add
-      .text(WIDTH - 20, HEIGHT - 14, '', { ...style, fontSize: '10px', color: '#8a8ab8' })
-      .setOrigin(1, 0.5);
     this.hint = neonText(this, WIDTH / 2, PADDLE_Y - 70, 'CLICK OR SPACE TO LAUNCH', 12, COLORS.white).setAlpha(0.8);
     this.tweens.add({ targets: this.hint, alpha: 0.2, duration: 600, yoyo: true, repeat: -1 });
-    this.pauseText = neonText(this, WIDTH / 2, HEIGHT / 2, 'PAUSED', 36, COLORS.yellow).setVisible(false).setDepth(10);
     this.updateHud();
     this.updateLives();
   }
 
   private bindInput(): void {
-    const kb = this.input.keyboard!;
-    this.keys = kb.addKeys({
-      left: Phaser.Input.Keyboard.KeyCodes.LEFT,
-      right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
-      a: Phaser.Input.Keyboard.KeyCodes.A,
-      d: Phaser.Input.Keyboard.KeyCodes.D,
-    }) as GameScene['keys'];
+    // Keyboard, gamepad and touch all go through the shared controls; pause, mute and
+    // auto-pause on blur come from the shared pause controller.
+    this.controls = new ArcadeControls(this);
+    this.pause = new PauseController(this, this.controls, { canPause: () => !this.levelDone });
 
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => (this.targetX = p.x));
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      if (this.pause.isPaused) return;
       this.targetX = p.x;
       this.launch();
-    });
-    kb.on('keydown-SPACE', () => this.launch());
-    kb.on('keydown-UP', () => this.launch());
-    kb.on('keydown-P', () => this.togglePause());
-    kb.on('keydown-ESC', () => this.togglePause());
-    kb.on('keydown-M', () => {
-      setMuted(!isMuted());
-      this.updateHud();
-    });
-
-    // Auto-pause when the tab is hidden so players don't lose a life while away.
-    this.game.events.on(Phaser.Core.Events.BLUR, this.pauseIfRunning, this);
-    // (The physics world clears its own 'worldbounds' listeners when the scene shuts down.)
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.game.events.off(Phaser.Core.Events.BLUR, this.pauseIfRunning, this);
     });
   }
 
   // ---------------------------------------------------------------- loop
 
   update(_time: number, deltaMs: number): void {
-    if (this.physics.world.isPaused) return;
+    if (this.pause.isPaused) return;
     const dt = deltaMs / 1000;
 
-    // Keyboard nudges the target; pointer sets it directly.
-    const dir =
-      (this.keys.right.isDown || this.keys.d.isDown ? 1 : 0) - (this.keys.left.isDown || this.keys.a.isDown ? 1 : 0);
+    if (this.controls.justPressed('action') || this.controls.justPressed('up')) this.launch();
+
+    // Keys, d-pad and stick nudge the target (the stick is analog); the pointer sets it directly.
+    const dir = this.controls.axisX;
     if (dir !== 0) this.targetX += dir * KEYBOARD_PADDLE_SPEED * dt;
     const half = this.paddle.displayWidth / 2;
     this.targetX = Phaser.Math.Clamp(this.targetX, half, WIDTH - half);
@@ -301,7 +282,7 @@ export class GameScene extends Phaser.Scene {
   // ---------------------------------------------------------------- events
 
   private launch(): void {
-    if (!this.stuck || this.levelDone || this.physics.world.isPaused) return;
+    if (!this.stuck || this.levelDone || this.pause.isPaused) return;
     this.stuck = false;
     this.hint.setVisible(false);
     const ball = this.balls.getFirstAlive() as Img | null;
@@ -343,7 +324,7 @@ export class GameScene extends Phaser.Scene {
     const points = 10 * (brick.getData('maxHp') as number) * Math.min(this.combo, 8);
     this.score += points;
     this.updateHud();
-    this.floatText(brick.x, brick.y, `+${points}`, color);
+    floatText(this, brick.x, brick.y, `+${points}`, color);
 
     this.burst.setParticleTint(color);
     this.burst.explode(18, brick.x, brick.y);
@@ -394,7 +375,7 @@ export class GameScene extends Phaser.Scene {
         this.wideTimer = this.time.delayedCall(WIDE_DURATION_MS, () =>
           this.tweens.add({ targets: this.paddle, scaleX: 1, duration: 200 }),
         );
-        this.floatText(this.paddle.x, PADDLE_Y - 30, 'WIDE', color);
+        floatText(this, this.paddle.x, PADDLE_Y - 30, 'WIDE', color);
         break;
       case 'multi': {
         const source = (this.balls.getFirstAlive() as Img | null) ?? undefined;
@@ -402,19 +383,19 @@ export class GameScene extends Phaser.Scene {
           this.spawnBall(false, source);
           this.spawnBall(false, source);
         }
-        this.floatText(this.paddle.x, PADDLE_Y - 30, 'MULTI', color);
+        floatText(this, this.paddle.x, PADDLE_Y - 30, 'MULTI', color);
         break;
       }
       case 'slow':
         this.speedFactor = SLOW_FACTOR;
         this.slowTimer?.remove();
         this.slowTimer = this.time.delayedCall(SLOW_DURATION_MS, () => (this.speedFactor = 1));
-        this.floatText(this.paddle.x, PADDLE_Y - 30, 'SLOW', color);
+        floatText(this, this.paddle.x, PADDLE_Y - 30, 'SLOW', color);
         break;
       case 'life':
         this.lives++;
         this.updateLives();
-        this.floatText(this.paddle.x, PADDLE_Y - 30, '1UP', color);
+        floatText(this, this.paddle.x, PADDLE_Y - 30, '1UP', color);
         break;
     }
   }
@@ -474,7 +455,7 @@ export class GameScene extends Phaser.Scene {
     [523, 659, 784, 1047].forEach((freq, i) =>
       this.time.delayedCall(i * 110, () => tone({ freq, duration: 0.18, type: 'triangle', volume: 0.1 })),
     );
-    this.showBanner(`LEVEL CLEAR\n+${bonus}`, COLORS.green);
+    showBanner(this, `LEVEL CLEAR\n+${bonus}`, COLORS.green);
     this.time.delayedCall(1800, () => {
       this.cameras.main.fadeOut(250, 5, 5, 13);
       this.cameras.main.once('camerafadeoutcomplete', () =>
@@ -483,30 +464,11 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  private pauseIfRunning(): void {
-    if (!this.physics.world.isPaused && !this.levelDone) this.togglePause();
-  }
-
-  private togglePause(): void {
-    if (this.levelDone) return;
-    const paused = !this.physics.world.isPaused;
-    if (paused) {
-      this.physics.pause();
-      this.tweens.pauseAll();
-    } else {
-      this.physics.resume();
-      this.tweens.resumeAll();
-    }
-    this.time.paused = paused;
-    this.pauseText.setVisible(paused);
-  }
-
   // ---------------------------------------------------------------- hud
 
   private updateHud(): void {
     this.scoreText.setText(this.score.toLocaleString());
     this.comboText.setText(this.combo > 1 ? `COMBO x${Math.min(this.combo, 8)}` : '');
-    this.muteText.setText(isMuted() ? 'MUTED (M)' : '');
   }
 
   private updateLives(): void {
@@ -515,23 +477,6 @@ export class GameScene extends Phaser.Scene {
       this.add.image(WIDTH - 26 - i * 20, 50, 'ball').setTint(COLORS.pink).setScale(0.8),
     );
     this.levelText.setText(`LV ${this.level + 1}`);
-  }
-
-  private floatText(x: number, y: number, text: string, color: number): void {
-    const t = neonText(this, x, y, text, 12, color).setDepth(5);
-    this.tweens.add({ targets: t, y: y - 40, alpha: 0, duration: 700, ease: 'Cubic.easeOut', onComplete: () => t.destroy() });
-  }
-
-  private showBanner(text: string, color: number = COLORS.cyan): void {
-    const banner = neonText(this, WIDTH / 2, HEIGHT / 2 + 40, text, 28, color).setDepth(10).setScale(0.5).setAlpha(0);
-    this.tweens.chain({
-      targets: banner,
-      tweens: [
-        { scale: 1, alpha: 1, duration: 300, ease: 'Back.easeOut' },
-        { alpha: 0, duration: 400, delay: 900 },
-      ],
-      onComplete: () => banner.destroy(),
-    });
   }
 
   /** Arcade collider callbacks don't guarantee argument order, so find the object by texture key. */

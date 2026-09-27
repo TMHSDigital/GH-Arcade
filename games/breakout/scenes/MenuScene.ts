@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { COLORS, GAME_ID, HEIGHT, ROW_COLORS, WIDTH } from '../config';
 import { getHighScore } from '../../../shared/storage';
-import { neonText, onStart } from './ui';
+import { neonText, onStart } from '../../../shared/ui';
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -39,7 +39,7 @@ export class MenuScene extends Phaser.Scene {
       .text(
         WIDTH / 2,
         HEIGHT - 60,
-        'Move: mouse / touch / ← →    Launch: click / space\nPause: P    Mute: M',
+        'Move: mouse / touch / ← → / stick    Launch: click / space / A\nPause: P / Start    Mute: M',
         { fontFamily: 'system-ui, sans-serif', fontSize: '15px', color: '#8a8ab8', align: 'center', lineSpacing: 6 },
       )
       .setOrigin(0.5);

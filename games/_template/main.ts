@@ -1,18 +1,26 @@
 import '../../shared/game-shell.css';
 import Phaser from 'phaser';
-import { createArcadeGame } from '../../shared/phaser-config';
-import { getHighScore, submitHighScore } from '../../shared/storage';
+import { ArcadeControls } from '../../shared/controls';
+import { PauseController } from '../../shared/pause';
+import { startArcadeGame } from '../../shared/phaser-config';
 import { tone } from '../../shared/sfx';
+import { getHighScore, submitHighScore } from '../../shared/storage';
+import { drawGrid, NEON, PIXEL_FONT } from '../../shared/ui';
 
 const GAME_ID = '__SLUG__';
 const WIDTH = 800;
 const HEIGHT = 600;
+const SPEED = 300;
 
-/** Starter scene: move the glowing square and collect dots. Replace with your game. */
+/**
+ * Starter scene: move the glowing square and collect dots. Replace with your game.
+ * Keyboard, gamepad and touch all work through ArcadeControls; P / Esc / Start pauses.
+ */
 class MainScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Image;
   private dot!: Phaser.Physics.Arcade.Image;
-  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+  private controls!: ArcadeControls;
+  private pause!: PauseController;
   private score = 0;
   private scoreText!: Phaser.GameObjects.Text;
 
@@ -21,20 +29,23 @@ class MainScene extends Phaser.Scene {
   }
 
   create(): void {
+    drawGrid(this, WIDTH, HEIGHT);
     const g = this.add.graphics();
     g.fillStyle(0xffffff).fillRoundedRect(0, 0, 32, 32, 6).generateTexture('player', 32, 32);
     g.clear().fillStyle(0xffffff).fillCircle(8, 8, 8).generateTexture('dot', 16, 16);
     g.destroy();
 
-    this.player = this.physics.add.image(WIDTH / 2, HEIGHT / 2, 'player').setTint(0x00f0ff).setCollideWorldBounds(true);
-    this.player.preFX?.addGlow(0x00f0ff, 4);
-    this.dot = this.physics.add.image(0, 0, 'dot').setTint(0xff2e97);
+    this.player = this.physics.add.image(WIDTH / 2, HEIGHT / 2, 'player').setTint(NEON.cyan).setCollideWorldBounds(true);
+    this.player.preFX?.addGlow(NEON.cyan, 4);
+    this.dot = this.physics.add.image(0, 0, 'dot').setTint(NEON.pink);
     this.moveDot();
 
-    this.cursors = this.input.keyboard!.createCursorKeys();
-    this.scoreText = this.add.text(WIDTH / 2, 24, '', { fontSize: '20px', color: '#e8e8ff' }).setOrigin(0.5);
+    this.controls = new ArcadeControls(this);
+    this.pause = new PauseController(this, this.controls);
+
+    this.scoreText = this.add.text(WIDTH / 2, 24, '', { fontFamily: PIXEL_FONT, fontSize: '16px', color: '#e8e8ff' }).setOrigin(0.5);
     this.add
-      .text(WIDTH / 2, HEIGHT - 24, `__TITLE__: arrows or tap to move. Best: ${getHighScore(GAME_ID)}`, {
+      .text(WIDTH / 2, HEIGHT - 24, `__TITLE__: arrows, stick or tap to move. Best: ${getHighScore(GAME_ID)}`, {
         fontSize: '14px',
         color: '#8a8ab8',
       })
@@ -49,14 +60,12 @@ class MainScene extends Phaser.Scene {
   }
 
   update(): void {
-    const speed = 300;
+    if (this.pause.isPaused) return;
     const p = this.input.activePointer;
     if (p.isDown) {
-      this.physics.moveTo(this.player, p.x, p.y, speed);
+      this.physics.moveTo(this.player, p.x, p.y, SPEED);
     } else {
-      const vx = (this.cursors.right.isDown ? 1 : 0) - (this.cursors.left.isDown ? 1 : 0);
-      const vy = (this.cursors.down.isDown ? 1 : 0) - (this.cursors.up.isDown ? 1 : 0);
-      this.player.setVelocity(vx * speed, vy * speed);
+      this.player.setVelocity(this.controls.axisX * SPEED, this.controls.axisY * SPEED);
     }
     this.scoreText.setText(String(this.score));
   }
@@ -66,4 +75,4 @@ class MainScene extends Phaser.Scene {
   }
 }
 
-createArcadeGame({ width: WIDTH, height: HEIGHT, scenes: [MainScene] });
+void startArcadeGame({ width: WIDTH, height: HEIGHT, scenes: [MainScene] });

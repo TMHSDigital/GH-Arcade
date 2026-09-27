@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { COLORS, GAME_ID, WIDTH } from '../config';
 import { getHighScore, submitHighScore } from '../../../shared/storage';
-import { neonText, onStart } from './ui';
+import { neonText, onStart } from '../../../shared/ui';
 
 export interface GameOverData {
   score: number;

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { PIXEL_FONT } from './ui';
 
 export interface ArcadeGameOptions {
   width?: number;
@@ -15,16 +16,30 @@ export function createArcadeGame(opts: ArcadeGameOptions): Phaser.Game {
     parent: 'game',
     width: opts.width ?? 800,
     height: opts.height ?? 600,
-    backgroundColor: opts.backgroundColor ?? '#0b0b1a',
+    backgroundColor: opts.backgroundColor ?? '#05050d',
     scale: {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
     physics: opts.physics ?? { default: 'arcade', arcade: { debug: false } },
-    input: { activePointers: 2 },
+    // Three pointers so a touch stick and two buttons can be held at once; gamepads via the Gamepad API.
+    input: { activePointers: 3, gamepad: true },
     scene: opts.scenes,
   });
   // Handy for debugging and automated tests in `npm run dev`; stripped from production builds.
   if (import.meta.env.DEV) (window as unknown as { game: Phaser.Game }).game = game;
   return game;
+}
+
+/**
+ * Waits (briefly) for the pixel font so Phaser doesn't render text in the fallback font, then starts the game.
+ * Use this from each game's main.ts.
+ */
+export async function startArcadeGame(opts: ArcadeGameOptions): Promise<Phaser.Game> {
+  try {
+    await Promise.race([document.fonts.load(`16px ${PIXEL_FONT}`), new Promise((r) => setTimeout(r, 1500))]);
+  } catch {
+    /* font loading unsupported; fall back to monospace */
+  }
+  return createArcadeGame(opts);
 }
