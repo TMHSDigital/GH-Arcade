@@ -95,6 +95,36 @@ body {
   font-size: 17px;
 }
 
+.install {
+  margin-top: 24px;
+  padding: 10px 20px;
+  border: 1px solid var(--cyan);
+  border-radius: 999px;
+  background: rgb(0 240 255 / 0.08);
+  color: var(--fg);
+  font: 500 15px var(--sans);
+  cursor: pointer;
+  box-shadow: 0 0 20px -6px var(--cyan);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.install span {
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.install:hover,
+.install:focus-visible {
+  background: rgb(0 240 255 / 0.18);
+  box-shadow: 0 0 28px -4px var(--cyan);
+  outline: none;
+}
+
+.install[hidden] {
+  display: none;
+}
+
 main {
   max-width: 1120px;
   margin: 0 auto;

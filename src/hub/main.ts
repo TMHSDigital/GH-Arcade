@@ -1,6 +1,30 @@
 import './hub.css';
 import registry from '../../games/registry.json';
+import { registerOffline } from '../../shared/pwa';
 import { getHighScore } from '../../shared/storage';
+
+registerOffline();
+
+// Chromium browsers fire this when the arcade can be installed as an app; show our own button for it.
+interface InstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+const installButton = document.querySelector<HTMLButtonElement>('#install')!;
+let installPrompt: InstallPromptEvent | null = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  installPrompt = e as InstallPromptEvent;
+  installButton.hidden = false;
+});
+installButton.addEventListener('click', async () => {
+  if (!installPrompt) return;
+  await installPrompt.prompt();
+  await installPrompt.userChoice;
+  installPrompt = null;
+  installButton.hidden = true;
+});
+window.addEventListener('appinstalled', () => (installButton.hidden = true));
 
 interface GameEntry {
   slug: string;

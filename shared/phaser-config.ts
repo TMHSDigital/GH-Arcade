@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { registerOffline } from './pwa';
 import { PIXEL_FONT } from './ui';
 
 export interface ArcadeGameOptions {
@@ -36,6 +37,7 @@ export function createArcadeGame(opts: ArcadeGameOptions): Phaser.Game {
  * Use this from each game's main.ts.
  */
 export async function startArcadeGame(opts: ArcadeGameOptions): Promise<Phaser.Game> {
+  registerOffline();
   try {
     await Promise.race([document.fonts.load(`16px ${PIXEL_FONT}`), new Promise((r) => setTimeout(r, 1500))]);
   } catch {
