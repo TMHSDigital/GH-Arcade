@@ -10,7 +10,7 @@
 [![Play now](https://img.shields.io/badge/PLAY%20NOW-tmhsdigital.github.io%2FGH--Arcade-ff2e97?style=for-the-badge&labelColor=05050d)](https://tmhsdigital.github.io/GH-Arcade/)
 
 [![Deploy](https://img.shields.io/github/actions/workflow/status/TMHSDigital/GH-Arcade/deploy.yml?branch=main&style=flat-square&label=deploy&labelColor=05050d)](https://github.com/TMHSDigital/GH-Arcade/actions/workflows/deploy.yml)
-[![Games](https://img.shields.io/badge/games-5-00f0ff?style=flat-square&labelColor=05050d)](#games)
+[![Games](https://img.shields.io/badge/games-7-00f0ff?style=flat-square&labelColor=05050d)](#games)
 [![PWA](https://img.shields.io/badge/PWA-offline%20ready-3dff8a?style=flat-square&labelColor=05050d)](#features)
 [![Phaser](https://img.shields.io/badge/Phaser-3.90-a45bff?style=flat-square&labelColor=05050d)](https://phaser.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript&logoColor=white&labelColor=05050d)](https://www.typescriptlang.org)
@@ -18,7 +18,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-ff8a3d?style=flat-square&labelColor=05050d)](LICENSE)
 
 **A growing collection of free, open-source arcade games that run in your browser.**<br />
-No accounts. No ads. Keyboard, touch or gamepad. Install it and play offline.
+No accounts. No ads. Keyboard, touch or gamepad, solo or with a friend. Install it and play offline.
 
 [Games](#games) ·
 [Features](#features) ·
@@ -50,7 +50,7 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/snake/"><img src=".github/assets/snake.gif" alt="Neon Snake gameplay: a glowing snake chasing food across a grid" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/snake/">Neon Snake</a></h3>
-      <p>Eat, grow and speed up. Grab the timed bonus stars before they fade. Smooth gliding movement and a turn buffer, so quick double-turns always register.</p>
+      <p>Eat, grow and speed up, and grab the timed bonus stars before they fade. Or go head to head in <b>two-player versus</b>: first to win three rounds.</p>
     </td>
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/stack/"><img src=".github/assets/stack.gif" alt="Neon Stack gameplay: falling blocks locking into place and clearing lines" width="100%" /></a>
@@ -70,6 +70,18 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
       <p>Sprint through a synthwave city. Jump, double jump, slide and dive past barriers, drones and pits while the pace keeps climbing.</p>
     </td>
   </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/siege/"><img src=".github/assets/siege.gif" alt="Star Siege gameplay: two cannons firing up at a marching alien formation" width="100%" /></a>
+      <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/siege/">Star Siege</a></h3>
+      <p>Hold the line against marching alien waves behind crumbling shields, and snipe the mothership for bonus points. Play solo or in <b>two-player co-op</b>.</p>
+    </td>
+    <td width="50%" valign="top">
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/hop/"><img src=".github/assets/hop.gif" alt="Neon Hop gameplay: a hopper crossing traffic and riding logs to a dock" width="100%" /></a>
+      <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/hop/">Neon Hop</a></h3>
+      <p>Dodge four lanes of traffic, then ride drifting logs and diving turtles across the river to fill all five docks before the timer runs out.</p>
+    </td>
+  </tr>
 </table>
 
 <details>
@@ -77,15 +89,17 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
 
 <br />
 
-Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pause, <kbd>M</kbd> / <kbd>Back</kbd> to mute, and pauses by itself when you switch tabs.
+Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pause, <kbd>M</kbd> / <kbd>Back</kbd> to mute, and pauses by itself when you switch tabs. The common keys can be changed in **Settings** on the hub.
 
 | Game | Keyboard | Gamepad | Touch |
 | --- | --- | --- | --- |
 | **Breakout** | <kbd>←</kbd> <kbd>→</kbd> move, <kbd>Space</kbd> launch (or use the mouse) | Stick or d-pad move, <kbd>A</kbd> launch | Drag to move, tap to launch |
-| **Snake** | Arrows or <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> steer | D-pad or stick steer | Swipe to steer |
+| **Snake** | Arrows or <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> steer. Versus: P1 <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd>, P2 arrows | D-pad or stick steer (pad 1 and pad 2 in versus) | Swipe to steer (each player on their own half in versus) |
 | **Stack** | <kbd>←</kbd> <kbd>→</kbd> move, <kbd>↓</kbd> soft drop, <kbd>↑</kbd> / <kbd>X</kbd> rotate, <kbd>Z</kbd> rotate back, <kbd>Space</kbd> hard drop, <kbd>C</kbd> / <kbd>Shift</kbd> hold | D-pad move, <kbd>A</kbd> / <kbd>B</kbd> rotate, d-pad up hard drop, <kbd>Y</kbd> hold | Drag to move and soft drop, tap to rotate, flick up to hard drop, HOLD button |
 | **Astro Blaster** | <kbd>←</kbd> <kbd>→</kbd> turn, <kbd>↑</kbd> thrust, <kbd>Space</kbd> / <kbd>Z</kbd> fire, <kbd>Shift</kbd> / <kbd>X</kbd> warp | Stick turn and thrust, <kbd>A</kbd> fire, <kbd>B</kbd> warp | On-screen stick, FIRE and WARP buttons |
 | **Runner** | <kbd>Space</kbd> / <kbd>↑</kbd> jump (again in the air to double jump), <kbd>↓</kbd> slide or dive | <kbd>A</kbd> jump, <kbd>B</kbd> or stick down slide | Tap to jump, swipe down to slide or dive |
+| **Star Siege** | <kbd>←</kbd> <kbd>→</kbd> move, <kbd>Space</kbd> fire. Co-op: P1 <kbd>A</kbd> <kbd>D</kbd> + <kbd>Space</kbd>, P2 arrows + <kbd>Enter</kbd> | Stick or d-pad move, <kbd>A</kbd> fire (pad 1 and pad 2 in co-op) | Drag to move, hold a finger down to fire |
+| **Neon Hop** | Arrows or <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> hop | D-pad or stick hop, <kbd>A</kbd> hops forward | Swipe to hop, tap to hop forward |
 
 </details>
 
@@ -101,6 +115,8 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | **Stack** | 1, 2, 3 or 4 lines score 100, 300, 500 or 800 × level. Back-to-back quads score ×1.5, combos add `50 × combo × level`, and drops add 1 point per row (2 for hard drops). Level up every 10 lines. |
 | **Astro Blaster** | Large rocks 20, medium 50, small 100, saucer 500. Extra life every 10,000 points. |
 | **Runner** | 1 point per metre plus 25 per coin. |
+| **Star Siege** | Aliens are worth 10, 20 or 30 by row, the mothership 50 to 300, and clearing a wave adds `100 × wave`. |
+| **Neon Hop** | 10 for each new row reached, 50 per dock plus 10 for each second left, 200 for the bonus orb, and 1,000 for filling all five docks. |
 
 **Breakout power-ups:** green **W** widens the paddle for 12 seconds, purple **M** splits the ball into three, yellow **S** slows the ball to 70% for 8 seconds, and the rare pink **+** is an extra life.
 
@@ -111,7 +127,7 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 ## Features
 
 <p align="center">
-  <img src=".github/assets/hub.png" alt="The GH Arcade hub with five game cabinets and tag filters" width="100%" />
+  <img src=".github/assets/hub.png" alt="The GH Arcade hub with game cabinets, tag filters, and Trophies and Settings buttons" width="100%" />
   <br />
   <sub>The hub: every game gets a cabinet card, filterable by tag, with your best score on it once you've played.</sub>
 </p>
@@ -121,7 +137,9 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | **Plays anywhere** | A static site on GitHub Pages. Loads straight in the browser on desktop, tablet or phone. |
 | **Installable, works offline** | Install GH Arcade as an app from the hub. After one visit, every game plays with no connection. |
 | **Keyboard, touch or gamepad** | Every game supports all three. Plug in a controller and it just works, including pause on <kbd>Start</kbd>. |
-| **High scores** | Best scores are saved on your device and shown on the hub. No sign-up. |
+| **Two-player** | Neon Snake has a versus mode and Star Siege has co-op, on one keyboard or two gamepads. |
+| **Trophies and stats** | 31 trophies across the arcade, with plays and best scores per game in the Trophies panel. Saved on your device, no sign-up. |
+| **Settings and accessibility** | Volume, reduced motion (no shake or flashes), a colorblind-friendly palette, and rebindable keys. |
 | **Zero-asset audio** | Sound effects are synthesized live with the Web Audio API, so there are no audio files to download. |
 | **Fast loads** | Each game is its own page and bundle. Phaser is split into one shared file that your browser caches across games. |
 | **One command per game** | `npm run new-game` scaffolds a working game and adds it to the hub. No config to edit. |
@@ -221,6 +239,8 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`phaser-config.ts`](shared/phaser-config.ts) | `startArcadeGame()`: fit-to-screen Phaser setup with gamepads enabled, once the pixel font has loaded. |
 | [`storage.ts`](shared/storage.ts) | `getHighScore()` and `submitHighScore()`, backed by `localStorage` that never throws. |
 | [`sfx.ts`](shared/sfx.ts) | `tone()` and `noise()`: retro sound effects synthesized with Web Audio. |
+| [`achievements.ts`](shared/achievements.ts) | Trophies and stats: `unlock()` when something happens, `addCounter()` for running totals. Unlocks pop up as a [toast](shared/toast.ts). |
+| [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key bindings) that every game reads on start. |
 | [`pwa.ts`](shared/pwa.ts) | Registers the service worker that makes every page work offline. |
 
 > [!NOTE]
@@ -243,7 +263,7 @@ Every push to `main` publishes the site automatically:
 ```
 GH-Arcade/
 ├── index.html              # Arcade hub page
-├── src/hub/                # Hub script and styles (cards, filters, install button)
+├── src/hub/                # Hub script and styles (cards, filters, install, settings and trophies panels)
 ├── games/
 │   ├── registry.json       # The list of games shown on the hub
 │   ├── _template/          # Starter game copied by `npm run new-game`
@@ -251,7 +271,9 @@ GH-Arcade/
 │   ├── snake/              # Neon Snake
 │   ├── stack/              # Neon Stack (rules live in logic.ts, separate from rendering)
 │   ├── astro/              # Astro Blaster
-│   └── runner/             # Neon Runner (obstacle patterns in patterns.ts)
+│   ├── runner/             # Neon Runner (obstacle patterns in patterns.ts)
+│   ├── siege/              # Star Siege (pixel art in sprites.ts)
+│   └── hop/                # Neon Hop (lane layout in config.ts)
 ├── shared/                 # Toolkit shared by all games (controls, pause, touch, scenes, ui, ...)
 ├── public/                 # Favicon, app icons and hub thumbnails, copied as-is
 ├── scripts/new-game.mjs    # Game scaffolder
@@ -284,20 +306,23 @@ Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `co
 **Shipped**
 
 - [x] Arcade hub with tag filters, thumbnails and saved high scores
-- [x] Neon Breakout, Neon Snake, Neon Stack, Astro Blaster and Neon Runner
+- [x] Seven games: Neon Breakout, Neon Snake, Neon Stack, Astro Blaster, Neon Runner, Star Siege and Neon Hop
 - [x] Gamepad support in every game
 - [x] Installable PWA with offline play
+- [x] Settings screen: volume, colorblind-friendly palette and reduced motion
+- [x] Rebindable controls
+- [x] Trophies and per-game stats
+- [x] Two-player modes: Snake versus and Star Siege co-op
 - [x] One-command game scaffolding with a shared toolkit
 - [x] Automatic GitHub Pages deploys
 
 **Up next**
 
-- [ ] Settings screen: volume, colorblind-friendly palette and reduced motion
-- [ ] Rebindable controls
-- [ ] Achievements and per-game stats
 - [ ] Online leaderboards
-- [ ] Two-player modes on one keyboard or two gamepads
-- [ ] More cabinets: an invader-wave shooter and a road-crossing game
+- [ ] Daily challenge with a shared seed
+- [ ] Breakout level editor
+- [ ] More two-player modes
+- [ ] More cabinets: a maze chase and a pinball table
 
 Have an idea? [Open an issue](https://github.com/TMHSDigital/GH-Arcade/issues/new).
 
