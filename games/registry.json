@@ -3,8 +3,22 @@
     "slug": "breakout",
     "title": "Neon Breakout",
     "description": "Smash glowing bricks, chase combos, and clear every level before your lives run out.",
-    "tags": ["arcade", "classic"],
+    "tags": [
+      "arcade",
+      "classic"
+    ],
     "accent": "#00f0ff",
     "controls": "Mouse / touch / ← →"
+  },
+  {
+    "slug": "snake",
+    "title": "Neon Snake",
+    "description": "Eat, grow and speed up. Grab the bonus stars before they fade, and don't bite your own tail.",
+    "tags": [
+      "classic",
+      "arcade"
+    ],
+    "accent": "#3dff8a",
+    "controls": "Arrows / swipe / d-pad"
   }
 ]

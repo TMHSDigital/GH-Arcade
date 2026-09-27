@@ -83,6 +83,30 @@ export function showBanner(scene: Phaser.Scene, text: string, color: number = NE
   });
 }
 
+/** Creates (once) and returns the key of a small white dot texture for particle effects. */
+export function sparkTexture(scene: Phaser.Scene): string {
+  if (!scene.textures.exists('spark')) {
+    const g = scene.make.graphics({}, false);
+    g.fillStyle(0xffffff).fillCircle(4, 4, 4).generateTexture('spark', 8, 8);
+    g.destroy();
+  }
+  return 'spark';
+}
+
+/** One-shot particle emitter for bursts: call `emitter.explode(count, x, y)` after setting a tint. */
+export function burstEmitter(scene: Phaser.Scene, speed = 300, lifespan = 650): Phaser.GameObjects.Particles.ParticleEmitter {
+  return scene.add
+    .particles(0, 0, sparkTexture(scene), {
+      speed: { min: speed * 0.25, max: speed },
+      lifespan,
+      scale: { start: 1, end: 0 },
+      alpha: { start: 1, end: 0 },
+      blendMode: Phaser.BlendModes.ADD,
+      emitting: false,
+    })
+    .setDepth(50);
+}
+
 /** Fades the camera out, then starts another scene. */
 export function fadeToScene(scene: Phaser.Scene, key: string, data?: object): void {
   scene.cameras.main.fadeOut(250, 5, 5, 13);

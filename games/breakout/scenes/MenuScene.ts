@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
-import { COLORS, GAME_ID, HEIGHT, ROW_COLORS, WIDTH } from '../config';
-import { getHighScore } from '../../../shared/storage';
-import { neonText, onStart } from '../../../shared/ui';
+import { GAME_ID, HEIGHT, ROW_COLORS, WIDTH } from '../config';
+import { buildMenu } from '../../../shared/scenes';
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -26,27 +25,11 @@ export class MenuScene extends Phaser.Scene {
       });
     }
 
-    neonText(this, WIDTH / 2, 170, 'NEON', 56, COLORS.pink);
-    neonText(this, WIDTH / 2, 240, 'BREAKOUT', 56, COLORS.cyan);
-
-    const best = getHighScore(GAME_ID);
-    if (best > 0) neonText(this, WIDTH / 2, 320, `BEST ${best.toLocaleString()}`, 16, COLORS.yellow);
-
-    const prompt = neonText(this, WIDTH / 2, 410, 'CLICK OR PRESS SPACE', 16, COLORS.white);
-    this.tweens.add({ targets: prompt, alpha: 0.2, duration: 600, yoyo: true, repeat: -1 });
-
-    this.add
-      .text(
-        WIDTH / 2,
-        HEIGHT - 60,
-        'Move: mouse / touch / ← → / stick    Launch: click / space / A\nPause: P / Start    Mute: M',
-        { fontFamily: 'system-ui, sans-serif', fontSize: '15px', color: '#8a8ab8', align: 'center', lineSpacing: 6 },
-      )
-      .setOrigin(0.5);
-
-    onStart(this, () => {
-      this.cameras.main.fadeOut(250, 5, 5, 13);
-      this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Game', { level: 0, score: 0 }));
+    buildMenu(this, {
+      gameId: GAME_ID,
+      title: ['NEON', 'BREAKOUT'],
+      help: 'Move: mouse / touch / ← → / stick    Launch: click / space / A\nPause: P / Start    Mute: M',
+      startData: { level: 0, score: 0 },
     });
   }
 }

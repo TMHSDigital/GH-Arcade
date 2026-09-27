@@ -10,6 +10,7 @@ import {
   BRICK_W,
   COLORS,
   COLS,
+  GAME_ID,
   HEIGHT,
   LEVELS,
   MAX_BOUNCE_ANGLE,
@@ -426,7 +427,14 @@ export class GameScene extends Phaser.Scene {
 
     if (this.lives <= 0) {
       this.levelDone = true;
-      this.time.delayedCall(700, () => this.scene.start('GameOver', { score: this.score, level: this.level }));
+      this.time.delayedCall(700, () =>
+        this.scene.start('GameOver', {
+          gameId: GAME_ID,
+          score: this.score,
+          detail: `REACHED LEVEL ${this.level + 1}`,
+          restartData: { level: 0, score: 0 },
+        }),
+      );
       return;
     }
     this.stuck = true;
