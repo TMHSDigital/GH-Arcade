@@ -45,6 +45,11 @@ export const TROPHIES: Trophy[] = [
   { id: 'runner.coins', game: 'runner', title: 'Pocket Change', description: 'Collect 20 coins in one run' },
   { id: 'runner.bank', game: 'runner', title: 'Treasure Hunter', description: 'Collect 500 coins in total', counter: 'runner.coins', target: 500 },
 
+  { id: 'siege.wave3', game: 'siege', title: 'Holding the Line', description: 'Clear wave 3' },
+  { id: 'siege.mothership', game: 'siege', title: 'Mothership Down', description: 'Shoot the mothership' },
+  { id: 'siege.score', game: 'siege', title: 'Star Defender', description: 'Score 5,000 points' },
+  { id: 'siege.coop', game: 'siege', title: 'Better Together', description: 'Clear a wave in two-player co-op' },
+
   { id: 'arcade.all', game: 'arcade', title: 'Arcade Regular', description: 'Play every game in the arcade' },
   { id: 'arcade.plays', game: 'arcade', title: 'Insert Another Coin', description: 'Play 25 games', counter: 'arcade.plays', target: 25 },
   { id: 'arcade.case', game: 'arcade', title: 'Trophy Case', description: 'Unlock 10 other trophies' },

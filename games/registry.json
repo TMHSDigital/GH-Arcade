@@ -17,7 +17,8 @@
     "description": "Eat, grow and speed up. Grab the bonus stars before they fade, and don't bite your own tail.",
     "tags": [
       "classic",
-      "arcade"
+      "arcade",
+      "2-player"
     ],
     "accent": "#3dff8a",
     "controls": "Arrows / swipe / d-pad",
@@ -58,5 +59,18 @@
     "accent": "#ff2e97",
     "controls": "Tap + swipe / Space + Down / gamepad",
     "thumbnail": "thumbs/runner.jpg"
+  },
+  {
+    "slug": "siege",
+    "title": "Star Siege",
+    "description": "Hold the line against marching alien waves. Duck behind shields, snipe the mothership, and team up with a friend in co-op.",
+    "tags": [
+      "shooter",
+      "classic",
+      "2-player"
+    ],
+    "accent": "#ffe45e",
+    "controls": "Arrows + Space / drag / gamepad",
+    "thumbnail": "thumbs/siege.jpg"
   }
 ]
