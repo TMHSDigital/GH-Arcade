@@ -65,6 +65,11 @@ export const TROPHIES: Trophy[] = [
   { id: 'maze.level3', game: 'maze', title: 'Deeper In', description: 'Reach level 3 in Neon Maze' },
   { id: 'maze.score', game: 'maze', title: 'High Voltage', description: 'Score 10,000 in Neon Maze' },
 
+  { id: 'pinball.lanes', game: 'pinball', title: 'Lane Lighter', description: 'Light all three top lanes' },
+  { id: 'pinball.bank', game: 'pinball', title: 'Target Practice', description: 'Knock down the whole drop-target bank' },
+  { id: 'pinball.multi', game: 'pinball', title: 'Maxed Out', description: 'Reach the x5 multiplier' },
+  { id: 'pinball.score', game: 'pinball', title: 'Table Wizard', description: 'Score 50,000 in Neon Pinball' },
+
   { id: 'arcade.all', game: 'arcade', title: 'Arcade Regular', description: 'Play every game in the arcade' },
   { id: 'arcade.plays', game: 'arcade', title: 'Insert Another Coin', description: 'Play 25 games', counter: 'arcade.plays', target: 25 },
   { id: 'arcade.case', game: 'arcade', title: 'Trophy Case', description: 'Unlock 10 other trophies' },

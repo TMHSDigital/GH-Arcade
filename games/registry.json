@@ -108,5 +108,17 @@
     "accent": "#ffe45e",
     "controls": "Arrows / swipe / d-pad",
     "thumbnail": "thumbs/maze.jpg"
+  },
+  {
+    "slug": "pinball",
+    "title": "Neon Pinball",
+    "description": "A glowing table of bumpers, slingshots, drop targets and rollover lanes. Build the multiplier to x5 across three balls.",
+    "tags": [
+      "arcade",
+      "physics"
+    ],
+    "accent": "#ff2e97",
+    "controls": "Left / right / hold sides / gamepad",
+    "thumbnail": "thumbs/pinball.jpg"
   }
 ]
