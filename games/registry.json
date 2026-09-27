@@ -84,5 +84,17 @@
     "accent": "#3d7bff",
     "controls": "Arrows / swipe / d-pad",
     "thumbnail": "thumbs/hop.jpg"
+  },
+  {
+    "slug": "pong",
+    "title": "Neon Pong",
+    "description": "The original paddle duel with spin and speed-ups. Take on the CPU or a friend, first to 7.",
+    "tags": [
+      "classic",
+      "2-player"
+    ],
+    "accent": "#5ef2d0",
+    "controls": "Up / down / drag / gamepad",
+    "thumbnail": "thumbs/pong.jpg"
   }
 ]
