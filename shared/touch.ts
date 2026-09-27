@@ -41,13 +41,16 @@ export function onSwipe(scene: Phaser.Scene, handler: (dir: SwipeDir) => void, o
       startY = p.y;
     }
   });
-  scene.input.on('pointerup', (p: Phaser.Input.Pointer) => {
+  const release = (p: Phaser.Input.Pointer) => {
     if (!active) return;
     active = false;
     const dir = direction(p.x - startX, p.y - startY, threshold);
     if (dir) handler(dir);
     else if (!swiped) handler('tap');
-  });
+  };
+  // A finger that slides off the canvas edge still completes its swipe.
+  scene.input.on('pointerup', release);
+  scene.input.on('pointerupoutside', release);
 }
 
 function direction(dx: number, dy: number, threshold: number): SwipeDir | null {

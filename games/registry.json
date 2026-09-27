@@ -20,5 +20,16 @@
     ],
     "accent": "#3dff8a",
     "controls": "Arrows / swipe / d-pad"
+  },
+  {
+    "slug": "stack",
+    "title": "Neon Stack",
+    "description": "Rotate, slide and drop falling blocks to clear lines. Hold a piece for later and chain combos as the speed climbs.",
+    "tags": [
+      "puzzle",
+      "classic"
+    ],
+    "accent": "#a45bff",
+    "controls": "Arrows + X/Z / drag and tap / gamepad"
   }
 ]
