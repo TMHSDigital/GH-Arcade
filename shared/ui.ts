@@ -69,10 +69,21 @@ export function floatText(scene: Phaser.Scene, x: number, y: number, text: strin
   scene.tweens.add({ targets: t, y: y - 40, alpha: 0, duration: 700, ease: 'Cubic.easeOut', onComplete: () => t.destroy() });
 }
 
-/** Big centered banner that pops in and fades out. */
+/**
+ * Big centered banner that pops in and fades out. A new banner at the same height replaces the
+ * previous one, so quick successive events (e.g. back-to-back line clears) never draw on top of each other.
+ */
 export function showBanner(scene: Phaser.Scene, text: string, color: number = NEON.cyan, y?: number): void {
   const { width, height } = scene.scale.gameSize;
-  const banner = neonText(scene, width / 2, y ?? height / 2 + 40, text, 28, color).setDepth(30).setScale(0.5).setAlpha(0);
+  const by = y ?? height / 2 + 40;
+  const slot = `banner:${Math.round(by)}`;
+  const previous = scene.data.get(slot) as Phaser.GameObjects.Text | undefined;
+  if (previous?.active) {
+    scene.tweens.killTweensOf(previous);
+    previous.destroy();
+  }
+  const banner = neonText(scene, width / 2, by, text, 28, color).setDepth(30).setScale(0.5).setAlpha(0);
+  scene.data.set(slot, banner);
   scene.tweens.chain({
     targets: banner,
     tweens: [

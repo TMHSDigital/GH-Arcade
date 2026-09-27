@@ -33,6 +33,8 @@ interface GameEntry {
   tags: string[];
   accent: string;
   controls?: string;
+  /** Optional 16:9 screenshot in public/, e.g. thumbs/snake.jpg. Without one the card shows the title's first letter. */
+  thumbnail?: string;
 }
 
 const games = registry as GameEntry[];
@@ -51,7 +53,11 @@ function card(game: GameEntry): HTMLLIElement {
   // Relative link so it works under any base path (dev server and GitHub Pages).
   li.innerHTML = `
     <a class="card-link" href="games/${encodeURIComponent(game.slug)}/">
-      <div class="card-art" aria-hidden="true"><span>${escapeHtml(game.title.charAt(0))}</span></div>
+      <div class="card-art" aria-hidden="true">${
+        game.thumbnail
+          ? `<img src="${escapeHtml(game.thumbnail)}" alt="" loading="lazy" decoding="async" />`
+          : `<span>${escapeHtml(game.title.charAt(0))}</span>`
+      }</div>
       <div class="card-body">
         <h3>${escapeHtml(game.title)}</h3>
         <p>${escapeHtml(game.description)}</p>

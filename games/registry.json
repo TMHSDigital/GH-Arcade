@@ -8,7 +8,8 @@
       "classic"
     ],
     "accent": "#00f0ff",
-    "controls": "Mouse / touch / ← →"
+    "controls": "Mouse / touch / ← →",
+    "thumbnail": "thumbs/breakout.jpg"
   },
   {
     "slug": "snake",
@@ -19,7 +20,8 @@
       "arcade"
     ],
     "accent": "#3dff8a",
-    "controls": "Arrows / swipe / d-pad"
+    "controls": "Arrows / swipe / d-pad",
+    "thumbnail": "thumbs/snake.jpg"
   },
   {
     "slug": "stack",
@@ -30,7 +32,8 @@
       "classic"
     ],
     "accent": "#a45bff",
-    "controls": "Arrows + X/Z / drag and tap / gamepad"
+    "controls": "Arrows + X/Z / drag and tap / gamepad",
+    "thumbnail": "thumbs/stack.jpg"
   },
   {
     "slug": "astro",
@@ -41,7 +44,8 @@
       "arcade"
     ],
     "accent": "#ff8a3d",
-    "controls": "Arrows + Space / touch stick / gamepad"
+    "controls": "Arrows + Space / touch stick / gamepad",
+    "thumbnail": "thumbs/astro.jpg"
   },
   {
     "slug": "runner",
@@ -52,6 +56,7 @@
       "action"
     ],
     "accent": "#ff2e97",
-    "controls": "Tap + swipe / Space + Down / gamepad"
+    "controls": "Tap + swipe / Space + Down / gamepad",
+    "thumbnail": "thumbs/runner.jpg"
   }
 ]
