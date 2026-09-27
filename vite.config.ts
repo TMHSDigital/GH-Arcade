@@ -17,8 +17,8 @@ function discoverGames(): Record<string, string> {
 }
 
 export default defineConfig({
-  // Project Pages site lives at https://tmhsdigital.github.io/GH-Game-1/
-  base: '/GH-Game-1/',
+  // Project Pages site lives at https://tmhsdigital.github.io/GH-Arcade/
+  base: '/GH-Arcade/',
   build: {
     target: 'es2020',
     chunkSizeWarningLimit: 1600, // Phaser alone is ~1.2 MB minified; it is cached across games

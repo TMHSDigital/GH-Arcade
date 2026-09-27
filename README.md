@@ -1,46 +1,258 @@
-# GH Arcade
+<div align="center">
 
-A growing arcade of free browser games, built with [Phaser 3](https://phaser.io), TypeScript and [Vite](https://vite.dev), and deployed to GitHub Pages.
+<a href="https://tmhsdigital.github.io/GH-Arcade/">
+  <img src=".github/assets/banner.png" alt="GH Arcade: free browser games" width="100%" />
+</a>
 
-**Play:** https://tmhsdigital.github.io/GH-Game-1/
+<br />
 
-## Games
+[![Play now](https://img.shields.io/badge/%E2%96%B6%20PLAY%20NOW-tmhsdigital.github.io%2FGH--Arcade-ff2e97?style=for-the-badge&labelColor=05050d)](https://tmhsdigital.github.io/GH-Arcade/)
 
-| Game | Description |
+[![Deploy](https://img.shields.io/github/actions/workflow/status/TMHSDigital/GH-Arcade/deploy.yml?branch=main&style=flat-square&label=deploy&labelColor=05050d)](https://github.com/TMHSDigital/GH-Arcade/actions/workflows/deploy.yml)
+[![Games](https://img.shields.io/badge/games-1-00f0ff?style=flat-square&labelColor=05050d)](#the-cabinets)
+[![Phaser](https://img.shields.io/badge/Phaser-3.90-a45bff?style=flat-square&labelColor=05050d)](https://phaser.io)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript&logoColor=white&labelColor=05050d)](https://www.typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-6-ffe45e?style=flat-square&logo=vite&logoColor=white&labelColor=05050d)](https://vite.dev)
+[![Last commit](https://img.shields.io/github/last-commit/TMHSDigital/GH-Arcade?style=flat-square&labelColor=05050d&color=3dff8a)](https://github.com/TMHSDigital/GH-Arcade/commits/main)
+
+**A growing collection of free, open-source arcade games that run in your browser.**<br />
+No installs. No accounts. No ads. Works on desktop and mobile.
+
+[**Play**](https://tmhsdigital.github.io/GH-Arcade/) ·
+[**Games**](#the-cabinets) ·
+[**Quick start**](#quick-start) ·
+[**Make a game**](#make-your-own-game) ·
+[**How it works**](#how-it-works) ·
+[**Roadmap**](#roadmap)
+
+</div>
+
+---
+
+<a id="the-cabinets"></a>
+
+## 🕹️ The cabinets
+
+<table>
+  <tr>
+    <td width="55%">
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/breakout/">
+        <img src=".github/assets/breakout.gif" alt="Neon Breakout gameplay: multiple balls smashing neon bricks" width="100%" />
+      </a>
+    </td>
+    <td width="45%">
+      <h3>Neon Breakout</h3>
+      <p>The classic brick-breaker, rebuilt with a synthwave glow. Aim with the paddle, chain combos between bounces, and catch power-ups as they fall.</p>
+      <ul>
+        <li>5 hand-built levels that loop with a faster ball</li>
+        <li>Armored bricks that take 2 or 3 hits</li>
+        <li>Combo multiplier up to <b>×8</b></li>
+        <li>Particles, screen shake and synthesized retro sound</li>
+      </ul>
+      <p>
+        <a href="https://tmhsdigital.github.io/GH-Arcade/games/breakout/"><b>▶ Play Neon Breakout</b></a>
+      </p>
+    </td>
+  </tr>
+</table>
+
+<details>
+<summary><b>Controls, power-ups and scoring</b></summary>
+
+<br />
+
+| Action | Keyboard | Mouse | Touch |
+| --- | --- | --- | --- |
+| Move paddle | <kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd> | Move | Drag |
+| Launch ball | <kbd>Space</kbd> or <kbd>↑</kbd> | Click | Tap |
+| Pause | <kbd>P</kbd> or <kbd>Esc</kbd> | | |
+| Mute | <kbd>M</kbd> | | |
+
+| Power-up | Pill | Effect |
+| --- | --- | --- |
+| Wide | 🟩 **W** | Paddle grows 50% for 12 seconds |
+| Multi-ball | 🟪 **M** | Splits into 3 balls |
+| Slow-mo | 🟨 **S** | Ball slows to 70% for 8 seconds |
+| Extra life | 🩷 **+** | One more life (rare) |
+
+**Scoring:** each brick is worth `10 × its hit points × combo`. The combo counts bricks broken since the ball last touched the paddle, capped at ×8. Clearing a level adds `250 × level number`. The game pauses by itself when you switch tabs.
+
+</details>
+
+<p align="center">
+  <img src=".github/assets/hub.png" alt="The GH Arcade hub page" width="85%" />
+  <br />
+  <sub>The hub: every game gets a cabinet card, with your best score saved in the browser.</sub>
+</p>
+
+---
+
+## ✨ Features
+
+|  |  |
 | --- | --- |
-| [Neon Breakout](https://tmhsdigital.github.io/GH-Game-1/games/breakout/) | Smash glowing bricks, chain combos, catch power-ups. |
+| 🌐 **Plays anywhere** | Pure static site on GitHub Pages. Loads straight in the browser on desktop, tablet or phone. |
+| 📱 **Touch-ready** | Games scale to fit any screen and support mouse, keyboard and touch. |
+| 🏆 **High scores** | Best scores are saved on your device and shown on the hub. No sign-up. |
+| 🔊 **Zero-asset audio** | Sound effects are synthesized live with the Web Audio API, so there are no audio files to download. |
+| ⚡ **Fast loads** | Each game is its own page and bundle. Phaser is split into one shared file that your browser caches across games. |
+| 🧩 **One command per game** | `npm run new-game` scaffolds a working game and adds it to the hub. No config to edit. |
 
-## Develop
+---
 
-Requires Node 20+.
+<a id="quick-start"></a>
+
+## 🚀 Quick start
+
+Requires **Node 20+**.
 
 ```bash
+git clone https://github.com/TMHSDigital/GH-Arcade.git
+cd GH-Arcade
 npm install
-npm run dev        # http://localhost:5173/GH-Game-1/
-npm run build      # type-check + production build into dist/
-npm run preview    # serve dist/ locally
+npm run dev
 ```
 
-## Add a game
+Then open **http://localhost:5173/GH-Arcade/**.
+
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Dev server with hot reload |
+| `npm run build` | Type-check, then production build into `dist/` |
+| `npm run preview` | Serve the production build locally |
+| `npm run typecheck` | TypeScript check only |
+| `npm run new-game <slug> ["Title"]` | Scaffold a new game |
+
+> [!TIP]
+> In dev mode the running Phaser game is exposed as `window.game`, so you can inspect scenes from the browser console. For example, `game.scene.getScene('Game')`. This is removed from production builds.
+
+---
+
+<a id="make-your-own-game"></a>
+
+## 🛠️ Make your own game
+
+**1. Scaffold it**
 
 ```bash
 npm run new-game space-dodge "Space Dodge"
 ```
 
-This copies `games/_template/` to `games/space-dodge/` and adds an entry to `games/registry.json`, which drives the hub cards. Vite discovers every `games/*/index.html` automatically, so there is no config to edit. Edit the registry entry's description, tags and accent color, then build the game.
+This copies `games/_template/` to `games/space-dodge/`: a small, playable Phaser game with movement, collectibles and high scores already wired up. It also adds a card to the hub.
 
-## Layout
+**2. Describe it** in [`games/registry.json`](games/registry.json):
+
+```jsonc
+{
+  "slug": "space-dodge",            // folder name and URL: /games/space-dodge/
+  "title": "Space Dodge",           // card title
+  "description": "Weave through…",  // card blurb
+  "tags": ["arcade", "shooter"],    // hub filter chips (they appear once 2+ tags exist)
+  "accent": "#a45bff",              // card glow color
+  "controls": "Arrows / touch"      // controls hint on the card
+}
+```
+
+**3. Build it.** Run `npm run dev`, open `/GH-Arcade/games/space-dodge/` and start editing `main.ts`. Vite discovers every `games/*/index.html` automatically. Push to `main` and it's live.
+
+### The shared toolkit
+
+Every game can import these from [`shared/`](shared):
+
+| Module | Exports | Purpose |
+| --- | --- | --- |
+| [`phaser-config.ts`](shared/phaser-config.ts) | `createArcadeGame({ scenes, width?, height?, physics? })` | Standard Phaser setup: fit-to-screen scaling, Arcade physics, multi-touch |
+| [`storage.ts`](shared/storage.ts) | `getHighScore(id)`, `submitHighScore(id, score)`, `loadJSON`, `saveJSON` | `localStorage` helpers that never throw (e.g. in private browsing) |
+| [`sfx.ts`](shared/sfx.ts) | `tone({ freq, toFreq?, duration?, type? })`, `noise()`, `setMuted()` | Retro sound effects synthesized with Web Audio |
+| [`game-shell.css`](shared/game-shell.css) | CSS | Full-screen canvas page plus the "← Arcade" back button |
+
+> [!NOTE]
+> Phaser is the default engine, but it's optional. A game is just an `index.html` with a script, so plain Canvas, Three.js or anything else Vite can bundle will work.
+
+---
+
+<a id="how-it-works"></a>
+
+## 🧠 How it works
+
+```mermaid
+flowchart LR
+    A["git push to main"] --> B["GitHub Actions<br/>npm ci + npm run build"]
+    B --> C["Vite multi-page build<br/>hub + every games/*/index.html"]
+    C --> D["dist/"]
+    D --> E["GitHub Pages<br/>tmhsdigital.github.io/GH-Arcade"]
+```
+
+<details>
+<summary><b>Project layout</b></summary>
 
 ```
-index.html, src/hub/     Arcade hub page
-games/registry.json      Game list shown on the hub
-games/<slug>/            One folder per game (index.html + main.ts + scenes)
-games/_template/         Starter game used by new-game
-shared/                  Helpers shared by games: Phaser config, high scores, synth SFX, page shell CSS
-scripts/new-game.mjs     Game scaffolder
-.github/workflows/       Build and deploy to GitHub Pages on every push to main
+GH-Arcade/
+├── index.html              # Arcade hub page
+├── src/hub/                # Hub script and styles (renders cards from the registry)
+├── games/
+│   ├── registry.json       # The list of games shown on the hub
+│   ├── _template/          # Starter game copied by `npm run new-game`
+│   └── breakout/           # Neon Breakout
+│       ├── index.html
+│       ├── main.ts         # Boots Phaser with the game's scenes
+│       ├── config.ts       # Tuning constants and level layouts
+│       └── scenes/         # Boot → Menu → Game → GameOver
+├── shared/                 # Toolkit shared by all games
+├── public/                 # Static files copied as-is (favicon)
+├── scripts/new-game.mjs    # Game scaffolder
+├── vite.config.ts          # Multi-page build with game auto-discovery
+└── .github/workflows/      # Build and deploy to GitHub Pages
 ```
 
-## Deploy
+</details>
 
-Every push to `main` runs `.github/workflows/deploy.yml`, which builds the site and publishes `dist/` to GitHub Pages. In the repo settings, Pages must have **Source: GitHub Actions** selected.
+<details>
+<summary><b>Design decisions</b></summary>
+
+- **Vite multi-page build, not an SPA.** Each game is an independent page, so one game can't break another, and each one loads only its own code.
+- **Shared Phaser chunk.** Phaser is ~340 KB gzipped. It's split into its own file so it downloads once and is cached for every game.
+- **Procedural art and audio.** Neon Breakout draws its textures at runtime and synthesizes its sounds, so the whole game is about 6 KB gzipped on top of Phaser.
+- **Relative links between pages.** The hub and games link to each other with relative paths, so the site works on the dev server, in preview and on Pages.
+
+</details>
+
+---
+
+<a id="roadmap"></a>
+
+## 🗺️ Roadmap
+
+- [x] Arcade hub with tag filters and saved high scores
+- [x] Neon Breakout
+- [x] One-command game scaffolding
+- [x] Automatic GitHub Pages deploys
+- [ ] Snake
+- [ ] Asteroids-style shooter
+- [ ] Falling-block puzzler
+- [ ] Endless runner
+- [ ] Gamepad support
+- [ ] Installable PWA with offline play
+
+Have an idea? [Open an issue](https://github.com/TMHSDigital/GH-Arcade/issues/new).
+
+---
+
+## 🤝 Contributing
+
+New games, level designs and bug fixes are welcome.
+
+1. Fork the repo and create a branch.
+2. Run `npm run new-game <slug>` and build your game.
+3. Check that `npm run build` passes.
+4. Open a pull request with a screenshot or GIF.
+
+---
+
+<div align="center">
+
+**[▶ Insert coin at tmhsdigital.github.io/GH-Arcade](https://tmhsdigital.github.io/GH-Arcade/)**
+
+<sub>Built with <a href="https://phaser.io">Phaser</a>, <a href="https://www.typescriptlang.org">TypeScript</a> and <a href="https://vite.dev">Vite</a> · Hosted on <a href="https://pages.github.com">GitHub Pages</a></sub>
+
+</div>

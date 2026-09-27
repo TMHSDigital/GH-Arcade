@@ -41,4 +41,4 @@ registry.push({
 writeFileSync(registryPath, JSON.stringify(registry, null, 2) + '\n');
 
 console.log(`Created games/${slug} and added it to games/registry.json.`);
-console.log(`Run "npm run dev" and open /GH-Game-1/games/${slug}/`);
+console.log(`Run "npm run dev" and open /GH-Arcade/games/${slug}/`);
