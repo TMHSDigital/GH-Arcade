@@ -21,6 +21,7 @@ import {
   WIDE_DURATION_MS,
   WIDTH,
 } from '../config';
+import { unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { noise, tone } from '../../../shared/sfx';
@@ -322,6 +323,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.combo++;
+    if (this.combo >= 8) unlock('breakout.combo');
     const points = 10 * (brick.getData('maxHp') as number) * Math.min(this.combo, 8);
     this.score += points;
     this.updateHud();
@@ -383,6 +385,7 @@ export class GameScene extends Phaser.Scene {
         if (!this.stuck && source) {
           this.spawnBall(false, source);
           this.spawnBall(false, source);
+          if (this.balls.countActive() >= 5) unlock('breakout.multi');
         }
         floatText(this, this.paddle.x, PADDLE_Y - 30, 'MULTI', color);
         break;
@@ -444,6 +447,7 @@ export class GameScene extends Phaser.Scene {
 
   private clearLevel(): void {
     this.levelDone = true;
+    unlock('breakout.clear');
     const bonus = 250 * (this.level + 1);
     this.score += bonus;
     this.updateHud();
@@ -475,6 +479,7 @@ export class GameScene extends Phaser.Scene {
   // ---------------------------------------------------------------- hud
 
   private updateHud(): void {
+    if (this.score >= 10000) unlock('breakout.score');
     this.scoreText.setText(this.score.toLocaleString());
     this.comboText.setText(this.combo > 1 ? `COMBO x${Math.min(this.combo, 8)}` : '');
   }

@@ -38,6 +38,7 @@ import {
   tryRotate,
   VISIBLE_ROWS,
 } from '../logic';
+import { addCounter, unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { noise, tone } from '../../../shared/sfx';
@@ -392,6 +393,8 @@ export class GameScene extends Phaser.Scene {
     let points = LINE_POINTS[n] * this.level;
     if (b2b) points = Math.floor(points * 1.5);
     if (this.combo > 0) points += 50 * this.combo * this.level;
+    if (n === 4) unlock('stack.quad');
+    if (b2b) unlock('stack.b2b');
     this.backToBack = n === 4;
     this.score += points;
 
@@ -416,7 +419,9 @@ export class GameScene extends Phaser.Scene {
       this.clearingRows = [];
       const before = this.level;
       this.lines += n;
+      addCounter('stack.lines', n);
       this.level = 1 + Math.floor(this.lines / LINES_PER_LEVEL);
+      if (this.level >= 5) unlock('stack.level5');
       if (this.level > before) {
         showBanner(this, `LEVEL ${this.level}`, NEON.green, BOARD_Y + 120);
         [392, 523, 659, 784, 1047].forEach((f, i) => this.time.delayedCall(250 + i * 70, () => tone({ freq: f, duration: 0.1, volume: 0.07 })));

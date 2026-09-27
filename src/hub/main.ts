@@ -3,9 +3,11 @@ import registry from '../../games/registry.json';
 import { registerOffline } from '../../shared/pwa';
 import { getHighScore } from '../../shared/storage';
 import { initSettingsPanel } from './settings-panel';
+import { initTrophiesPanel } from './trophies-panel';
 
 registerOffline();
 initSettingsPanel();
+initTrophiesPanel();
 
 // Chromium browsers fire this when the arcade can be installed as an app; show our own button for it.
 interface InstallPromptEvent extends Event {

@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
+import { onUnlock } from './achievements';
 import { registerOffline } from './pwa';
 import { getSettings } from './settings';
+import { showToast } from './toast';
 import { PIXEL_FONT } from './ui';
 
 export interface ArcadeGameOptions {
@@ -55,6 +57,7 @@ export function createArcadeGame(opts: ArcadeGameOptions): Phaser.Game {
  */
 export async function startArcadeGame(opts: ArcadeGameOptions): Promise<Phaser.Game> {
   registerOffline();
+  onUnlock((t) => showToast('Trophy unlocked', t.title));
   try {
     await Promise.race([document.fonts.load(`16px ${PIXEL_FONT}`), new Promise((r) => setTimeout(r, 1500))]);
   } catch {

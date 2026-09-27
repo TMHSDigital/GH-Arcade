@@ -28,6 +28,7 @@ import {
   WARP_COOLDOWN_MS,
   WIDTH,
 } from '../config';
+import { addCounter, unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { noise, tone } from '../../../shared/sfx';
@@ -171,6 +172,7 @@ export class GameScene extends Phaser.Scene {
 
   private nextWave(): void {
     this.wave++;
+    if (this.wave >= 5) unlock('astro.wave5');
     this.waveRocks = Math.min(FIRST_WAVE_ROCKS + this.wave - 1, MAX_WAVE_ROCKS);
     for (let i = 0; i < this.waveRocks; i++) {
       // Spawn on the edges, away from the ship.
@@ -419,7 +421,10 @@ export class GameScene extends Phaser.Scene {
 
   private breakRock(r: Rock, scored: boolean): void {
     const size = r.size;
-    if (scored) this.addScore(ROCKS[size].points, r.x, r.y);
+    if (scored) {
+      this.addScore(ROCKS[size].points, r.x, r.y);
+      addCounter('astro.rocks');
+    }
     this.burst.setParticleTint(size === 3 ? NEON.orange : size === 2 ? NEON.yellow : NEON.white);
     this.burst.explode(6 + size * 6, r.x, r.y);
     noise(0.12 + size * 0.08, 0.05 + size * 0.025);
@@ -435,7 +440,10 @@ export class GameScene extends Phaser.Scene {
   private destroyUfo(scored: boolean): void {
     const u = this.ufo;
     if (!u) return;
-    if (scored) this.addScore(UFO_POINTS, u.x, u.y, NEON.green);
+    if (scored) {
+      this.addScore(UFO_POINTS, u.x, u.y, NEON.green);
+      unlock('astro.saucer');
+    }
     this.burst.setParticleTint(NEON.green);
     this.burst.explode(30, u.x, u.y);
     noise(0.4, 0.1);
@@ -445,6 +453,7 @@ export class GameScene extends Phaser.Scene {
 
   private addScore(points: number, x: number, y: number, color: number = NEON.cyan): void {
     this.score += points;
+    if (this.score >= 10000) unlock('astro.score');
     floatText(this, x, y, `+${points}`, color, 10);
     if (this.score >= this.nextExtraLife) {
       this.nextExtraLife += EXTRA_LIFE_EVERY;

@@ -15,6 +15,7 @@
   <body>
     <div class="scanlines" aria-hidden="true"></div>
     <nav class="topbar" aria-label="Arcade options">
+      <button id="open-trophies" class="topbar-button" type="button">Trophies</button>
       <button id="open-settings" class="topbar-button" type="button">Settings</button>
     </nav>
     <header class="marquee">
@@ -35,6 +36,21 @@
     <footer class="footer">
       <a href="https://github.com/TMHSDigital/GH-Arcade">Source on GitHub</a>
     </footer>
+
+    <dialog id="trophies" class="panel wide" aria-labelledby="trophies-title">
+      <div class="panel-inner">
+        <div class="panel-head">
+          <h2 id="trophies-title">Trophies</h2>
+          <button id="close-trophies" class="close" type="button" aria-label="Close trophies">Close</button>
+        </div>
+        <p id="trophy-summary" class="hint"></p>
+        <div id="trophy-list"></div>
+        <div class="panel-foot">
+          <p class="hint">Trophies and stats are saved on this device.</p>
+          <button id="reset-trophies" class="text-button" type="button">Reset trophies and stats</button>
+        </div>
+      </div>
+    </dialog>
 
     <dialog id="settings" class="panel" aria-labelledby="settings-title">
       <div class="panel-inner">

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { recordPlay } from './achievements';
 import { getHighScore, submitHighScore } from './storage';
 import { isTouchDevice } from './touch';
 import { blinkingPrompt, fadeToScene, NEON, neonText, onStart } from './ui';
@@ -62,6 +63,7 @@ export class ArcadeGameOverScene extends Phaser.Scene {
   create(data: GameOverData): void {
     const { width } = this.scale.gameSize;
     const isRecord = submitHighScore(data.gameId, data.score);
+    recordPlay(data.gameId, data.score);
     this.cameras.main.fadeIn(250, 5, 5, 13);
 
     neonText(this, width / 2, 150, 'GAME OVER', 48, NEON.pink);

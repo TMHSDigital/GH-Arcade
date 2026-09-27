@@ -23,6 +23,7 @@ import {
   WIDTH,
 } from '../config';
 import { PATTERNS, type Piece } from '../patterns';
+import { addCounter, unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { noise, tone } from '../../../shared/sfx';
@@ -364,6 +365,8 @@ export class GameScene extends Phaser.Scene {
       if (c.x + 9 > p.l && c.x - 9 < p.r && c.y + 9 > p.t && c.y - 9 < p.b) {
         c.taken = true;
         this.coinsTaken++;
+        addCounter('runner.coins');
+        if (this.coinsTaken >= 20) unlock('runner.coins');
         const sx = c.x - this.distance + PLAYER_X;
         this.burst.setParticleTint(NEON.yellow);
         this.burst.explode(6, sx, c.y);
@@ -528,7 +531,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateHud(): void {
-    this.distText.setText(`${Math.floor(this.distance / PX_PER_METRE)}m`);
+    const metres = Math.floor(this.distance / PX_PER_METRE);
+    if (metres >= 1000) unlock('runner.1k');
+    if (metres >= 3000) unlock('runner.3k');
+    this.distText.setText(`${metres}m`);
     this.coinText.setText(`COINS ${this.coinsTaken}`);
   }
 }

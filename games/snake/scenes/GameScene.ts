@@ -17,6 +17,7 @@ import {
   TURN_BUFFER,
   WIDTH,
 } from '../config';
+import { unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { noise, tone } from '../../../shared/sfx';
@@ -215,6 +216,8 @@ export class GameScene extends Phaser.Scene {
     this.burst.explode(14, x, y);
     floatText(this, x, y - 10, `+${points}`, NEON.pink);
     tone({ freq: 520 + Math.min(this.eaten, 30) * 12, toFreq: 880 + Math.min(this.eaten, 30) * 12, duration: 0.08, type: 'triangle', volume: 0.08 });
+    if (this.segments.length >= 25) unlock('snake.len25');
+    if (this.segments.length >= 50) unlock('snake.len50');
     this.food = this.randomFreeCell();
     if (this.eaten % BONUS_EVERY === 0) this.bonus = { cell: this.randomFreeCell(), expiresAt: this.elapsed + BONUS_LIFETIME_MS };
     this.updateHud();
@@ -233,6 +236,7 @@ export class GameScene extends Phaser.Scene {
     floatText(this, x, y - 10, `BONUS +${points}`, NEON.yellow, 14);
     [660, 880, 1320].forEach((f, i) => this.time.delayedCall(i * 70, () => tone({ freq: f, duration: 0.1, type: 'square', volume: 0.06 })));
     this.bonus = null;
+    unlock('snake.bonus');
     this.updateHud();
   }
 
@@ -316,6 +320,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateHud(): void {
+    if (this.score >= 1000) unlock('snake.score');
     this.scoreText.setText(this.score.toLocaleString());
     this.lengthText.setText(`LEN ${this.segments.length}`);
   }
