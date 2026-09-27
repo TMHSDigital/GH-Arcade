@@ -15,6 +15,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript&logoColor=white&labelColor=05050d)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-6-ffe45e?style=flat-square&logo=vite&logoColor=white&labelColor=05050d)](https://vite.dev)
 [![Last commit](https://img.shields.io/github/last-commit/TMHSDigital/GH-Arcade?style=flat-square&labelColor=05050d&color=3dff8a)](https://github.com/TMHSDigital/GH-Arcade/commits/main)
+[![License: MIT](https://img.shields.io/badge/license-MIT-ff8a3d?style=flat-square&labelColor=05050d)](LICENSE)
 
 **A growing collection of free, open-source arcade games that run in your browser.**<br />
 No installs. No accounts. No ads. Works on desktop and mobile.
@@ -255,6 +256,12 @@ New games, level designs and bug fixes are welcome.
 2. Run `npm run new-game <slug>` and build your game.
 3. Check that `npm run build` passes.
 4. Open a pull request with a screenshot or GIF of your game.
+
+By contributing, you agree that your work is released under the project's MIT License.
+
+## License
+
+[MIT](LICENSE) © 2026 TM Hospitality Strategies. You're free to use, modify and share the code, including commercially, as long as you keep the copyright notice.
 
 <br />
 
