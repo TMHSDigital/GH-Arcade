@@ -31,5 +31,16 @@
     ],
     "accent": "#a45bff",
     "controls": "Arrows + X/Z / drag and tap / gamepad"
+  },
+  {
+    "slug": "astro",
+    "title": "Astro Blaster",
+    "description": "Thrust, drift and blast through waves of splitting space rocks. Watch out for the saucer from wave 3.",
+    "tags": [
+      "shooter",
+      "arcade"
+    ],
+    "accent": "#ff8a3d",
+    "controls": "Arrows + Space / touch stick / gamepad"
   }
 ]
