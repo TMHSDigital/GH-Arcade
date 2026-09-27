@@ -195,7 +195,8 @@ main {
 }
 
 .card-link:hover,
-.card-link:focus-visible {
+.card-link:focus-visible,
+.card-link.nav-focus {
   transform: translateY(-4px);
   border-color: var(--accent);
   box-shadow: 0 0 0 1px var(--accent), 0 12px 40px -8px color-mix(in srgb, var(--accent) 60%, transparent);
@@ -238,7 +239,8 @@ main {
 }
 
 .card-link:hover .card-art img,
-.card-link:focus-visible .card-art img {
+.card-link:focus-visible .card-art img,
+.card-link.nav-focus .card-art img {
   transform: scale(1.04);
   filter: saturate(1.2) brightness(1);
 }
@@ -493,3 +495,5 @@ main {
 
 .trophy.done strong,
 .trophy.done em { color: var(--yellow); }
+
+.nav-tip { margin: 0 0 10px; color: var(--muted); font-size: 13px; }

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { onUnlock } from './achievements';
+import { hideLoader, initGameChrome } from './chrome';
 import { registerOffline } from './pwa';
 import { getSettings } from './settings';
 import { showToast } from './toast';
@@ -46,6 +47,8 @@ export function createArcadeGame(opts: ArcadeGameOptions): Phaser.Game {
     input: { activePointers: 3, gamepad: true },
     scene: opts.scenes,
   });
+  // Swap the page's "loading" placeholder for the game once its first frame is drawn.
+  game.events.once(Phaser.Core.Events.POST_RENDER, hideLoader);
   // Handy for debugging and automated tests in `npm run dev`; stripped from production builds.
   if (import.meta.env.DEV) (window as unknown as { game: Phaser.Game }).game = game;
   return game;
@@ -57,6 +60,7 @@ export function createArcadeGame(opts: ArcadeGameOptions): Phaser.Game {
  */
 export async function startArcadeGame(opts: ArcadeGameOptions): Promise<Phaser.Game> {
   registerOffline();
+  initGameChrome();
   onUnlock((t) => showToast('Trophy unlocked', t.title));
   try {
     await Promise.race([document.fonts.load(`16px ${PIXEL_FONT}`), new Promise((r) => setTimeout(r, 1500))]);

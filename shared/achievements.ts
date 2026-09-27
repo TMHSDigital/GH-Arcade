@@ -75,6 +75,8 @@ interface Save {
 const KEY = 'trophies';
 let save: Save = { unlocked: {}, counters: {}, games: {}, ...loadJSON<Partial<Save>>(KEY, {}) };
 const listeners = new Set<(t: Trophy) => void>();
+/** Trophies unlocked since the last drainRecentUnlocks(), e.g. to list on the game-over screen. */
+let recent: Trophy[] = [];
 
 function persist(): void {
   saveJSON(KEY, save);
@@ -94,6 +96,7 @@ export function unlock(id: string): boolean {
   if (!trophy || isUnlocked(id)) return false;
   save.unlocked[id] = Date.now();
   persist();
+  recent.push(trophy);
   listeners.forEach((fn) => fn(trophy));
   // Meta trophy: ten others unlocked.
   if (id !== 'arcade.case' && Object.keys(save.unlocked).filter((k) => k !== 'arcade.case').length >= 10) unlock('arcade.case');
@@ -128,6 +131,13 @@ export function recordPlay(game: string, score: number): void {
 
 export function getStats(game: string): GameStats {
   return save.games[game] ?? { plays: 0, best: 0, totalScore: 0 };
+}
+
+/** Returns the trophies unlocked since the last call, and clears the list. */
+export function drainRecentUnlocks(): Trophy[] {
+  const out = recent;
+  recent = [];
+  return out;
 }
 
 /** Calls `fn` for every newly unlocked trophy. Returns an unsubscribe function. */

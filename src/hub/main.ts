@@ -2,12 +2,14 @@ import './hub.css';
 import registry from '../../games/registry.json';
 import { registerOffline } from '../../shared/pwa';
 import { getHighScore } from '../../shared/storage';
+import { initHubNavigation } from './navigation';
 import { initSettingsPanel } from './settings-panel';
 import { initTrophiesPanel } from './trophies-panel';
 
 registerOffline();
 initSettingsPanel();
 initTrophiesPanel();
+initHubNavigation();
 
 // Chromium browsers fire this when the arcade can be installed as an app; show our own button for it.
 interface InstallPromptEvent extends Event {

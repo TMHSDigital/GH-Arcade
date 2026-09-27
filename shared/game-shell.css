@@ -48,6 +48,80 @@ html, body {
   border-color: var(--shell-accent);
 }
 
+/* Pause and fullscreen buttons (shared/chrome.ts), styled to match the back link. */
+.game-toolbar {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+}
+
+.game-button {
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--shell-accent) 50%, transparent);
+  border-radius: 999px;
+  background: rgb(5 5 13 / 0.7);
+  color: var(--shell-fg);
+  font: 13px system-ui, -apple-system, 'Segoe UI', sans-serif;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  opacity: 0.7;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.game-button:hover,
+.game-button:focus-visible {
+  opacity: 1;
+  border-color: var(--shell-accent);
+  outline: none;
+}
+
+.game-button[hidden] { display: none; }
+
+/* Shown while the game's scripts load; removed on the first rendered frame. */
+.game-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  color: var(--shell-accent);
+  font: 14px 'Press Start 2P', ui-monospace, monospace;
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 12px var(--shell-accent);
+  pointer-events: none;
+  animation: loading-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes loading-pulse { from { opacity: 0.35; } to { opacity: 1; } }
+
+/* Suggests landscape on phones held upright. */
+.rotate-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 32px);
+  padding: 10px 12px 10px 16px;
+  border: 1px solid color-mix(in srgb, var(--shell-accent) 50%, transparent);
+  border-radius: 14px;
+  background: rgb(5 5 13 / 0.92);
+  font-size: 14px;
+  transform: translateX(-50%);
+}
+
+.rotate-hint[hidden] { display: none; }
+.rotate-hint .game-button { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .game-loading { animation: none; }
+}
+
 /* Trophy toasts (shared/toast.ts). */
 .toast-stack {
   position: fixed;

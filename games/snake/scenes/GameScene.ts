@@ -147,7 +147,8 @@ export class GameScene extends Phaser.Scene {
     this.pause = new PauseController(
       this,
       this.players.map((p) => p.controls),
-      { canPause: () => !this.over },
+      // Restart begins a fresh match rather than replaying the current round.
+      { canPause: () => !this.over, restartData: { players: this.versus ? 2 : 1 } },
     );
     this.createHud();
 

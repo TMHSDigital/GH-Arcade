@@ -224,7 +224,8 @@ export class GameScene extends Phaser.Scene {
     // Keyboard, gamepad and touch all go through the shared controls; pause, mute and
     // auto-pause on blur come from the shared pause controller.
     this.controls = new ArcadeControls(this);
-    this.pause = new PauseController(this, this.controls, { canPause: () => !this.levelDone });
+    // Restart always goes back to level 1, not the level in progress.
+    this.pause = new PauseController(this, this.controls, { canPause: () => !this.levelDone, restartData: { level: 0, score: 0 } });
 
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => (this.targetX = p.x));
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
