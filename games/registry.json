@@ -72,5 +72,17 @@
     "accent": "#ffe45e",
     "controls": "Arrows + Space / drag / gamepad",
     "thumbnail": "thumbs/siege.jpg"
+  },
+  {
+    "slug": "hop",
+    "title": "Neon Hop",
+    "description": "Hop across four lanes of traffic and a river of drifting logs and diving turtles to fill all five docks before the timer runs out.",
+    "tags": [
+      "arcade",
+      "classic"
+    ],
+    "accent": "#3d7bff",
+    "controls": "Arrows / swipe / d-pad",
+    "thumbnail": "thumbs/hop.jpg"
   }
 ]

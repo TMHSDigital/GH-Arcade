@@ -50,6 +50,11 @@ export const TROPHIES: Trophy[] = [
   { id: 'siege.score', game: 'siege', title: 'Star Defender', description: 'Score 5,000 points' },
   { id: 'siege.coop', game: 'siege', title: 'Better Together', description: 'Clear a wave in two-player co-op' },
 
+  { id: 'hop.home', game: 'hop', title: 'Safe Harbor', description: 'Reach a dock' },
+  { id: 'hop.full', game: 'hop', title: 'Full House', description: 'Fill all five docks' },
+  { id: 'hop.level3', game: 'hop', title: 'Rush Hour', description: 'Reach level 3' },
+  { id: 'hop.score', game: 'hop', title: 'Road Warrior', description: 'Score 5,000 points' },
+
   { id: 'arcade.all', game: 'arcade', title: 'Arcade Regular', description: 'Play every game in the arcade' },
   { id: 'arcade.plays', game: 'arcade', title: 'Insert Another Coin', description: 'Play 25 games', counter: 'arcade.plays', target: 25 },
   { id: 'arcade.case', game: 'arcade', title: 'Trophy Case', description: 'Unlock 10 other trophies' },
