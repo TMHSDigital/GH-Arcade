@@ -40,7 +40,7 @@ export function tone({ freq, toFreq, duration = 0.1, type = 'square', volume = 0
   osc.stop(t + duration);
 }
 
-/** Short burst of filtered noise — explosions, impacts. */
+/** Short burst of filtered noise, for explosions and impacts. */
 export function noise(duration = 0.2, volume = 0.1): void {
   const ac = audio();
   if (!ac) return;

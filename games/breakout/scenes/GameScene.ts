@@ -534,7 +534,7 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  /** Arcade collider callbacks don't guarantee argument order — find the object by texture key. */
+  /** Arcade collider callbacks don't guarantee argument order, so find the object by texture key. */
   private pick(a: unknown, b: unknown, key: string): Img {
     return ((a as Img).texture?.key === key ? a : b) as Img;
   }

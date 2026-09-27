@@ -1,4 +1,4 @@
-// localStorage can throw (private mode, blocked storage) — never let that break a game.
+// localStorage can throw (private mode, blocked storage), so never let that break a game.
 const PREFIX = 'gh-arcade:';
 
 export function loadJSON<T>(key: string, fallback: T): T {
@@ -14,7 +14,7 @@ export function saveJSON(key: string, value: unknown): void {
   try {
     localStorage.setItem(PREFIX + key, JSON.stringify(value));
   } catch {
-    /* storage unavailable — ignore */
+    /* storage unavailable; ignore */
   }
 }
 

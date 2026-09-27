@@ -34,7 +34,7 @@ class MainScene extends Phaser.Scene {
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.scoreText = this.add.text(WIDTH / 2, 24, '', { fontSize: '20px', color: '#e8e8ff' }).setOrigin(0.5);
     this.add
-      .text(WIDTH / 2, HEIGHT - 24, `__TITLE__ — arrows or tap to move. Best: ${getHighScore(GAME_ID)}`, {
+      .text(WIDTH / 2, HEIGHT - 24, `__TITLE__: arrows or tap to move. Best: ${getHighScore(GAME_ID)}`, {
         fontSize: '14px',
         color: '#8a8ab8',
       })

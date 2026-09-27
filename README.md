@@ -6,7 +6,7 @@
 
 <br />
 
-[![Play now](https://img.shields.io/badge/%E2%96%B6%20PLAY%20NOW-tmhsdigital.github.io%2FGH--Arcade-ff2e97?style=for-the-badge&labelColor=05050d)](https://tmhsdigital.github.io/GH-Arcade/)
+[![Play now](https://img.shields.io/badge/PLAY%20NOW-tmhsdigital.github.io%2FGH--Arcade-ff2e97?style=for-the-badge&labelColor=05050d)](https://tmhsdigital.github.io/GH-Arcade/)
 
 [![Deploy](https://img.shields.io/github/actions/workflow/status/TMHSDigital/GH-Arcade/deploy.yml?branch=main&style=flat-square&label=deploy&labelColor=05050d)](https://github.com/TMHSDigital/GH-Arcade/actions/workflows/deploy.yml)
 [![Games](https://img.shields.io/badge/games-1-00f0ff?style=flat-square&labelColor=05050d)](#the-cabinets)
@@ -31,7 +31,7 @@ No installs. No accounts. No ads. Works on desktop and mobile.
 
 <a id="the-cabinets"></a>
 
-## 🕹️ The cabinets
+## The cabinets
 
 <table>
   <tr>
@@ -50,7 +50,7 @@ No installs. No accounts. No ads. Works on desktop and mobile.
         <li>Particles, screen shake and synthesized retro sound</li>
       </ul>
       <p>
-        <a href="https://tmhsdigital.github.io/GH-Arcade/games/breakout/"><b>▶ Play Neon Breakout</b></a>
+        <a href="https://tmhsdigital.github.io/GH-Arcade/games/breakout/"><b>Play Neon Breakout</b></a>
       </p>
     </td>
   </tr>
@@ -70,10 +70,10 @@ No installs. No accounts. No ads. Works on desktop and mobile.
 
 | Power-up | Pill | Effect |
 | --- | --- | --- |
-| Wide | 🟩 **W** | Paddle grows 50% for 12 seconds |
-| Multi-ball | 🟪 **M** | Splits into 3 balls |
-| Slow-mo | 🟨 **S** | Ball slows to 70% for 8 seconds |
-| Extra life | 🩷 **+** | One more life (rare) |
+| Wide | Green **W** | Paddle grows 50% for 12 seconds |
+| Multi-ball | Purple **M** | Splits into 3 balls |
+| Slow-mo | Yellow **S** | Ball slows to 70% for 8 seconds |
+| Extra life | Pink **+** | One more life (rare) |
 
 **Scoring:** each brick is worth `10 × its hit points × combo`. The combo counts bricks broken since the ball last touched the paddle, capped at ×8. Clearing a level adds `250 × level number`. The game pauses by itself when you switch tabs.
 
@@ -87,22 +87,22 @@ No installs. No accounts. No ads. Works on desktop and mobile.
 
 ---
 
-## ✨ Features
+## Features
 
-|  |  |
+| Feature | Details |
 | --- | --- |
-| 🌐 **Plays anywhere** | Pure static site on GitHub Pages. Loads straight in the browser on desktop, tablet or phone. |
-| 📱 **Touch-ready** | Games scale to fit any screen and support mouse, keyboard and touch. |
-| 🏆 **High scores** | Best scores are saved on your device and shown on the hub. No sign-up. |
-| 🔊 **Zero-asset audio** | Sound effects are synthesized live with the Web Audio API, so there are no audio files to download. |
-| ⚡ **Fast loads** | Each game is its own page and bundle. Phaser is split into one shared file that your browser caches across games. |
-| 🧩 **One command per game** | `npm run new-game` scaffolds a working game and adds it to the hub. No config to edit. |
+| **Plays anywhere** | Pure static site on GitHub Pages. Loads straight in the browser on desktop, tablet or phone. |
+| **Touch-ready** | Games scale to fit any screen and support mouse, keyboard and touch. |
+| **High scores** | Best scores are saved on your device and shown on the hub. No sign-up. |
+| **Zero-asset audio** | Sound effects are synthesized live with the Web Audio API, so there are no audio files to download. |
+| **Fast loads** | Each game is its own page and bundle. Phaser is split into one shared file that your browser caches across games. |
+| **One command per game** | `npm run new-game` scaffolds a working game and adds it to the hub. No config to edit. |
 
 ---
 
 <a id="quick-start"></a>
 
-## 🚀 Quick start
+## Quick start
 
 Requires **Node 20+**.
 
@@ -130,7 +130,7 @@ Then open **http://localhost:5173/GH-Arcade/**.
 
 <a id="make-your-own-game"></a>
 
-## 🛠️ Make your own game
+## Make your own game
 
 **1. Scaffold it**
 
@@ -173,7 +173,7 @@ Every game can import these from [`shared/`](shared):
 
 <a id="how-it-works"></a>
 
-## 🧠 How it works
+## How it works
 
 ```mermaid
 flowchart LR
@@ -221,7 +221,7 @@ GH-Arcade/
 
 <a id="roadmap"></a>
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [x] Arcade hub with tag filters and saved high scores
 - [x] Neon Breakout
@@ -238,7 +238,7 @@ Have an idea? [Open an issue](https://github.com/TMHSDigital/GH-Arcade/issues/ne
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 New games, level designs and bug fixes are welcome.
 
@@ -251,7 +251,7 @@ New games, level designs and bug fixes are welcome.
 
 <div align="center">
 
-**[▶ Insert coin at tmhsdigital.github.io/GH-Arcade](https://tmhsdigital.github.io/GH-Arcade/)**
+**[Insert coin at tmhsdigital.github.io/GH-Arcade](https://tmhsdigital.github.io/GH-Arcade/)**
 
 <sub>Built with <a href="https://phaser.io">Phaser</a>, <a href="https://www.typescriptlang.org">TypeScript</a> and <a href="https://vite.dev">Vite</a> · Hosted on <a href="https://pages.github.com">GitHub Pages</a></sub>
 

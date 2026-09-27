@@ -12,7 +12,7 @@ async function start(): Promise<void> {
   try {
     await Promise.race([document.fonts.load(`16px ${PIXEL_FONT}`), new Promise((r) => setTimeout(r, 1500))]);
   } catch {
-    /* font loading unsupported — fall back to monospace */
+    /* font loading unsupported; fall back to monospace */
   }
   createArcadeGame({
     width: WIDTH,

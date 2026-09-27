@@ -37,7 +37,7 @@ function card(game: GameEntry): HTMLLIElement {
         </div>
         ${game.controls ? `<p class="controls">${escapeHtml(game.controls)}</p>` : ''}
       </div>
-      <span class="play">Play ▶</span>
+      <span class="play">Play</span>
     </a>`;
   return li;
 }
