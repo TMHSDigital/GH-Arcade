@@ -42,5 +42,16 @@
     ],
     "accent": "#ff8a3d",
     "controls": "Arrows + Space / touch stick / gamepad"
+  },
+  {
+    "slug": "runner",
+    "title": "Neon Runner",
+    "description": "Sprint through a synthwave city. Jump, double jump and slide past barriers, drones and gaps as the pace keeps climbing.",
+    "tags": [
+      "endless",
+      "action"
+    ],
+    "accent": "#ff2e97",
+    "controls": "Tap + swipe / Space + Down / gamepad"
   }
 ]
