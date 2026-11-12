@@ -17,7 +17,7 @@ export class MenuScene extends Phaser.Scene {
       gameId: GAME_ID,
       title: ['NEON', 'PINBALL'],
       colors: [NEON.pink, NEON.cyan],
-      help: 'Flippers: left / right, A D, Z M, LB RB, or hold each side of the screen\nLaunch: hold Space / Down / A and release    Pause: P / Start',
+      help: 'Flippers: left / right, A D, Z /, LB RB, or hold each side of the screen\nLaunch: hold Space / Down / A and release    Pause: P / Start',
     });
   }
 

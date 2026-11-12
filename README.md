@@ -125,7 +125,7 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | **Neon Hop** | Arrows or <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> hop | D-pad or stick hop, <kbd>A</kbd> hops forward | Swipe to hop, tap to hop forward |
 | **Neon Pong** | <kbd>↑</kbd> <kbd>↓</kbd> or <kbd>W</kbd> <kbd>S</kbd> move. Versus: P1 <kbd>W</kbd> <kbd>S</kbd>, P2 <kbd>↑</kbd> <kbd>↓</kbd> | Stick or d-pad move (pad 1 and pad 2 in versus) | Drag to move (each player on their own half in versus) |
 | **Neon Maze** | Arrows or <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> steer (turns pressed early are taken at the next corner) | D-pad or stick steer | Swipe or drag to steer |
-| **Neon Pinball** | <kbd>←</kbd> <kbd>→</kbd>, <kbd>A</kbd> <kbd>D</kbd> or <kbd>Z</kbd> <kbd>M</kbd> flip, hold <kbd>Space</kbd> / <kbd>↓</kbd> and release to launch | D-pad, <kbd>LB</kbd> <kbd>RB</kbd> or triggers flip, hold <kbd>A</kbd> to launch | Hold the left or right half to flip, hold the right half to launch |
+| **Neon Pinball** | <kbd>←</kbd> <kbd>→</kbd>, <kbd>A</kbd> <kbd>D</kbd> or <kbd>Z</kbd> <kbd>/</kbd> flip, hold <kbd>Space</kbd> / <kbd>↓</kbd> and release to launch | D-pad, <kbd>LB</kbd> <kbd>RB</kbd> or triggers flip, hold <kbd>A</kbd> to launch | Hold the left or right half to flip, hold the right half to launch |
 
 </details>
 

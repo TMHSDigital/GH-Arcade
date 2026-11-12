@@ -125,7 +125,7 @@ export class GameScene extends Phaser.Scene {
     this.ballText = this.add.text(30, 168, '', value);
     this.add.text(30, 220, 'MULTIPLIER', label);
     this.multText = this.add.text(30, 238, '', { ...value, color: '#ffe45e' });
-    const help = ['FLIPPERS', 'LEFT / RIGHT', 'A D / Z M', 'LB RB', '', 'LAUNCH', 'HOLD SPACE / DOWN', '', 'TOUCH', 'HOLD EACH SIDE'];
+    const help = ['FLIPPERS', 'LEFT / RIGHT', 'A D / Z /', 'LB RB', '', 'LAUNCH', 'HOLD SPACE / DOWN', '', 'TOUCH', 'HOLD EACH SIDE'];
     this.add.text(WIDTH - 30, 80, help.join('\n'), { ...label, align: 'right', lineSpacing: 8 }).setOrigin(1, 0);
 
     this.flippers = FLIPPER_PIVOTS.map((pivot, i) => {
@@ -134,9 +134,9 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.controls = new ArcadeControls(this, {
-      // Z / M and the shoulder buttons and triggers work the flippers too.
+      // Z and / and the shoulder buttons and triggers work the flippers too.
       flipL: { keys: ['Z'], buttons: [4, 6] },
-      flipR: { keys: ['M'], buttons: [5, 7] },
+      flipR: { keys: ['FORWARD_SLASH'], buttons: [5, 7] },
     });
     this.pause = new PauseController(this, this.controls, { canPause: () => this.state !== 'over' });
     this.bindTouch();
