@@ -22,10 +22,11 @@ import {
 import { unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
+import { showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { getHighScore } from '../../../shared/storage';
 import { isTouchDevice, onSwipe } from '../../../shared/touch';
-import { burstEmitter, fadeToScene, floatText, hex, NEON, neonText, onStart, PIXEL_FONT, showBanner } from '../../../shared/ui';
+import { burstEmitter, fadeToScene, floatText, hex, NEON, neonText, PIXEL_FONT, showBanner } from '../../../shared/ui';
 
 interface Cell {
   x: number;
@@ -386,16 +387,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   private matchOver(winner: Player): void {
-    const { width, height } = this.scale.gameSize;
-    this.add.rectangle(0, 0, width, height, NEON.bg, 0.7).setOrigin(0).setDepth(40);
-    neonText(this, width / 2, 200, `PLAYER ${winner.id} WINS!`, 36, winner.colors[0]).setDepth(41);
-    neonText(this, width / 2, 270, `${this.wins[0]} - ${this.wins[1]}`, 28, NEON.white).setDepth(41);
-    const prompt = isTouchDevice() ? 'TAP FOR A REMATCH' : 'SPACE / A: REMATCH     ESC: MENU';
-    neonText(this, width / 2, 380, prompt, 14, NEON.yellow).setDepth(41);
-    [523, 659, 784, 1047].forEach((f, i) => this.time.delayedCall(i * 110, () => tone({ freq: f, duration: 0.18, type: 'triangle', volume: 0.09 })));
-    this.time.delayedCall(700, () => {
-      onStart(this, () => fadeToScene(this, 'Game', { players: 2 }));
-      this.input.keyboard?.once('keydown-ESC', () => fadeToScene(this, 'Menu'));
+    showMatchResult(this, this.players[0].controls, {
+      gameId: GAME_ID,
+      title: `PLAYER ${winner.id} WINS!`,
+      color: winner.colors[0],
+      tally: `${this.wins[0]} - ${this.wins[1]}`,
+      rematchData: { players: 2 },
     });
   }
 

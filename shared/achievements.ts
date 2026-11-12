@@ -5,7 +5,7 @@ import { loadJSON, onExternalChange, saveJSON } from './storage';
  *
  * Games call `unlock('snake.bonus')` when something happens, or `addCounter('stack.lines', 4)` for
  * running totals (trophies tied to a counter unlock automatically at their target).
- * Plays and best scores are recorded by the shared game-over screen via `recordPlay()`.
+ * Plays and best scores are recorded when a run ends, via `finishRun()` in shared/scenes.ts.
  */
 
 export interface Trophy {
@@ -139,8 +139,8 @@ export function getCounter(counter: string): number {
   return save.counters[counter] ?? 0;
 }
 
-/** Called once per finished game with its final score. */
-export function recordPlay(game: string, score: number): void {
+/** Called once per finished game with its final score (0 for matches that have no score, e.g. versus). */
+export function recordPlay(game: string, score = 0): void {
   const stats = save.games[game] ?? { plays: 0, best: 0, totalScore: 0 };
   stats.plays++;
   stats.best = Math.max(stats.best, score);
@@ -163,6 +163,11 @@ export function drainRecentUnlocks(): Trophy[] {
   return out;
 }
 
+/** Forgets trophies from a run that never reached an end screen, so they are not credited to the next one. */
+export function clearRecentUnlocks(): void {
+  recent = [];
+}
+
 /** Calls `fn` for every newly unlocked trophy. Returns an unsubscribe function. */
 export function onUnlock(fn: (t: Trophy) => void): () => void {
   listeners.add(fn);
@@ -171,5 +176,6 @@ export function onUnlock(fn: (t: Trophy) => void): () => void {
 
 export function resetTrophies(): void {
   save = { unlocked: {}, counters: {}, games: {} };
+  recent = [];
   persist();
 }

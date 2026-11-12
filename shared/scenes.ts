@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
-import { drainRecentUnlocks, recordPlay } from './achievements';
+import { clearRecentUnlocks, drainRecentUnlocks, recordPlay, type Trophy } from './achievements';
 import { ArcadeControls } from './controls';
 import { OptionMenu } from './menu';
 import { getHighScore, submitHighScore } from './storage';
+import { tone } from './sfx';
 import { isTouchDevice } from './touch';
 import { blinkingPrompt, fadeToScene, NEON, neonText, onStart } from './ui';
 
@@ -28,6 +29,8 @@ export interface MenuOptions {
  * on click, tap, Space, Enter or any gamepad button. Draw any background decoration before calling this.
  */
 export function buildMenu(scene: Phaser.Scene, opts: MenuOptions): void {
+  // Back at the menu: anything unlocked in a run that was abandoned belongs to no end screen.
+  clearRecentUnlocks();
   const { width, height } = scene.scale.gameSize;
   const [top, bottom] = opts.title;
   const [c1, c2] = opts.colors ?? [NEON.pink, NEON.cyan];
@@ -69,6 +72,66 @@ export function buildMenu(scene: Phaser.Scene, opts: MenuOptions): void {
   onStart(scene, () => fadeToScene(scene, startScene, opts.startData ?? {}));
 }
 
+/**
+ * Records a finished run: counts the play, saves the score if it is a new best, and returns the
+ * trophies earned during the run. Leave `score` out for matches that have none (two-player versus);
+ * the play still counts but no high score is submitted.
+ */
+export function finishRun(gameId: string, score?: number): { isRecord: boolean; earned: Trophy[] } {
+  const isRecord = score !== undefined && submitHighScore(gameId, score);
+  recordPlay(gameId, score ?? 0);
+  return { isRecord, earned: drainRecentUnlocks() };
+}
+
+function trophyLine(earned: Trophy[]): string {
+  const names = earned.map((t) => t.title.toUpperCase());
+  return `TROPHY: ${names.length > 2 ? `${names.slice(0, 2).join(', ')} +${names.length - 2} MORE` : names.join(', ')}`;
+}
+
+export interface MatchResultOptions {
+  gameId: string;
+  /** Headline, e.g. "PLAYER 1 WINS!". */
+  title: string;
+  color: number;
+  /** Final tally, e.g. "7 - 4". */
+  tally: string;
+  /** Data the Game scene is restarted with for a rematch. */
+  rematchData: object;
+}
+
+/**
+ * End screen for two-player matches, drawn over the finished game: who won, the tally, any trophies
+ * earned, and Rematch / Menu options that work with keyboard, gamepad and touch. Records the play.
+ */
+export function showMatchResult(scene: Phaser.Scene, controls: ArcadeControls<string>, opts: MatchResultOptions): void {
+  const { width, height } = scene.scale.gameSize;
+  const { earned } = finishRun(opts.gameId);
+  scene.add.rectangle(0, 0, width, height, NEON.bg, 0.8).setOrigin(0).setDepth(40);
+  neonText(scene, width / 2, 200, opts.title, 36, opts.color).setDepth(41);
+  neonText(scene, width / 2, 270, opts.tally, 28, NEON.white).setDepth(41);
+  if (earned.length) neonText(scene, width / 2, 330, trophyLine(earned), 11, NEON.green).setDepth(41);
+  [523, 659, 784, 1047].forEach((f, i) => scene.time.delayedCall(i * 110, () => tone({ freq: f, duration: 0.18, type: 'triangle', volume: 0.09 })));
+  // Short delay so the input that ended the match doesn't instantly pick an option.
+  scene.time.delayedCall(700, () => {
+    let chosen = false;
+    const go = (key: string, data?: object) => {
+      if (chosen) return;
+      chosen = true;
+      fadeToScene(scene, key, data);
+    };
+    new OptionMenu(scene, controls, {
+      x: width / 2,
+      y: 400,
+      spacing: 300,
+      depth: 41,
+      items: [
+        { label: 'REMATCH', onSelect: () => go('Game', opts.rematchData) },
+        { label: 'MENU', onSelect: () => go('Menu') },
+      ],
+    });
+  });
+}
+
 export interface GameOverData {
   gameId: string;
   score: number;
@@ -89,9 +152,7 @@ export class ArcadeGameOverScene extends Phaser.Scene {
 
   create(data: GameOverData): void {
     const { width } = this.scale.gameSize;
-    const isRecord = submitHighScore(data.gameId, data.score);
-    recordPlay(data.gameId, data.score);
-    const earned = drainRecentUnlocks();
+    const { isRecord, earned } = finishRun(data.gameId, data.score);
     this.cameras.main.fadeIn(250, 5, 5, 13);
 
     neonText(this, width / 2, 130, 'GAME OVER', 48, NEON.pink);
@@ -105,11 +166,7 @@ export class ArcadeGameOverScene extends Phaser.Scene {
       neonText(this, width / 2, 315, `BEST ${getHighScore(data.gameId).toLocaleString()}`, 14, NEON.yellow);
     }
 
-    if (earned.length) {
-      const names = earned.map((t) => t.title.toUpperCase());
-      const line = names.length > 2 ? `${names.slice(0, 2).join(', ')} +${names.length - 2} MORE` : names.join(', ');
-      neonText(this, width / 2, 365, `TROPHY: ${line}`, 11, NEON.green);
-    }
+    if (earned.length) neonText(this, width / 2, 365, trophyLine(earned), 11, NEON.green);
 
     // Short delay so the input that ended the run doesn't instantly pick an option.
     this.time.delayedCall(600, () => {

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { clearRecentUnlocks } from './achievements';
 import type { ArcadeControls } from './controls';
 import { OptionMenu } from './menu';
 import { isMuted, setMuted } from './sfx';
@@ -44,6 +45,8 @@ export class PauseController {
     const leave = (fn: () => void) => {
       // Unfreeze first so the next scene doesn't start with paused timers and tweens.
       this.toggle(true);
+      // The run is being abandoned, so its trophies must not show up on a later run's end screen.
+      clearRecentUnlocks();
       fn();
     };
     this.menu = new OptionMenu(scene, all[0], {

@@ -23,10 +23,10 @@ import {
 } from '../config';
 import { unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
-import { OptionMenu } from '../../../shared/menu';
 import { PauseController } from '../../../shared/pause';
+import { showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
-import { burstEmitter, fadeToScene, hex, NEON, neonText, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
+import { burstEmitter, hex, NEON, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
 
 interface Paddle {
   side: -1 | 1;
@@ -292,29 +292,12 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     unlock('pong.versus');
-    const { width, height } = this.scale.gameSize;
-    this.add.rectangle(0, 0, width, height, NEON.bg, 0.8).setOrigin(0).setDepth(40);
-    const id = winner === you ? 1 : 2;
-    neonText(this, width / 2, 200, `PLAYER ${id} WINS!`, 36, winner.color).setDepth(41);
-    neonText(this, width / 2, 270, `${you.score} - ${other.score}`, 28, NEON.white).setDepth(41);
-    [523, 659, 784, 1047].forEach((f, i) => this.time.delayedCall(i * 110, () => tone({ freq: f, duration: 0.18, type: 'triangle', volume: 0.09 })));
-    this.time.delayedCall(700, () => {
-      let chosen = false;
-      const go = (key: string, data?: object) => {
-        if (chosen) return;
-        chosen = true;
-        fadeToScene(this, key, data);
-      };
-      new OptionMenu(this, you.controls!, {
-        x: width / 2,
-        y: 400,
-        spacing: 300,
-        depth: 41,
-        items: [
-          { label: 'REMATCH', onSelect: () => go('Game', { players: 2 }) },
-          { label: 'MENU', onSelect: () => go('Menu') },
-        ],
-      });
+    showMatchResult(this, you.controls!, {
+      gameId: GAME_ID,
+      title: `PLAYER ${winner === you ? 1 : 2} WINS!`,
+      color: winner.color,
+      tally: `${you.score} - ${other.score}`,
+      rematchData: { players: 2 },
     });
   }
 
