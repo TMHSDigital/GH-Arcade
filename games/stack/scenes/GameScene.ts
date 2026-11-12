@@ -166,6 +166,11 @@ export class GameScene extends Phaser.Scene {
   private bindTouch(): void {
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
       if (this.holdButton?.contains(p.x, p.y)) return;
+      // A tap on the pause menu (including the one that resumes) is not a game gesture.
+      if (this.pause.isPaused) {
+        this.drag = null;
+        return;
+      }
       this.drag = { lastX: p.x, lastY: p.y, startY: p.y, t: this.time.now, moved: false };
     });
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => {

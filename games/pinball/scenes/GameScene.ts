@@ -145,7 +145,10 @@ export class GameScene extends Phaser.Scene {
 
   /** Touch: holding the left half works the left flipper, the right half the right flipper (and the plunger). */
   private bindTouch(): void {
-    this.input.on('pointerdown', (p: Phaser.Input.Pointer) => this.touchSides.set(p.id, p.x < WIDTH / 2 ? 1 : -1));
+    this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      if (this.pause.isPaused) return;
+      this.touchSides.set(p.id, p.x < WIDTH / 2 ? 1 : -1);
+    });
     const release = (p: Phaser.Input.Pointer) => this.touchSides.delete(p.id);
     this.input.on('pointerup', release);
     this.input.on('pointerupoutside', release);

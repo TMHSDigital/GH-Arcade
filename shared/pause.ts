@@ -23,6 +23,8 @@ export const PAUSE_STATE_EVENT = 'arcade:pause-state';
  */
 export class PauseController {
   private paused = false;
+  /** Set on resume and cleared after the frame, so the input that chose RESUME never reaches the game. */
+  private resuming = false;
   private readonly overlay: Phaser.GameObjects.Container;
   private readonly muteText: Phaser.GameObjects.Text;
   private readonly menu: OptionMenu;
@@ -82,12 +84,17 @@ export class PauseController {
       if (!this.paused) this.toggle();
     };
     const onRequest = () => this.toggle();
+    const onPostUpdate = () => {
+      this.resuming = false;
+    };
     // scene.events outlives a scene restart, so every listener added here is removed on shutdown.
     scene.events.on(Phaser.Scenes.Events.UPDATE, onUpdate);
+    scene.events.on(Phaser.Scenes.Events.POST_UPDATE, onPostUpdate);
     scene.game.events.on(Phaser.Core.Events.BLUR, onBlur);
     window.addEventListener(PAUSE_REQUEST_EVENT, onRequest);
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       scene.events.off(Phaser.Scenes.Events.UPDATE, onUpdate);
+      scene.events.off(Phaser.Scenes.Events.POST_UPDATE, onPostUpdate);
       scene.game.events.off(Phaser.Core.Events.BLUR, onBlur);
       window.removeEventListener(PAUSE_REQUEST_EVENT, onRequest);
       window.dispatchEvent(new CustomEvent(PAUSE_STATE_EVENT, { detail: { paused: false, available: false } }));
@@ -96,8 +103,12 @@ export class PauseController {
     window.dispatchEvent(new CustomEvent(PAUSE_STATE_EVENT, { detail: { paused: false, available: true } }));
   }
 
+  /**
+   * True while paused, and for the rest of the frame in which the game was resumed: the key, button
+   * or tap that resumed is still "just pressed" then, and must not also act in the game.
+   */
   get isPaused(): boolean {
-    return this.paused;
+    return this.paused || this.resuming;
   }
 
   /** Toggles pause. `forceResume` unpauses unconditionally (used before leaving the scene). */
@@ -105,6 +116,7 @@ export class PauseController {
     if (forceResume && !this.paused) return;
     if (!forceResume && !this.paused && this.opts.canPause && !this.opts.canPause()) return;
     this.paused = !this.paused;
+    this.resuming = !this.paused;
     const { scene } = this;
     if (this.paused) {
       scene.physics?.world?.pause();

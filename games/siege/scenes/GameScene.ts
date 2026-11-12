@@ -199,6 +199,7 @@ export class GameScene extends Phaser.Scene {
   /** Solo touch play: drag to move the cannon, keep a finger down to keep firing. */
   private bindTouch(): void {
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      if (this.pause.isPaused) return;
       this.touchX = p.x;
       this.touchFiring = true;
     });
