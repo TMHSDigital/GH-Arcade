@@ -12,6 +12,7 @@ import {
   JUMP_BUFFER_MS,
   JUMP_CUT,
   JUMP_VELOCITY,
+  LEDGE_FORGIVENESS,
   MAX_SPEED,
   PLAYER_H,
   PLAYER_W,
@@ -253,10 +254,13 @@ export class GameScene extends Phaser.Scene {
       // Variable jump height: let go early for a short hop.
       if (!holdingJump && this.vy < 0) this.vy *= Math.pow(JUMP_CUT, dt * 12);
       this.vy += GRAVITY * dt;
+      const prevY = this.y;
       this.y += this.vy * dt;
 
       const overGap = this.gapUnder();
-      if (!overGap && this.y >= GROUND_Y && this.vy >= 0) {
+      // Only land from above: once the feet have dropped into a gap the far edge is a wall, not a floor.
+      const fromAbove = prevY <= GROUND_Y + LEDGE_FORGIVENESS;
+      if (!overGap && fromAbove && this.y >= GROUND_Y && this.vy >= 0) {
         if (!this.grounded) this.land();
         this.y = GROUND_Y;
         this.vy = 0;
@@ -271,7 +275,9 @@ export class GameScene extends Phaser.Scene {
       if (this.sliding && Math.floor(this.elapsed / 90) !== Math.floor((this.elapsed - deltaMs) / 90)) noise(0.05, 0.015);
 
       this.collectCoins();
-      if (this.y > HEIGHT + 60 || this.hitsObstacle()) this.die();
+      // Still below the floor when the gap ends: the runner hits the far wall instead of sinking through the ground.
+      const hitGapWall = !overGap && this.y > GROUND_Y + LEDGE_FORGIVENESS;
+      if (this.y > HEIGHT + 60 || hitGapWall || this.hitsObstacle()) this.die();
       this.runPhase += dt * (this.speed / 40);
       this.trail.setPosition(PLAYER_X - 8, this.y - (this.sliding ? SLIDE_H : PLAYER_H) / 2);
       this.updateHud();

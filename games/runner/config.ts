@@ -19,6 +19,8 @@ export const JUMP_CUT = 0.45;
 export const DIVE_VELOCITY = 1400;
 /** Grace period after running off an edge during which you can still jump. */
 export const COYOTE_MS = 90;
+/** Feet may be this far below the floor and still catch the far edge of a gap; deeper than that is a fall. */
+export const LEDGE_FORGIVENESS = 12;
 /** A jump pressed this long before landing still fires on landing. */
 export const JUMP_BUFFER_MS = 130;
 /** How long a touch-triggered slide lasts (keys and gamepad slide while held). */
