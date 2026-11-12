@@ -1,4 +1,4 @@
-import { loadJSON, saveJSON } from './storage';
+import { loadJSON, onExternalChange, saveJSON } from './storage';
 
 /**
  * Arcade-wide player settings, shared by the hub and every game (saved on this device).
@@ -56,8 +56,18 @@ function defaults(): Settings {
   return { volume: 0.8, muted: false, reducedMotion: prefersReducedMotion(), palette: 'neon', bindings: {} };
 }
 
-let current: Settings = { ...defaults(), ...loadJSON<Partial<Settings>>(KEY, {}) };
+function read(): Settings {
+  return { ...defaults(), ...loadJSON<Partial<Settings>>(KEY, {}) };
+}
+
+let current: Settings = read();
 const listeners = new Set<(s: Settings) => void>();
+// Settings changed in another tab (e.g. on the hub while a game is open): adopt them, so a later
+// write from this tab, such as toggling mute, does not put the old values back.
+onExternalChange(KEY, () => {
+  current = read();
+  listeners.forEach((fn) => fn(current));
+});
 
 export function getSettings(): Readonly<Settings> {
   return current;

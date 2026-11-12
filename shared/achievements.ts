@@ -1,4 +1,4 @@
-import { loadJSON, saveJSON } from './storage';
+import { loadJSON, onExternalChange, saveJSON } from './storage';
 
 /**
  * Trophies and per-game stats, saved on this device. No Phaser here, so the hub can list them.
@@ -88,7 +88,15 @@ interface Save {
 }
 
 const KEY = 'trophies';
-let save: Save = { unlocked: {}, counters: {}, games: {}, ...loadJSON<Partial<Save>>(KEY, {}) };
+function read(): Save {
+  return { unlocked: {}, counters: {}, games: {}, ...loadJSON<Partial<Save>>(KEY, {}) };
+}
+
+let save: Save = read();
+// Another tab unlocked something, recorded a play or reset trophies: pick that up before the next save.
+onExternalChange(KEY, () => {
+  save = read();
+});
 const listeners = new Set<(t: Trophy) => void>();
 /** Trophies unlocked since the last drainRecentUnlocks(), e.g. to list on the game-over screen. */
 let recent: Trophy[] = [];

@@ -18,6 +18,21 @@ export function saveJSON(key: string, value: unknown): void {
   }
 }
 
+/**
+ * Calls `fn` when the saved value for `key` may have changed behind this page's back: another tab
+ * wrote or cleared it, or the page was restored from the back/forward cache. Modules that keep an
+ * in-memory copy use this to re-read it, so a later whole-object save never erases newer data.
+ */
+export function onExternalChange(key: string, fn: () => void): void {
+  if (typeof window === 'undefined') return;
+  window.addEventListener('storage', (e) => {
+    if (e.key === null || e.key === PREFIX + key) fn();
+  });
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) fn();
+  });
+}
+
 export function getHighScore(game: string): number {
   return loadJSON<number>(`${game}:highscore`, 0);
 }

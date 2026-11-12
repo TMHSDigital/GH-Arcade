@@ -109,3 +109,7 @@ function escapeHtml(s: string): string {
 
 renderFilters();
 render();
+// A hub restored from the back/forward cache still shows the bests from before the last game.
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) render();
+});
