@@ -21,6 +21,18 @@ export const DEFAULT_KEY_LABELS: Record<RebindableAction, string> = {
   mute: 'M',
 };
 
+/** keyCodes behind the default keys above, for start prompts and for spotting clashes when rebinding. */
+export const DEFAULT_KEY_CODES: Record<RebindableAction, number[]> = {
+  left: [37, 65],
+  right: [39, 68],
+  up: [38, 87],
+  down: [40, 83],
+  action: [32, 13],
+  alt: [16, 88],
+  pause: [80, 27],
+  mute: [77],
+};
+
 export interface KeyBinding {
   /** KeyboardEvent.keyCode, which Phaser uses for its keys. */
   code: number;
@@ -85,6 +97,22 @@ export function resetSettings(): Settings {
   saveJSON(KEY, current);
   listeners.forEach((fn) => fn(current));
   return current;
+}
+
+/** The keyCodes that currently trigger an action for a solo player: the custom key, or the defaults. */
+export function keyCodesFor(action: RebindableAction): number[] {
+  const custom = current.bindings[action];
+  return custom ? [custom.code] : DEFAULT_KEY_CODES[action];
+}
+
+/**
+ * Upper-case key name(s) for on-screen prompts, following the player's bindings: "K" when rebound,
+ * otherwise the defaults ("P / ESC"). `first` keeps only the first default key ("SPACE").
+ */
+export function keyLabel(action: RebindableAction, first = false): string {
+  const custom = current.bindings[action];
+  const label = custom ? custom.label : DEFAULT_KEY_LABELS[action];
+  return (first && !custom ? label.split(' / ')[0] : label).toUpperCase();
 }
 
 /** Calls `fn` whenever settings change. Returns an unsubscribe function. */

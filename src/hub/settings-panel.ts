@@ -1,7 +1,9 @@
 import { cssColor, PALETTES } from '../../shared/palette';
 import {
+  DEFAULT_KEY_CODES,
   DEFAULT_KEY_LABELS,
   getSettings,
+  keyCodesFor,
   type KeyBinding,
   onSettingsChange,
   REBINDABLE,
@@ -30,6 +32,9 @@ function keyLabel(e: KeyboardEvent): string {
   return e.key;
 }
 
+/** Keys that cannot be bound: Tab moves focus, and these modifiers and system keys belong to the browser or OS. */
+const UNBINDABLE = new Set(['Tab', 'Control', 'Alt', 'AltGraph', 'Meta', 'OS', 'CapsLock', 'ContextMenu', 'Unidentified', 'Dead', 'Process']);
+
 /** Wires up the settings dialog in index.html. Everything saves immediately; games pick changes up on their next load. */
 export function initSettingsPanel(): void {
   const dialog = document.querySelector<HTMLDialogElement>('#settings')!;
@@ -41,6 +46,7 @@ export function initSettingsPanel(): void {
   const colorblind = dialog.querySelector<HTMLInputElement>('#colorblind')!;
   const swatches = dialog.querySelector<HTMLDivElement>('#swatches')!;
   const bindingList = dialog.querySelector<HTMLTableSectionElement>('#bindings')!;
+  const bindingNote = dialog.querySelector<HTMLParagraphElement>('#binding-note')!;
   let listening: { action: RebindableAction; button: HTMLButtonElement } | null = null;
 
   const render = () => {
@@ -62,16 +68,42 @@ export function initSettingsPanel(): void {
       ...REBINDABLE.map((action) => {
         const row = document.createElement('tr');
         const custom = s.bindings[action];
-        row.innerHTML = `<th scope="row">${ACTION_NAMES[action]}</th><td><kbd class="${custom ? 'custom' : ''}"></kbd></td><td><button type="button" class="rebind">Change</button></td>`;
+        row.innerHTML = `<th scope="row">${ACTION_NAMES[action]}</th><td><kbd class="${custom ? 'custom' : ''}"></kbd></td><td><button type="button" class="rebind">Change</button>${custom ? ' <button type="button" class="rebind default">Default</button>' : ''}</td>`;
         row.querySelector('kbd')!.textContent = custom ? custom.label : DEFAULT_KEY_LABELS[action];
         const button = row.querySelector<HTMLButtonElement>('.rebind')!;
         button.addEventListener('click', () => startListening(action, button));
+        row.querySelector<HTMLButtonElement>('.default')?.addEventListener('click', () => restoreDefault(action));
         return row;
       }),
     );
   };
 
+  const note = (text: string) => {
+    bindingNote.textContent = text;
+    bindingNote.hidden = text === '';
+  };
+
+  /** The other action, if any, that a key already triggers (through its custom key or its defaults). */
+  const clashFor = (action: RebindableAction, code: number) =>
+    REBINDABLE.find((other) => other !== action && keyCodesFor(other).includes(code));
+
+  /** Puts one action back on its default keys, unless another action has since been given one of them. */
+  const restoreDefault = (action: RebindableAction) => {
+    const bindings = { ...getSettings().bindings };
+    delete bindings[action];
+    const taken = REBINDABLE.find(
+      (other) => other !== action && bindings[other] && DEFAULT_KEY_CODES[action].includes(bindings[other]!.code),
+    );
+    if (taken) {
+      note(`${ACTION_NAMES[taken]} is using one of those keys. Change it first.`);
+      return;
+    }
+    note('');
+    updateSettings({ bindings });
+  };
+
   const startListening = (action: RebindableAction, button: HTMLButtonElement) => {
+    note('');
     listening?.button.classList.remove('listening');
     listening = { action, button };
     button.textContent = 'Press a key';
@@ -89,7 +121,14 @@ export function initSettingsPanel(): void {
       listening = null;
       if (e.key !== 'Escape') {
         const binding: KeyBinding = { code: e.keyCode, label: keyLabel(e) };
-        updateSettings({ bindings: { ...getSettings().bindings, [action]: binding } });
+        const clash = clashFor(action, binding.code);
+        let problem = '';
+        if (UNBINDABLE.has(e.key)) problem = `${binding.label} can't be used for controls.`;
+        else if (clash) problem = `${binding.label} is already used for ${ACTION_NAMES[clash]}. Pick another key, or change that one first.`;
+        else updateSettings({ bindings: { ...getSettings().bindings, [action]: binding } });
+        render();
+        note(problem);
+        return;
       }
       render();
     },
@@ -100,7 +139,10 @@ export function initSettingsPanel(): void {
   muted.addEventListener('change', () => updateSettings({ muted: muted.checked }));
   motion.addEventListener('change', () => updateSettings({ reducedMotion: motion.checked }));
   colorblind.addEventListener('change', () => updateSettings({ palette: colorblind.checked ? 'colorblind' : 'neon' }));
-  dialog.querySelector('#reset-bindings')!.addEventListener('click', () => updateSettings({ bindings: {} }));
+  dialog.querySelector('#reset-bindings')!.addEventListener('click', () => {
+    note('');
+    updateSettings({ bindings: {} });
+  });
   dialog.querySelector('#reset-all')!.addEventListener('click', () => resetSettings());
   dialog.querySelector('#close-settings')!.addEventListener('click', () => dialog.close());
   // Clicking the dimmed backdrop closes the dialog too.
@@ -109,6 +151,7 @@ export function initSettingsPanel(): void {
   });
   dialog.addEventListener('close', () => {
     listening = null;
+    note('');
     render();
   });
   open.addEventListener('click', () => {

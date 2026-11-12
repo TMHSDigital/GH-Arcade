@@ -4,6 +4,7 @@ import { ArcadeControls } from './controls';
 import { OptionMenu } from './menu';
 import { getHighScore, submitHighScore } from './storage';
 import { tone } from './sfx';
+import { keyLabel } from './settings';
 import { isTouchDevice } from './touch';
 import { blinkingPrompt, fadeToScene, NEON, neonText, onStart } from './ui';
 
@@ -68,7 +69,7 @@ export function buildMenu(scene: Phaser.Scene, opts: MenuOptions): void {
     });
     return;
   }
-  blinkingPrompt(scene, width / 2, 410, isTouchDevice() ? 'TAP TO START' : 'CLICK OR PRESS SPACE');
+  blinkingPrompt(scene, width / 2, 410, isTouchDevice() ? 'TAP TO START' : `CLICK OR PRESS ${keyLabel('action', true)}`);
   onStart(scene, () => fadeToScene(scene, startScene, opts.startData ?? {}));
 }
 

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { type AccentName, PALETTES } from './palette';
-import { getSettings } from './settings';
+import { getSettings, keyCodesFor } from './settings';
 
 export const PIXEL_FONT = '"Press Start 2P", monospace';
 
@@ -37,7 +37,7 @@ export function neonText(
     .setShadow(0, 0, c, 12, false, true);
 }
 
-/** Registers a one-shot "start" action on click/tap, Space, Enter or any gamepad button. */
+/** Registers a one-shot "start" action on click/tap, the player's Action key (Space or Enter by default) or any gamepad button. */
 export function onStart(scene: Phaser.Scene, action: () => void): void {
   let fired = false;
   const go = () => {
@@ -46,8 +46,12 @@ export function onStart(scene: Phaser.Scene, action: () => void): void {
     action();
   };
   scene.input.once('pointerdown', go);
-  scene.input.keyboard?.once('keydown-SPACE', go);
-  scene.input.keyboard?.once('keydown-ENTER', go);
+  const codes = keyCodesFor('action');
+  const onKey = (e: KeyboardEvent) => {
+    if (codes.includes(e.keyCode)) go();
+  };
+  scene.input.keyboard?.on('keydown', onKey);
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.input.keyboard?.off('keydown', onKey));
   scene.input.gamepad?.once('down', go);
 }
 

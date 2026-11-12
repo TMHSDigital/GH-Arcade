@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { clearRecentUnlocks } from './achievements';
 import type { ArcadeControls } from './controls';
 import { OptionMenu } from './menu';
+import { keyLabel } from './settings';
 import { isMuted, setMuted } from './sfx';
 import { NEON, neonText, PIXEL_FONT } from './ui';
 
@@ -64,7 +65,7 @@ export class PauseController {
         { label: 'ARCADE', onSelect: () => leave(() => window.location.assign('../../')) },
       ],
     });
-    const hint = neonText(scene, width / 2, height / 2 + 150, 'P / ESC / START TO RESUME', 10, NEON.white).setAlpha(0.6);
+    const hint = neonText(scene, width / 2, height / 2 + 150, `${keyLabel('pause')} / START TO RESUME`, 10, NEON.white).setAlpha(0.6);
     this.overlay = scene.add
       .container(0, 0, [dim, title, hint, ...this.menu.objects])
       .setDepth(1000)
@@ -136,6 +137,6 @@ export class PauseController {
   }
 
   private updateMuteText(): void {
-    this.muteText.setText(isMuted() ? 'MUTED (M)' : '');
+    this.muteText.setText(isMuted() ? `MUTED (${keyLabel('mute')})` : '');
   }
 }
