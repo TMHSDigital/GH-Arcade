@@ -292,7 +292,7 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     unlock('pong.versus');
-    showMatchResult(this, you.controls!, {
+    showMatchResult(this, [you.controls!, other.controls!], {
       gameId: GAME_ID,
       title: `PLAYER ${winner === you ? 1 : 2} WINS!`,
       color: winner.color,

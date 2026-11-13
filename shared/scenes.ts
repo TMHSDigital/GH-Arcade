@@ -111,7 +111,11 @@ export interface MatchResultOptions {
  * End screen for two-player matches, drawn over the finished game: who won, the tally, any trophies
  * earned, and Rematch / Menu options that work with keyboard, gamepad and touch. Records the play.
  */
-export function showMatchResult(scene: Phaser.Scene, controls: ArcadeControls<string>, opts: MatchResultOptions): void {
+export function showMatchResult(
+  scene: Phaser.Scene,
+  controls: ArcadeControls<string> | ArcadeControls<string>[],
+  opts: MatchResultOptions,
+): void {
   const { width, height } = scene.scale.gameSize;
   const { earned } = finishRun(opts.gameId);
   scene.add.rectangle(0, 0, width, height, NEON.bg, 0.8).setOrigin(0).setDepth(40);

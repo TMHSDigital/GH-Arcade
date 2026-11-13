@@ -387,7 +387,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   private matchOver(winner: Player): void {
-    showMatchResult(this, this.players[0].controls, {
+    const controls = this.players.map((p) => p.controls);
+    showMatchResult(this, controls, {
       gameId: GAME_ID,
       title: `PLAYER ${winner.id} WINS!`,
       color: winner.colors[0],
