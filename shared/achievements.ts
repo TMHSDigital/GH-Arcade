@@ -1,4 +1,4 @@
-import { isRecord, loadJSON, onExternalChange, saveJSON, savedNumber } from './storage';
+import { isRecord, loadJSON, onExternalChange, saveJSON, savedNumber, STORAGE_PREFIX } from './storage';
 
 /**
  * Trophies and per-game stats, saved on this device. No Phaser here, so the hub can list them.
@@ -6,6 +6,7 @@ import { isRecord, loadJSON, onExternalChange, saveJSON, savedNumber } from './s
  * Games call `unlock('snake.bonus')` when something happens, or `addCounter('stack.lines', 4)` for
  * running totals (trophies tied to a counter unlock automatically at their target).
  * Plays and best scores are recorded when a run ends, via `finishRun()` in shared/scenes.ts.
+ * A game's best score lives here, in its stats, and nowhere else.
  */
 
 export interface Trophy {
@@ -99,6 +100,33 @@ function numberMap(raw: unknown): Record<string, number> {
   return out;
 }
 
+/**
+ * Best scores used to be stored a second time under "<slug>:highscore". Folds any such keys into
+ * the stats (keeping the higher value) and removes them. Returns true if anything was migrated.
+ */
+function adoptLegacyBests(games: Record<string, GameStats>): boolean {
+  const legacy = /^(.+):highscore$/;
+  let changed = false;
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(STORAGE_PREFIX) && legacy.test(key.slice(STORAGE_PREFIX.length))) keys.push(key);
+    }
+    for (const key of keys) {
+      const slug = key.slice(STORAGE_PREFIX.length).match(legacy)![1];
+      const best = savedNumber(loadJSON<unknown>(key.slice(STORAGE_PREFIX.length), 0));
+      const stats = games[slug] ?? { plays: 0, best: 0, totalScore: 0 };
+      games[slug] = { ...stats, best: Math.max(stats.best, best) };
+      localStorage.removeItem(key);
+      changed = true;
+    }
+  } catch {
+    /* storage unavailable; nothing to migrate */
+  }
+  return changed;
+}
+
 /** Reads the save, keeping only well-formed parts, so stale or hand-edited data can never throw later. */
 function read(): Save {
   const raw = loadJSON<unknown>(KEY, {});
@@ -112,7 +140,9 @@ function read(): Save {
       }
     }
   }
-  return { unlocked: numberMap(data.unlocked), counters: numberMap(data.counters), games };
+  const result = { unlocked: numberMap(data.unlocked), counters: numberMap(data.counters), games };
+  if (adoptLegacyBests(games)) saveJSON(KEY, { version: SAVE_VERSION, ...result });
+  return result;
 }
 
 let save: Save = read();
@@ -162,9 +192,13 @@ export function getCounter(counter: string): number {
   return save.counters[counter] ?? 0;
 }
 
-/** Called once per finished game with its final score (0 for matches that have no score, e.g. versus). */
-export function recordPlay(game: string, score = 0): void {
+/**
+ * Called once per finished game with its final score (0 for matches that have no score, e.g. versus).
+ * Returns true when the score beat the game's previous best.
+ */
+export function recordPlay(game: string, score = 0): boolean {
   const stats = save.games[game] ?? { plays: 0, best: 0, totalScore: 0 };
+  const isRecord = score > stats.best;
   stats.plays++;
   stats.best = Math.max(stats.best, score);
   stats.totalScore += score;
@@ -172,8 +206,15 @@ export function recordPlay(game: string, score = 0): void {
   save.games[game] = stats;
   persist();
   addCounter('arcade.plays');
-  const played = new Set(Object.keys(save.games));
+  // A game can have stats without a play (a best score kept through a reset), so count plays, not entries.
+  const played = new Set(Object.keys(save.games).filter((g) => save.games[g].plays > 0));
   if (TROPHIES.filter((t) => t.game !== 'arcade').every((t) => played.has(t.game))) unlock('arcade.all');
+  return isRecord;
+}
+
+/** The best score recorded for a game, or 0. */
+export function getHighScore(game: string): number {
+  return getStats(game).best;
 }
 
 export function getStats(game: string): GameStats {
@@ -204,8 +245,17 @@ export function onUnlock(fn: (t: Trophy) => void): () => void {
   return () => listeners.delete(fn);
 }
 
+/** Clears trophies, counters, plays and totals. Best scores are kept. */
 export function resetTrophies(): void {
-  save = { unlocked: {}, counters: {}, games: {} };
+  const games: Record<string, GameStats> = {};
+  for (const [slug, stats] of Object.entries(save.games)) if (stats.best > 0) games[slug] = { plays: 0, best: stats.best, totalScore: 0 };
+  save = { unlocked: {}, counters: {}, games };
   recent = [];
+  persist();
+}
+
+/** Clears every game's best score. Trophies, plays and totals are kept. */
+export function resetBestScores(): void {
+  for (const stats of Object.values(save.games)) stats.best = 0;
   persist();
 }

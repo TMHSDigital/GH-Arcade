@@ -1,4 +1,5 @@
-import { exportBackup, importBackup, resetHighScores } from '../../shared/backup';
+import { resetBestScores } from '../../shared/achievements';
+import { exportBackup, importBackup } from '../../shared/backup';
 
 /**
  * Wires up the "Your data" section of the settings dialog: download a backup of everything saved
@@ -50,7 +51,7 @@ export function initDataPanel(): void {
 
   section.querySelector('#reset-scores')!.addEventListener('click', () => {
     if (!window.confirm('Reset the best score for every game on this device? Trophies and stats are kept.')) return;
-    resetHighScores();
+    resetBestScores();
     window.location.reload();
   });
 }

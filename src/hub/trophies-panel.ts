@@ -31,7 +31,9 @@ export function initTrophiesPanel(): void {
                   // Two-player matches count as plays but carry no score, so only show an average when there is one.
                   stats.totalScore > 0 ? ` · Average ${Math.round(stats.totalScore / stats.plays).toLocaleString()}` : ''
                 }`
-              : 'Not played yet';
+              : stats.best
+                ? `Best ${stats.best.toLocaleString()}`
+                : 'Not played yet';
         const tiles = trophies
           .map((t) => {
             const done = isUnlocked(t.id);

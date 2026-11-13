@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getHighScore, loadJSON, saveJSON, submitHighScore } from './storage';
+import { loadJSON, saveJSON, savedNumber } from './storage';
 import { installMemoryStorage } from './test-utils';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -52,27 +52,9 @@ describe('saveJSON', () => {
   });
 });
 
-describe('high scores', () => {
-  it('only a strictly higher score is a record', () => {
-    installMemoryStorage();
-    expect(submitHighScore('snake', 0)).toBe(false);
-    expect(submitHighScore('snake', 10)).toBe(true);
-    expect(submitHighScore('snake', 10)).toBe(false);
-    expect(submitHighScore('snake', 9)).toBe(false);
-    expect(submitHighScore('snake', 11)).toBe(true);
-    expect(getHighScore('snake')).toBe(11);
-  });
-
-  it('keeps scores per game', () => {
-    installMemoryStorage();
-    submitHighScore('snake', 5);
-    expect(getHighScore('pong')).toBe(0);
-  });
-
-  it('treats a malformed stored score as no score', () => {
-    installMemoryStorage({ 'gh-arcade:snake:highscore': '"abc"', 'gh-arcade:pong:highscore': '-5' });
-    expect(getHighScore('snake')).toBe(0);
-    expect(getHighScore('pong')).toBe(0);
-    expect(submitHighScore('snake', 1)).toBe(true);
+describe('savedNumber', () => {
+  it('passes finite positive numbers and turns anything else into 0', () => {
+    expect(savedNumber(12)).toBe(12);
+    for (const bad of [-5, NaN, Infinity, '12', null, undefined, {}]) expect(savedNumber(bad)).toBe(0);
   });
 });

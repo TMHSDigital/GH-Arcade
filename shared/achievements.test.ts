@@ -88,6 +88,55 @@ describe('recordPlay', () => {
   });
 });
 
+describe('best scores', () => {
+  it('recordPlay reports a record only for a strictly higher score', async () => {
+    const { a } = await fresh();
+    expect(a.recordPlay('snake', 0)).toBe(false);
+    expect(a.recordPlay('snake', 10)).toBe(true);
+    expect(a.recordPlay('snake', 10)).toBe(false);
+    expect(a.recordPlay('snake', 9)).toBe(false);
+    expect(a.recordPlay('snake', 11)).toBe(true);
+    expect(a.getHighScore('snake')).toBe(11);
+    expect(a.getHighScore('pong')).toBe(0);
+  });
+
+  it('adopts legacy per-game keys once, keeping the higher value, and removes them', async () => {
+    const trophies = JSON.stringify({ version: 1, games: { snake: { plays: 3, best: 40, totalScore: 90 }, pong: { plays: 1, best: 900, totalScore: 900 } } });
+    const { a, storage } = await fresh({
+      'gh-arcade:trophies': trophies,
+      'gh-arcade:snake:highscore': '75',
+      'gh-arcade:pong:highscore': '100',
+      'gh-arcade:hop:highscore': '12',
+      'gh-arcade:maze:highscore': '"abc"',
+    });
+    expect(a.getHighScore('snake')).toBe(75);
+    expect(a.getHighScore('pong')).toBe(900);
+    expect(a.getHighScore('hop')).toBe(12);
+    expect(a.getHighScore('maze')).toBe(0);
+    expect(a.getStats('snake').plays).toBe(3);
+    expect([...storage.data.keys()]).toEqual(['gh-arcade:trophies']);
+    expect(JSON.parse(storage.data.get('gh-arcade:trophies')!).games.hop.best).toBe(12);
+  });
+
+  it('a best score without a play does not count toward "play every game"', async () => {
+    const games = [...new Set((await fresh()).a.TROPHIES.filter((t) => t.game !== 'arcade').map((t) => t.game))];
+    const legacy = Object.fromEntries(games.map((g) => [`gh-arcade:${g}:highscore`, '5']));
+    const { a } = await fresh(legacy);
+    a.recordPlay(games[0], 1);
+    expect(a.isUnlocked('arcade.all')).toBe(false);
+  });
+
+  it('resetBestScores clears bests and keeps everything else', async () => {
+    const { a } = await fresh();
+    a.unlock('snake.bonus');
+    a.recordPlay('snake', 30);
+    a.resetBestScores();
+    expect(a.getHighScore('snake')).toBe(0);
+    expect(a.getStats('snake').plays).toBe(1);
+    expect(a.isUnlocked('snake.bonus')).toBe(true);
+  });
+});
+
 describe('trophyProgress', () => {
   it('counts a game\'s unlocked trophies out of its total', async () => {
     const { a } = await fresh();
@@ -118,7 +167,7 @@ describe('recent unlocks', () => {
 });
 
 describe('resetTrophies', () => {
-  it('clears unlocks, counters, stats and the recent list', async () => {
+  it('clears unlocks, counters, plays and the recent list, but keeps best scores', async () => {
     const { a } = await fresh();
     a.unlock('snake.bonus');
     a.addCounter('stack.lines', 5);
@@ -126,7 +175,8 @@ describe('resetTrophies', () => {
     a.resetTrophies();
     expect(a.isUnlocked('snake.bonus')).toBe(false);
     expect(a.getCounter('stack.lines')).toBe(0);
-    expect(a.getStats('snake').plays).toBe(0);
+    expect(a.getStats('snake')).toMatchObject({ plays: 0, totalScore: 0 });
+    expect(a.getHighScore('snake')).toBe(10);
     expect(a.drainRecentUnlocks()).toEqual([]);
   });
 });

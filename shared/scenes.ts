@@ -1,8 +1,7 @@
 import Phaser from 'phaser';
-import { clearRecentUnlocks, drainRecentUnlocks, recordPlay, type Trophy } from './achievements';
+import { clearRecentUnlocks, drainRecentUnlocks, getHighScore, recordPlay, type Trophy } from './achievements';
 import { ArcadeControls } from './controls';
 import { OptionMenu } from './menu';
-import { getHighScore, submitHighScore } from './storage';
 import { tone } from './sfx';
 import { keyLabel } from './settings';
 import { isTouchDevice } from './touch';
@@ -81,13 +80,12 @@ export function buildMenu(scene: Phaser.Scene, opts: MenuOptions): void {
 }
 
 /**
- * Records a finished run: counts the play, saves the score if it is a new best, and returns the
+ * Records a finished run: counts the play, keeps the score if it is a new best, and returns the
  * trophies earned during the run. Leave `score` out for matches that have none (two-player versus);
- * the play still counts but no high score is submitted.
+ * the play still counts but cannot be a record.
  */
 export function finishRun(gameId: string, score?: number): { isRecord: boolean; earned: Trophy[] } {
-  const isRecord = score !== undefined && submitHighScore(gameId, score);
-  recordPlay(gameId, score ?? 0);
+  const isRecord = recordPlay(gameId, score ?? 0) && score !== undefined;
   return { isRecord, earned: drainRecentUnlocks() };
 }
 

@@ -47,13 +47,3 @@ export function savedNumber(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
 }
 
-export function getHighScore(game: string): number {
-  return savedNumber(loadJSON<unknown>(`${game}:highscore`, 0));
-}
-
-/** Saves the score if it beats the stored best. Returns true when a new record was set. */
-export function submitHighScore(game: string, score: number): boolean {
-  if (score <= getHighScore(game)) return false;
-  saveJSON(`${game}:highscore`, score);
-  return true;
-}

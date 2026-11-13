@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { exportBackup, importBackup, resetHighScores } from './backup';
+import { exportBackup, importBackup } from './backup';
 import { freshModules, installMemoryStorage, installWindow } from './test-utils';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -39,11 +39,12 @@ describe('importBackup', () => {
     expect(importBackup(backup)).toEqual({ ok: true, keys: 5 });
     expect(clean.data.get('gh-arcade:snake:highscore')).toBe('50');
 
-    const { settings, achievements, storage } = await freshModules();
+    const { settings, achievements } = await freshModules();
     expect(settings.getSettings()).toMatchObject({ volume: 0.4, palette: 'colorblind' });
     expect(achievements.isUnlocked('snake.bonus')).toBe(true);
     expect(achievements.getStats('snake')).toMatchObject({ plays: 2, best: 50 });
-    expect(storage.getHighScore('space-dodge')).toBe(7);
+    // A backup from before best scores moved into the stats still restores them.
+    expect(achievements.getHighScore('space-dodge')).toBe(7);
   });
 
   it('replaces what was there, but leaves other sites\' keys alone', () => {
@@ -70,17 +71,5 @@ describe('importBackup', () => {
     const result = importBackup(file);
     expect(result.ok).toBe(false);
     expect(storage.data).toEqual(before);
-  });
-});
-
-describe('resetHighScores', () => {
-  it('removes every best score and nothing else', () => {
-    const storage = installMemoryStorage(saved);
-    expect(resetHighScores()).toBe(2);
-    expect([...storage.data.keys()].sort()).toEqual(['gh-arcade:hub:sort', 'gh-arcade:settings', 'gh-arcade:trophies', 'unrelated:key']);
-  });
-
-  it('does nothing when storage is unavailable', () => {
-    expect(resetHighScores()).toBe(0);
   });
 });

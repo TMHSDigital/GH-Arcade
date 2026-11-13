@@ -1,8 +1,8 @@
 import './hub.css';
 import registry from '../../games/registry.json';
 import { registerOffline } from '../../shared/pwa';
-import { getStats, trophyProgress } from '../../shared/achievements';
-import { getHighScore, loadJSON, saveJSON } from '../../shared/storage';
+import { getHighScore, getStats, trophyProgress } from '../../shared/achievements';
+import { loadJSON, saveJSON } from '../../shared/storage';
 import { initDataPanel } from './data-panel';
 import { escapeHtml } from './html';
 import { initHubNavigation } from './navigation';

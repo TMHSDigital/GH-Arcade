@@ -2,8 +2,7 @@ import { isRecord, STORAGE_PREFIX as PREFIX } from './storage';
 
 /**
  * Backup and restore of everything the arcade saves on this device (settings, trophies, stats,
- * best scores), plus a high-score reset. No Phaser and no DOM here; the hub's settings dialog
- * drives it.
+ * best scores). No Phaser and no DOM here; the hub's settings dialog drives it.
  */
 
 const APP = 'gh-arcade';
@@ -47,6 +46,8 @@ export function exportBackup(): Backup {
 
 /** Why a value is not acceptable for its key, or null if it is fine. */
 function problemWith(key: string, value: unknown): string | null {
+  // Best scores were once saved per game under "<slug>:highscore". Backups from then still restore;
+  // the stats module folds those keys into the trophies save on the next load.
   if (HIGH_SCORE.test(key)) {
     return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? null : `"${key}" is not a score`;
   }
@@ -81,15 +82,4 @@ export function importBackup(raw: unknown): ImportResult {
     return { ok: false, reason: 'This browser is blocking saved data, so the backup could not be restored.' };
   }
   return { ok: true, keys: entries.length };
-}
-
-/** Clears every game's best score. Returns how many were removed. */
-export function resetHighScores(): number {
-  try {
-    const scores = savedKeys().filter((key) => HIGH_SCORE.test(key));
-    for (const key of scores) localStorage.removeItem(PREFIX + key);
-    return scores.length;
-  } catch {
-    return 0;
-  }
 }

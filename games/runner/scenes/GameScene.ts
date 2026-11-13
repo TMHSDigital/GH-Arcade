@@ -24,11 +24,10 @@ import {
   WIDTH,
 } from '../config';
 import { MAX_PATTERN_LEVEL, PATTERNS, type Piece } from '../patterns';
-import { addCounter, unlock } from '../../../shared/achievements';
+import { addCounter, getHighScore, unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { noise, tone } from '../../../shared/sfx';
-import { getHighScore } from '../../../shared/storage';
 import { burstEmitter, floatText, hex, NEON, neonText, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
 
 interface Block {
