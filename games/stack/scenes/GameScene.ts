@@ -227,14 +227,25 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Horizontal movement with delayed auto shift, like a real cabinet.
-    const held = c.isDown('left') ? -1 : c.isDown('right') ? 1 : 0;
     if (c.justPressed('left') || c.justPressed('right')) {
       const dir = c.justPressed('left') ? -1 : 1;
       this.shift(dir);
       this.dasDir = dir;
       this.dasTimer = 0;
       this.arrTimer = 0;
-    } else if (held !== 0 && held === this.dasDir) {
+      return;
+    }
+    // Keep shifting the way the last press went while that key is down; if it was only tapped
+    // (hold left, tap right), fall back to the direction that is still held.
+    const stillDown = this.dasDir === -1 ? c.isDown('left') : this.dasDir === 1 && c.isDown('right');
+    const held = stillDown ? this.dasDir : c.isDown('left') ? -1 : c.isDown('right') ? 1 : 0;
+    if (held === 0) {
+      this.dasDir = 0;
+    } else if (held !== this.dasDir) {
+      this.dasDir = held;
+      this.dasTimer = 0;
+      this.arrTimer = 0;
+    } else {
       this.dasTimer += delta;
       if (this.dasTimer >= DAS_MS) {
         this.arrTimer += delta;
@@ -243,8 +254,6 @@ export class GameScene extends Phaser.Scene {
           if (!this.shift(held)) break;
         }
       }
-    } else if (held === 0) {
-      this.dasDir = 0;
     }
   }
 
