@@ -479,6 +479,8 @@ export class GameScene extends Phaser.Scene {
     // Snap to the nearest center so the eyes can path home cleanly.
     ch.x = wrapX(Math.round(ch.x));
     ch.y = Math.round(ch.y);
+    // Choose a direction from the snapped cell; the old heading may now point straight into a wall.
+    this.chaserAtCenter(ch);
     floatText(this, px(ch.x), py(ch.y) - 12, String(points), NEON.cyan, 12);
     this.burst.setParticleTint(ch.color);
     this.burst.explode(20, px(ch.x), py(ch.y));
