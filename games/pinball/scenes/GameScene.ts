@@ -47,7 +47,7 @@ import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
-import { helpKeys } from '../../../shared/settings';
+import { getSettings, helpKeys } from '../../../shared/settings';
 import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, floatText, HUD_LABEL_STYLE, HUD_STYLE, NEON, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
@@ -156,7 +156,7 @@ export class GameScene extends Phaser.Scene {
     this.readyBall();
   }
 
-  /** Touch: holding the left half works the left flipper, the right half the right flipper (and the plunger). */
+  /** Touch: holding the left half works the left flipper, the right half the right flipper. One half also launches (see readInput). */
   private bindTouch(): void {
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
       if (this.pause.isPaused) return;
@@ -212,7 +212,10 @@ export class GameScene extends Phaser.Scene {
     });
 
     if (this.state !== 'ready') return;
-    const plunging = c.isDown('action') || c.isDown('down') || touch.includes(-1);
+    // Each half always works its own flipper. Only the launch is one-sided: it follows the plunger on
+    // the right, or moves to the left half with the left-handed touch layout.
+    const launchSide = getSettings().touch.mirrored ? 1 : -1;
+    const plunging = c.isDown('action') || c.isDown('down') || touch.includes(launchSide);
     if (plunging) {
       this.charge = Math.min(1, this.charge + dt / PLUNGE_CHARGE_TIME);
     } else if (this.charge > 0) {

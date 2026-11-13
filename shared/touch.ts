@@ -9,6 +9,10 @@ export type SwipeDir = 'left' | 'right' | 'up' | 'down' | 'tap';
 /**
  * Where an on-screen control goes given the player's touch settings: with the left-handed layout
  * on, x is flipped across the middle of the screen. Use it for any touch-only UI a game places itself.
+ *
+ * Only one-sided controls need it. Gestures that work anywhere on the screen (swipes, drags, tap to
+ * jump) and halves that belong to something on that side (Pinball's flippers, each player's half in
+ * a two-player game) stay where they are.
  */
 export function mirrorX(scene: Phaser.Scene, x: number): number {
   return getSettings().touch.mirrored ? scene.scale.gameSize.width - x : x;
