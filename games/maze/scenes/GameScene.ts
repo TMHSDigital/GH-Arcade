@@ -5,38 +5,38 @@ import {
   BONUS_TIME,
   CATCH_FREEZE_MS,
   CELL,
-  CHASER_SPEED,
-  CHASER_SPEED_MAX,
-  CHASER_SPEED_STEP,
   CLEAR_MS,
   COLS,
   DEATH_MS,
   EXTRA_LIFE_AT,
-  EYES_SPEED,
   GAME_ID,
   GRID_X,
   GRID_Y,
-  HOUSE_SPEED,
   MODE_SCHEDULE,
-  POINTS_CHASER,
   POINTS_DOT,
   POINTS_POWER,
   READY_MS,
   RELEASE_TIMES,
   ROWS,
-  RUNNER_SPEED,
-  RUNNER_SPEED_MAX,
-  RUNNER_SPEED_STEP,
-  SCARED_SPEED,
-  SCARED_TIME,
-  SCARED_TIME_MIN,
-  SCARED_TIME_STEP,
   SCARED_WARN,
   START_LIVES,
-  TUNNEL_SPEED,
   WIDTH,
 } from '../config';
-import { BONUS_CELL, DIRS, find, HOUSE_EXIT, HOUSE_Y, MAZE, OPPOSITE, open, tile, TUNNEL_ROW, VEC, wrapX, type Dir } from '../maze';
+import {
+  catchPoints,
+  type ChaserCore,
+  type ChaserKind,
+  chaserSpeed,
+  chooseDirection,
+  directionOptions,
+  isScatter,
+  type Mover,
+  runnerSpeed,
+  scaredSeconds,
+  targetFor,
+  touches,
+} from '../chase';
+import { BONUS_CELL, find, HOUSE_EXIT, HOUSE_Y, MAZE, OPPOSITE, open, tile, VEC, wrapX, type Dir } from '../maze';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
@@ -48,23 +48,10 @@ import type { TROPHIES } from '../trophies';
 
 const { unlock } = trophiesFor<typeof TROPHIES>();
 
-/** Anything that walks the grid. Positions are in cells; whole numbers are cell centers. */
-interface Mover {
-  x: number;
-  y: number;
-  dir: Dir | null;
-}
-
-type ChaserKind = 'hunter' | 'ambusher' | 'flanker' | 'drifter';
-type ChaserState = 'house' | 'leaving' | 'active' | 'eyes' | 'entering';
-
-interface Chaser extends Mover {
-  kind: ChaserKind;
+/** A chaser as the scene tracks it: the rule-relevant part from ../chase plus what drawing and timing need. */
+interface Chaser extends ChaserCore {
   color: number;
-  state: ChaserState;
-  scared: boolean;
   homeX: number;
-  corner: { x: number; y: number };
   releaseAt: number;
 }
 
@@ -281,7 +268,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private runnerSpeed(): number {
-    return Math.min(RUNNER_SPEED + RUNNER_SPEED_STEP * (this.level - 1), RUNNER_SPEED_MAX);
+    return runnerSpeed(this.level);
   }
 
   private moveRunner(dt: number): void {
@@ -321,16 +308,8 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private chaserSpeed(ch: Chaser): number {
-    if (ch.state === 'eyes' || ch.state === 'entering') return EYES_SPEED;
-    if (ch.state === 'house' || ch.state === 'leaving') return HOUSE_SPEED;
-    if (ch.y === TUNNEL_ROW && (ch.x < 5 || ch.x > COLS - 6)) return TUNNEL_SPEED;
-    if (ch.scared) return SCARED_SPEED;
-    return Math.min(CHASER_SPEED + CHASER_SPEED_STEP * (this.level - 1), CHASER_SPEED_MAX);
-  }
-
   private moveChaser(ch: Chaser, dt: number): void {
-    const dist = this.chaserSpeed(ch) * dt;
+    const dist = chaserSpeed(ch, this.level) * dt;
     switch (ch.state) {
       case 'house':
         if (this.clock - this.roundStart >= ch.releaseAt) ch.state = 'leaving';
@@ -367,50 +346,24 @@ export class GameScene extends Phaser.Scene {
       ch.dir = null;
       return;
     }
-    const back = ch.dir ? OPPOSITE[ch.dir] : null;
-    const options = DIRS.filter((d) => d !== back && open(ch.x + VEC[d].x, ch.y + VEC[d].y));
+    // Which ways are open, where each chaser is heading and how it picks a turn are rules in ../chase.
+    const options = directionOptions(ch);
     if (options.length === 0) {
-      ch.dir = back;
+      // Dead end: the only way is back.
+      ch.dir = ch.dir ? OPPOSITE[ch.dir] : null;
       return;
     }
     if (ch.scared && ch.state === 'active') {
       ch.dir = Phaser.Utils.Array.GetRandom(options);
       return;
     }
-    const target = this.targetFor(ch);
-    let best = options[0];
-    let bestDist = Infinity;
-    for (const d of options) {
-      const nx = ch.x + VEC[d].x;
-      const ny = ch.y + VEC[d].y;
-      const dist = (nx - target.x) ** 2 + (ny - target.y) ** 2;
-      if (dist < bestDist) {
-        bestDist = dist;
-        best = d;
-      }
-    }
-    ch.dir = best;
-  }
-
-  /** Each chaser reads the runner differently, which is what makes them hard to shake as a group. */
-  private targetFor(ch: Chaser): { x: number; y: number } {
-    if (ch.state === 'eyes') return HOUSE_EXIT;
-    if (this.modeIndex < MODE_SCHEDULE.length && this.modeIndex % 2 === 0) return ch.corner;
-    const r = { x: Math.round(this.runner.x), y: Math.round(this.runner.y) };
-    const f = VEC[this.facing];
-    switch (ch.kind) {
-      case 'hunter':
-        return r;
-      case 'ambusher':
-        return { x: r.x + f.x * 4, y: r.y + f.y * 4 };
-      case 'flanker': {
-        const hunter = this.chasers[0];
-        const pivot = { x: r.x + f.x * 2, y: r.y + f.y * 2 };
-        return { x: pivot.x * 2 - hunter.x, y: pivot.y * 2 - hunter.y };
-      }
-      case 'drifter':
-        return (ch.x - r.x) ** 2 + (ch.y - r.y) ** 2 > 64 ? r : ch.corner;
-    }
+    const target = targetFor(ch, {
+      runner: { x: Math.round(this.runner.x), y: Math.round(this.runner.y) },
+      facing: this.facing,
+      hunter: this.chasers[0],
+      scatter: isScatter(this.modeIndex),
+    });
+    ch.dir = chooseDirection(ch, target, options);
   }
 
   private reverseChasers(): void {
@@ -453,7 +406,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private scare(): void {
-    const secs = Math.max(SCARED_TIME_MIN, SCARED_TIME - SCARED_TIME_STEP * (this.level - 1));
+    const secs = scaredSeconds(this.level);
     this.scaredUntil = this.clock + secs * 1000;
     this.catchStreak = 0;
     this.reverseChasers();
@@ -465,16 +418,14 @@ export class GameScene extends Phaser.Scene {
     const r = this.runner;
     for (const ch of this.chasers) {
       if (ch.state !== 'active') continue;
-      const dx = Math.abs(ch.x - r.x);
-      const near = Math.min(dx, COLS - dx) < 0.6 && Math.abs(ch.y - r.y) < 0.6;
-      if (!near) continue;
+      if (!touches(ch, r)) continue;
       if (ch.scared) this.catchChaser(ch);
       else return this.die();
     }
   }
 
   private catchChaser(ch: Chaser): void {
-    const points = POINTS_CHASER * 2 ** this.catchStreak;
+    const points = catchPoints(this.catchStreak);
     this.catchStreak++;
     if (this.catchStreak === 4) unlock('maze.sweep');
     this.addScore(points);

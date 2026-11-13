@@ -1,24 +1,20 @@
 import Phaser from 'phaser';
 import {
-  BONUS_BASE_POINTS,
   BONUS_EVERY,
   BONUS_LIFETIME_MS,
   CELL,
   COLS,
   FIELD_TOP,
-  FOOD_POINTS,
   GAME_ID,
   HEIGHT,
-  MIN_STEP_MS,
   ROUNDS_TO_WIN,
   ROWS,
   START_LENGTH,
   START_STEP_MS,
-  STEP_SPEEDUP_MS,
-  TURN_BUFFER,
   VERSUS_STEP_MS,
   WIDTH,
 } from '../config';
+import { advance, bonusPoints, type Cell, type DirName, DIRS, foodPoints, freeCells, nextStepMs, queueTurn, resolveStep, same } from '../logic';
 import { getHighScore, trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
@@ -29,19 +25,6 @@ import { burstEmitter, fadeToScene, floatText, hex, HUD_STYLE, NEON, neonText, s
 import type { TROPHIES } from '../trophies';
 
 const { unlock } = trophiesFor<typeof TROPHIES>();
-
-interface Cell {
-  x: number;
-  y: number;
-}
-
-const DIRS = {
-  up: { x: 0, y: -1 },
-  down: { x: 0, y: 1 },
-  left: { x: -1, y: 0 },
-  right: { x: 1, y: 0 },
-} as const;
-type DirName = keyof typeof DIRS;
 
 interface Player {
   id: 1 | 2;
@@ -65,8 +48,6 @@ export interface SnakeGameData {
   round?: number;
 }
 
-const same = (a: Cell, b: Cell) => a.x === b.x && a.y === b.y;
-const key = (c: Cell) => `${c.x},${c.y}`;
 const cellX = (x: number) => x * CELL + CELL / 2;
 const cellY = (y: number) => FIELD_TOP + y * CELL + CELL / 2;
 
@@ -227,10 +208,8 @@ export class GameScene extends Phaser.Scene {
 
   private turn(p: Player, name: DirName): void {
     if (!p.alive || this.over || this.pause.isPaused) return;
-    const d = DIRS[name];
-    const last = p.queue.at(-1) ?? p.dir;
-    // Ignore repeats and 180-degree reversals into your own neck.
-    if (!same(d, last) && !(d.x === -last.x && d.y === -last.y) && p.queue.length < TURN_BUFFER) p.queue.push(d);
+    // Repeats, reversals into your own neck and presses beyond the buffer are ignored.
+    queueTurn(p.queue, p.dir, DIRS[name]);
     // In solo play the first input starts the game; versus rounds start on a timer.
     if (!this.versus) this.begin();
   }
@@ -264,54 +243,38 @@ export class GameScene extends Phaser.Scene {
   /** Moves every living snake one cell and resolves all collisions together. */
   private step(): void {
     const alive = this.players.filter((p) => p.alive);
-    const moves = alive.map((p) => {
+    for (const p of alive) {
       const next = p.queue.shift();
       if (next) p.dir = next;
-      const head = p.segments[0];
-      const nh = { x: head.x + p.dir.x, y: head.y + p.dir.y };
-      return { p, nh, grows: same(nh, this.food) };
+    }
+    // The rules (walls, bodies, head-on meetings, growth) live in ../logic.
+    const moves = resolveStep(alive, this.food);
+
+    alive.forEach((p, i) => {
+      const m = moves[i];
+      if (m.crashed) return;
+      const old = p.segments;
+      p.prev = old.map((c) => ({ ...c }));
+      p.segments = advance(old, m.head, m.grows);
+      if (m.grows) p.prev.push({ ...old[old.length - 1] });
+      if (m.grows) this.eatFood(p);
+      if (this.bonus && same(m.head, this.bonus.cell)) this.eatBonus();
     });
 
-    // Cells that stay occupied after this step: each snake's body, minus its tail unless it grows.
-    const occupied = new Set<string>();
-    for (const m of moves) (m.grows ? m.p.segments : m.p.segments.slice(0, -1)).forEach((c) => occupied.add(key(c)));
-
-    const crashed = new Set<Player>();
-    for (const m of moves) {
-      const { nh } = m;
-      if (nh.x < 0 || nh.x >= COLS || nh.y < 0 || nh.y >= ROWS || occupied.has(key(nh))) crashed.add(m.p);
-      for (const o of moves) {
-        if (o === m) continue;
-        const headOn = same(nh, o.nh);
-        const swapped = same(nh, o.p.segments[0]) && same(o.nh, m.p.segments[0]);
-        if (headOn || swapped) crashed.add(m.p);
-      }
-    }
-
-    for (const m of moves) {
-      if (crashed.has(m.p)) continue;
-      const old = m.p.segments;
-      m.p.prev = old.map((c) => ({ ...c }));
-      m.p.segments = [m.nh, ...old];
-      if (m.grows) m.p.prev.push({ ...old[old.length - 1] });
-      else m.p.segments.pop();
-      if (m.grows) this.eatFood(m.p);
-      if (this.bonus && same(m.nh, this.bonus.cell)) this.eatBonus();
-    }
-
-    if (crashed.size) this.crash([...crashed]);
+    const crashed = alive.filter((_, i) => moves[i].crashed);
+    if (crashed.length) this.crash(crashed);
   }
 
   private eatFood(p: Player): void {
     this.eaten++;
     const x = cellX(this.food.x);
     const y = cellY(this.food.y);
-    this.stepMs = Math.max(MIN_STEP_MS, this.stepMs - STEP_SPEEDUP_MS);
+    this.stepMs = nextStepMs(this.stepMs);
     this.burst.setParticleTint(p.colors[0]);
     this.burst.explode(14, x, y);
     tone({ freq: 520 + Math.min(this.eaten, 30) * 12, toFreq: 880 + Math.min(this.eaten, 30) * 12, duration: 0.08, type: 'triangle', volume: 0.08 });
     if (!this.versus) {
-      const points = FOOD_POINTS * (1 + Math.floor(this.eaten / 10));
+      const points = foodPoints(this.eaten);
       this.score += points;
       floatText(this, x, y - 10, `+${points}`, NEON.pink);
       if (p.segments.length >= 25) unlock('snake.len25');
@@ -325,8 +288,7 @@ export class GameScene extends Phaser.Scene {
 
   private eatBonus(): void {
     if (!this.bonus) return;
-    const secondsLeft = Math.max(0, Math.ceil((this.bonus.expiresAt - this.elapsed) / 1000));
-    const points = BONUS_BASE_POINTS + secondsLeft * 10;
+    const points = bonusPoints(this.bonus.expiresAt - this.elapsed);
     this.score += points;
     const x = cellX(this.bonus.cell.x);
     const y = cellY(this.bonus.cell.y);
@@ -466,11 +428,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   private randomFreeCell(): Cell {
-    const taken = new Set(this.players.flatMap((p) => p.segments.map(key)));
-    if (this.food) taken.add(key(this.food));
-    if (this.bonus) taken.add(key(this.bonus.cell));
-    const free: Cell[] = [];
-    for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (!taken.has(`${x},${y}`)) free.push({ x, y });
-    return Phaser.Utils.Array.GetRandom(free);
+    const taken = this.players.flatMap((p) => p.segments);
+    if (this.food) taken.push(this.food);
+    if (this.bonus) taken.push(this.bonus.cell);
+    return Phaser.Utils.Array.GetRandom(freeCells(taken));
   }
 }
