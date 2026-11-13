@@ -26,7 +26,7 @@ import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
-import { floatText, neonText, PIXEL_FONT, showBanner } from '../../../shared/ui';
+import { burstEmitter, floatText, HUD_STYLE, neonText, PIXEL_FONT, showBanner, sparkTexture } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { unlock } = trophiesFor<typeof TROPHIES>();
@@ -116,14 +116,8 @@ export class GameScene extends Phaser.Scene {
     this.bricks = this.physics.add.staticGroup();
     this.buildLevel();
 
-    this.burst = this.add.particles(0, 0, 'spark', {
-      speed: { min: 80, max: 340 },
-      lifespan: 650,
-      scale: { start: 1, end: 0 },
-      alpha: { start: 1, end: 0 },
-      blendMode: Phaser.BlendModes.ADD,
-      emitting: false,
-    });
+    // Same emitter as the other games, kept at Breakout's original depth (below the HUD).
+    this.burst = burstEmitter(this, 340).setDepth(0);
 
     this.spawnBall(true);
 
@@ -194,7 +188,7 @@ export class GameScene extends Phaser.Scene {
     (ball.body as Phaser.Physics.Arcade.Body).onWorldBounds = true;
     ball.preFX?.addGlow(COLORS.white, 4, 0, false);
 
-    const trail = this.add.particles(0, 0, 'spark', {
+    const trail = this.add.particles(0, 0, sparkTexture(this), {
       follow: ball,
       lifespan: 260,
       frequency: 16,
@@ -214,7 +208,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createHud(): void {
-    const style = { fontFamily: PIXEL_FONT, fontSize: '16px', color: '#e8e8ff' };
+    const style = HUD_STYLE;
     this.scoreText = this.add.text(WIDTH / 2, 24, '', style).setOrigin(0.5);
     this.comboText = this.add.text(WIDTH / 2, 50, '', { ...style, fontSize: '12px', color: '#ffe45e' }).setOrigin(0.5);
     this.levelText = this.add.text(WIDTH - 20, 24, `LV ${this.level + 1}`, style).setOrigin(1, 0.5);

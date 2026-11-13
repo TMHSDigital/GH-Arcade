@@ -273,7 +273,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`chrome.ts`](shared/chrome.ts) | The page around the canvas: pause and fullscreen buttons, the loading indicator and the rotate hint. |
 | [`touch.ts`](shared/touch.ts) | `onSwipe()` gestures, plus `VirtualStick` and `VirtualButton` that appear only on touch screens. |
 | [`scenes.ts`](shared/scenes.ts) | `buildMenu()` title screens and the shared `ArcadeGameOverScene` with high-score checks. |
-| [`ui.ts`](shared/ui.ts) | Neon text, banners, score popups, particle bursts and the shared color palette. |
+| [`ui.ts`](shared/ui.ts) | Neon text, the HUD text style, banners, score popups, particle bursts and the shared color palette. |
 | [`phaser-config.ts`](shared/phaser-config.ts) | `startArcadeGame()`: fit-to-screen Phaser setup with gamepads enabled, once the pixel font has loaded. |
 | [`storage.ts`](shared/storage.ts) | `loadJSON()` and `saveJSON()`, backed by `localStorage` that never throws. |
 | [`sfx.ts`](shared/sfx.ts) | `tone()` and `noise()`: retro sound effects synthesized with Web Audio. |

@@ -34,7 +34,7 @@ import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, VirtualButton, VirtualStick } from '../../../shared/touch';
-import { burstEmitter, floatText, NEON, PIXEL_FONT, showBanner } from '../../../shared/ui';
+import { burstEmitter, floatText, HUD_STYLE, NEON, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { addCounter, unlock } = trophiesFor<typeof TROPHIES>();
@@ -145,7 +145,7 @@ export class GameScene extends Phaser.Scene {
     this.gfx = this.add.graphics();
     this.burst = burstEmitter(this, 260, 800);
 
-    const style = { fontFamily: PIXEL_FONT, fontSize: '16px', color: '#e8e8ff' };
+    const style = HUD_STYLE;
     this.scoreText = this.add.text(WIDTH / 2, 24, '0', style).setOrigin(0.5).setDepth(100);
     this.waveText = this.add.text(WIDTH - 20, 24, '', { ...style, fontSize: '12px' }).setOrigin(1, 0.5).setDepth(100);
 

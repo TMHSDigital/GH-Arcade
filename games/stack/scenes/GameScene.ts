@@ -45,7 +45,7 @@ import { endRun } from '../../../shared/scenes';
 import { createRng, dailySeed, getDailyBest, submitDailyScore } from '../../../shared/rng';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, VirtualButton } from '../../../shared/touch';
-import { burstEmitter, hex, NEON, neonText, PIXEL_FONT, showBanner } from '../../../shared/ui';
+import { burstEmitter, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { addCounter, unlock } = trophiesFor<typeof TROPHIES>();
@@ -126,8 +126,8 @@ export class GameScene extends Phaser.Scene {
     this.gfx = this.add.graphics();
     this.burst = burstEmitter(this, 320, 700);
 
-    const label = { fontFamily: PIXEL_FONT, fontSize: '10px', color: '#8a8ab8' };
-    const value = { fontFamily: PIXEL_FONT, fontSize: '16px', color: '#e8e8ff' };
+    const label = HUD_LABEL_STYLE;
+    const value = HUD_STYLE;
     const statY = BOARD_Y + 200;
     this.add.text(LEFT_PANEL_X, statY, 'SCORE', label);
     this.scoreText = this.add.text(LEFT_PANEL_X, statY + 18, '0', value);

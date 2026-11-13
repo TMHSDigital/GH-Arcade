@@ -48,7 +48,7 @@ import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
-import { burstEmitter, floatText, NEON, PIXEL_FONT, showBanner } from '../../../shared/ui';
+import { burstEmitter, floatText, HUD_LABEL_STYLE, HUD_STYLE, NEON, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { unlock } = trophiesFor<typeof TROPHIES>();
@@ -122,8 +122,8 @@ export class GameScene extends Phaser.Scene {
     this.burst = burstEmitter(this, 240, 450);
     this.drawTable();
 
-    const label = { fontFamily: PIXEL_FONT, fontSize: '10px', color: '#8a8ab8' };
-    const value = { fontFamily: PIXEL_FONT, fontSize: '18px', color: '#e8e8ff' };
+    const label = HUD_LABEL_STYLE;
+    const value = { ...HUD_STYLE, fontSize: '18px' };
     this.add.text(30, 80, 'SCORE', label);
     this.scoreText = this.add.text(30, 98, '0', value);
     this.add.text(30, 150, 'BALL', label);

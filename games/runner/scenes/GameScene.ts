@@ -31,7 +31,7 @@ import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
-import { burstEmitter, floatText, hex, NEON, neonText, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
+import { burstEmitter, floatText, hex, HUD_STYLE, NEON, neonText, sparkTexture } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { addCounter, unlock } = trophiesFor<typeof TROPHIES>();
@@ -151,7 +151,7 @@ export class GameScene extends Phaser.Scene {
       })
       .setDepth(5);
 
-    const style = { fontFamily: PIXEL_FONT, fontSize: '16px', color: '#e8e8ff' };
+    const style = HUD_STYLE;
     this.distText = this.add.text(WIDTH / 2, 24, '0m', style).setOrigin(0.5).setDepth(100);
     this.coinText = this.add.text(WIDTH - 20, 24, '0', { ...style, fontSize: '12px', color: hex(NEON.yellow) }).setOrigin(1, 0.5).setDepth(100);
     this.add

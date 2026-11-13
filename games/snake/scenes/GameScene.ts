@@ -25,7 +25,7 @@ import { PauseController } from '../../../shared/pause';
 import { endRun, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, onSwipe } from '../../../shared/touch';
-import { burstEmitter, fadeToScene, floatText, hex, NEON, neonText, PIXEL_FONT, showBanner } from '../../../shared/ui';
+import { burstEmitter, fadeToScene, floatText, hex, HUD_STYLE, NEON, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { unlock } = trophiesFor<typeof TROPHIES>();
@@ -192,7 +192,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createHud(): void {
-    const style = { fontFamily: PIXEL_FONT, fontSize: '16px', color: '#e8e8ff' };
+    const style = HUD_STYLE;
     if (this.versus) {
       const [p1, p2] = this.players;
       this.add.text(20, FIELD_TOP / 2, 'P1', { ...style, fontSize: '14px', color: hex(p1.colors[0]) }).setOrigin(0, 0.5);

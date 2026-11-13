@@ -43,7 +43,7 @@ import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { onSwipe } from '../../../shared/touch';
-import { burstEmitter, floatText, NEON, PIXEL_FONT, showBanner } from '../../../shared/ui';
+import { burstEmitter, floatText, HUD_STYLE, NEON, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { unlock } = trophiesFor<typeof TROPHIES>();
@@ -133,7 +133,7 @@ export class GameScene extends Phaser.Scene {
     this.walls = this.add.graphics();
     this.gfx = this.add.graphics();
     this.burst = burstEmitter(this, 220, 600);
-    const style = { fontFamily: PIXEL_FONT, fontSize: '16px', color: '#e8e8ff' };
+    const style = HUD_STYLE;
     this.add.text(GRID_X, 22, 'SCORE', { ...style, fontSize: '10px', color: '#8a8ab8' });
     this.scoreText = this.add.text(GRID_X, 38, '0', style);
     this.levelText = this.add.text(WIDTH / 2, 38, '', { ...style, fontSize: '12px' }).setOrigin(0.5, 0);

@@ -4,7 +4,7 @@ import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun, SCENE } from '../../../shared/scenes';
 import { tone } from '../../../shared/sfx';
-import { drawGrid, NEON, PIXEL_FONT } from '../../../shared/ui';
+import { drawGrid, hudText, NEON } from '../../../shared/ui';
 
 /**
  * Starter game: move the glowing square and collect dots before the timer runs out. Replace with
@@ -46,7 +46,7 @@ export class GameScene extends Phaser.Scene {
 
     this.controls = new ArcadeControls(this);
     this.pause = new PauseController(this, this.controls, { canPause: () => !this.over });
-    this.hud = this.add.text(WIDTH / 2, 24, '', { fontFamily: PIXEL_FONT, fontSize: '16px', color: '#e8e8ff' }).setOrigin(0.5);
+    this.hud = hudText(this, WIDTH / 2, 24, '').setOrigin(0.5);
 
     this.physics.add.overlap(this.player, this.dot, () => {
       this.score += DOT_POINTS;

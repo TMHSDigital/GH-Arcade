@@ -26,7 +26,7 @@ import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
-import { burstEmitter, hex, NEON, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
+import { burstEmitter, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { unlock } = trophiesFor<typeof TROPHIES>();
@@ -109,7 +109,7 @@ export class GameScene extends Phaser.Scene {
       ? [make(-1, NEON.cyan, false, 1), make(1, NEON.pink, false, 2)]
       : [make(-1, NEON.cyan, false), make(1, NEON.pink, true)];
 
-    const style = { fontFamily: PIXEL_FONT, fontSize: '40px', color: '#e8e8ff' };
+    const style = { ...HUD_STYLE, fontSize: '40px' };
     this.scoreTexts = this.paddles.map((p) =>
       this.add
         .text(WIDTH / 2 + p.side * 90, TOP / 2 + 4, '0', { ...style, color: hex(p.color) })
@@ -119,7 +119,7 @@ export class GameScene extends Phaser.Scene {
     const labels = this.versus ? ['P1', 'P2'] : ['YOU', 'CPU'];
     this.paddles.forEach((p, i) =>
       this.add
-        .text(WIDTH / 2 + p.side * 190, TOP / 2 + 4, labels[i], { fontFamily: PIXEL_FONT, fontSize: '11px', color: '#8a8ab8' })
+        .text(WIDTH / 2 + p.side * 190, TOP / 2 + 4, labels[i], { ...HUD_LABEL_STYLE, fontSize: '11px' })
         .setOrigin(0.5),
     );
     this.rallyText = this.add.text(WIDTH / 2, HEIGHT - 34, '', { fontFamily: PIXEL_FONT, fontSize: '11px', color: hex(NEON.yellow) }).setOrigin(0.5);

@@ -12,6 +12,16 @@ export const NEON: Readonly<Record<AccentName | 'white' | 'muted' | 'bg', number
   bg: 0x05050d,
 };
 
+/** The one text style for in-game HUD values (score, lives, level). Spread it to vary size or color. */
+export const HUD_STYLE = { fontFamily: PIXEL_FONT, fontSize: '16px', color: '#e8e8ff' } as const;
+/** Small muted captions above HUD values. */
+export const HUD_LABEL_STYLE = { fontFamily: PIXEL_FONT, fontSize: '10px', color: '#8a8ab8' } as const;
+
+/** Adds HUD text in the shared style, optionally at another size. */
+export function hudText(scene: Phaser.Scene, x: number, y: number, text: string, size = 16): Phaser.GameObjects.Text {
+  return scene.add.text(x, y, text, { ...HUD_STYLE, fontSize: `${size}px` });
+}
+
 /** True when the player asked for reduced motion: skip decorative animation. */
 export function reducedMotion(): boolean {
   return getSettings().reducedMotion;
