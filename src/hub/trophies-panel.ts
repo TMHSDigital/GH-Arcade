@@ -21,7 +21,6 @@ export function initTrophiesPanel(): void {
     list.innerHTML = groups
       .map((game) => {
         const trophies = TROPHIES.filter((t) => t.game === game);
-        if (!trophies.length) return '';
         const stats = getStats(game);
         const statLine =
           game === 'arcade'
@@ -51,7 +50,9 @@ export function initTrophiesPanel(): void {
             </li>`;
           })
           .join('');
-        return `<section><h3>${escapeHtml(game === 'arcade' ? 'Arcade' : gameTitles[game])} <small>${statLine}</small></h3><ul class="trophy-grid">${tiles}</ul></section>`;
+        // A game with no trophies yet (e.g. freshly scaffolded) still gets its stats line.
+        const grid = trophies.length ? `<ul class="trophy-grid">${tiles}</ul>` : '';
+        return `<section><h3>${escapeHtml(game === 'arcade' ? 'Arcade' : gameTitles[game])} <small>${statLine}</small></h3>${grid}</section>`;
       })
       .join('');
   };

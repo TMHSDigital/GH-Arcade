@@ -32,13 +32,16 @@ import {
   WIDTH,
 } from '../config';
 import { ALIEN_POINTS, type AlienKind, makeSprites, ROW_KINDS } from '../sprites';
-import { unlock } from '../../../shared/achievements';
+import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice } from '../../../shared/touch';
 import { burstEmitter, floatText, NEON, neonText, PIXEL_FONT, showBanner } from '../../../shared/ui';
+import type { TROPHIES } from '../trophies';
+
+const { unlock } = trophiesFor<typeof TROPHIES>();
 
 interface Alien {
   img: Phaser.GameObjects.Image;

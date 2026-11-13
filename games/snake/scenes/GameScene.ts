@@ -19,13 +19,16 @@ import {
   VERSUS_STEP_MS,
   WIDTH,
 } from '../config';
-import { getHighScore, unlock } from '../../../shared/achievements';
+import { getHighScore, trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, onSwipe } from '../../../shared/touch';
 import { burstEmitter, fadeToScene, floatText, hex, NEON, neonText, PIXEL_FONT, showBanner } from '../../../shared/ui';
+import type { TROPHIES } from '../trophies';
+
+const { unlock } = trophiesFor<typeof TROPHIES>();
 
 interface Cell {
   x: number;

@@ -37,13 +37,16 @@ import {
   WIDTH,
 } from '../config';
 import { BONUS_CELL, DIRS, find, HOUSE_EXIT, HOUSE_Y, MAZE, OPPOSITE, open, tile, TUNNEL_ROW, VEC, wrapX, type Dir } from '../maze';
-import { unlock } from '../../../shared/achievements';
+import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { onSwipe } from '../../../shared/touch';
 import { burstEmitter, floatText, NEON, PIXEL_FONT, showBanner } from '../../../shared/ui';
+import type { TROPHIES } from '../trophies';
+
+const { unlock } = trophiesFor<typeof TROPHIES>();
 
 /** Anything that walks the grid. Positions are in cells; whole numbers are cell centers. */
 interface Mover {

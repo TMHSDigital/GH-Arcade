@@ -43,12 +43,15 @@ import {
   type Point,
   type Segment,
 } from '../table';
-import { unlock } from '../../../shared/achievements';
+import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, floatText, NEON, PIXEL_FONT, showBanner } from '../../../shared/ui';
+import type { TROPHIES } from '../trophies';
+
+const { unlock } = trophiesFor<typeof TROPHIES>();
 
 interface Flipper {
   pivot: Point;

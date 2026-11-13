@@ -38,13 +38,16 @@ import {
   tryRotate,
   VISIBLE_ROWS,
 } from '../logic';
-import { addCounter, unlock } from '../../../shared/achievements';
+import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, VirtualButton } from '../../../shared/touch';
 import { burstEmitter, NEON, neonText, PIXEL_FONT, showBanner } from '../../../shared/ui';
+import type { TROPHIES } from '../trophies';
+
+const { addCounter, unlock } = trophiesFor<typeof TROPHIES>();
 
 type Extra = 'rotCW' | 'rotCCW' | 'hold' | 'drop';
 

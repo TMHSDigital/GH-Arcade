@@ -21,12 +21,15 @@ import {
   TOP,
   WIDTH,
 } from '../config';
-import { unlock } from '../../../shared/achievements';
+import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, hex, NEON, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
+import type { TROPHIES } from '../trophies';
+
+const { unlock } = trophiesFor<typeof TROPHIES>();
 
 interface Paddle {
   side: -1 | 1;

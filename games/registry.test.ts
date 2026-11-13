@@ -5,9 +5,9 @@ import registry from './registry.json';
 import { TROPHIES } from '../shared/achievements';
 
 /**
- * The list of games has three sources: Vite builds a page for every games/<slug>/index.html, the
- * hub lists registry.json, and the "play every game" trophy derives its set from the trophy list.
- * These checks keep the three in step.
+ * The list of games has two sources: Vite builds a page for every games/<slug>/index.html and the
+ * hub (and the "play every game" trophy) lists registry.json. Trophies are declared per game in
+ * games/<slug>/trophies.ts. These checks keep them in step.
  */
 
 const gamesDir = import.meta.dirname;
@@ -69,8 +69,14 @@ describe('trophies', () => {
     }
   });
 
-  it('exist for every game, so each one counts toward "play every game"', () => {
-    for (const slug of slugs) expect(TROPHIES.some((t) => t.game === slug), slug).toBe(true);
+  it('use their game\'s slug as the id prefix', () => {
+    for (const t of TROPHIES) expect(t.id.startsWith(`${t.game}.`), t.id).toBe(true);
+  });
+
+  it('are collected from every game that declares some', () => {
+    const declaring = folders.filter((slug) => existsSync(resolve(gamesDir, slug, 'trophies.ts')));
+    for (const slug of declaring) expect(TROPHIES.some((t) => t.game === slug), slug).toBe(true);
+    expect(TROPHIES.some((t) => t.game.startsWith('_'))).toBe(false);
   });
 
   it('set counter and target together or not at all', () => {

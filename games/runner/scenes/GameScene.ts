@@ -24,12 +24,15 @@ import {
   WIDTH,
 } from '../config';
 import { MAX_PATTERN_LEVEL, PATTERNS, type Piece } from '../patterns';
-import { addCounter, getHighScore, unlock } from '../../../shared/achievements';
+import { getHighScore, trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, floatText, hex, NEON, neonText, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
+import type { TROPHIES } from '../trophies';
+
+const { addCounter, unlock } = trophiesFor<typeof TROPHIES>();
 
 interface Block {
   x: number;

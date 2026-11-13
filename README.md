@@ -277,7 +277,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`phaser-config.ts`](shared/phaser-config.ts) | `startArcadeGame()`: fit-to-screen Phaser setup with gamepads enabled, once the pixel font has loaded. |
 | [`storage.ts`](shared/storage.ts) | `loadJSON()` and `saveJSON()`, backed by `localStorage` that never throws. |
 | [`sfx.ts`](shared/sfx.ts) | `tone()` and `noise()`: retro sound effects synthesized with Web Audio. |
-| [`achievements.ts`](shared/achievements.ts) | Trophies, stats and best scores: `unlock()` when something happens, `addCounter()` for running totals, `getHighScore()` for a game's best. Unlocks pop up as a [toast](shared/toast.ts). |
+| [`achievements.ts`](shared/achievements.ts) | Trophies, stats and best scores. Each game lists its trophies in its own `trophies.ts` and gets type-checked `unlock()` and `addCounter()` helpers from `trophiesFor()`; `getHighScore()` returns a game's best. Unlocks pop up as a [toast](shared/toast.ts). |
 | [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key bindings) that every game reads on start. |
 | [`backup.ts`](shared/backup.ts) | Export, import and reset of everything saved on the device, used by the hub's settings dialog. |
 | [`pwa.ts`](shared/pwa.ts) | Registers the service worker that makes every page work offline, and announces when the arcade is ready offline or has updated. |

@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import registry from '../games/registry.json';
+import type { TROPHIES as STACK_TROPHIES } from '../games/stack/trophies';
 import { freshModules, installMemoryStorage, installWindow } from './test-utils';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -80,7 +82,7 @@ describe('recordPlay', () => {
 
   it('unlocks "play every game" only after every game has a play', async () => {
     const { a } = await fresh();
-    const games = [...new Set(a.TROPHIES.filter((t) => t.game !== 'arcade').map((t) => t.game))];
+    const games = (registry as { slug: string }[]).map((g) => g.slug);
     games.slice(0, -1).forEach((g) => a.recordPlay(g, 1));
     expect(a.isUnlocked('arcade.all')).toBe(false);
     a.recordPlay(games[games.length - 1], 1);
@@ -119,7 +121,7 @@ describe('best scores', () => {
   });
 
   it('a best score without a play does not count toward "play every game"', async () => {
-    const games = [...new Set((await fresh()).a.TROPHIES.filter((t) => t.game !== 'arcade').map((t) => t.game))];
+    const games = (registry as { slug: string }[]).map((g) => g.slug);
     const legacy = Object.fromEntries(games.map((g) => [`gh-arcade:${g}:highscore`, '5']));
     const { a } = await fresh(legacy);
     a.recordPlay(games[0], 1);
@@ -134,6 +136,21 @@ describe('best scores', () => {
     expect(a.getHighScore('snake')).toBe(0);
     expect(a.getStats('snake').plays).toBe(1);
     expect(a.isUnlocked('snake.bonus')).toBe(true);
+  });
+});
+
+describe('trophiesFor', () => {
+  it('gives a game unlock and addCounter helpers limited to its own ids and counters', async () => {
+    const { a } = await fresh();
+    const { unlock, addCounter } = a.trophiesFor<typeof STACK_TROPHIES>();
+    expect(unlock('stack.quad')).toBe(true);
+    expect(addCounter('stack.lines', 3)).toBe(3);
+    // The next two lines are type errors, which is the point: a typo cannot compile. If the typing is
+    // ever loosened, tsc reports these directives as unused and the build fails.
+    // @ts-expect-error not one of Stack's trophy ids
+    expect(unlock('stack.qaud')).toBe(false);
+    // @ts-expect-error not one of Stack's counters
+    addCounter('stack.line');
   });
 });
 
