@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { readdirSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { gamePages } from './build/game-pages';
+import registry from './games/registry.json';
 
 const root = import.meta.dirname;
 const BASE = '/GH-Arcade/';
@@ -35,6 +37,8 @@ export default defineConfig({
     },
   },
   plugins: [
+    // Shared head tags, title, back link and loader for every game page.
+    gamePages(registry),
     // Installable app with offline play: the service worker precaches the hub, every game and the shared
     // Phaser chunk, so once the arcade has loaded online it works with no connection at all.
     VitePWA({

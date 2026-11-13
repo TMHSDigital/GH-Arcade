@@ -323,7 +323,7 @@ GH-Arcade/
 └── .github/workflows/      # Build and deploy to GitHub Pages
 ```
 
-Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `config.ts` (tuning constants) and `scenes/` (menu and game).
+Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `config.ts` (tuning constants), `trophies.ts` and `scenes/` (menu and game). The `index.html` files hold only the canvas container and the script tag; [`build/game-pages.ts`](build/game-pages.ts) adds the shared head tags, the title from the registry, the back link and the loader to every game page.
 
 </details>
 

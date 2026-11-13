@@ -77,8 +77,7 @@ describe('scaffold', () => {
     const title = 'Cash $$ `Grab` ${x} <b> & "q" it\'s';
     scaffold({ root, slug: 'cash', title });
     const files = gameFiles('cash');
-    const html = files.find((f) => f.name === 'index.html').text;
-    expect(html).toContain('Cash $$ `Grab` ${x} &#60;b&#62; &#38; &#34;q&#34; it&#39;s');
+    // The page title is not in index.html any more: the build takes it from the registry and escapes it.
     const menu = files.find((f) => f.name === 'MenuScene.ts').text;
     expect(menu).toContain(`'Cash $$ \`Grab\` \${x} <b> & \\"q\\" it\\'s'`);
     expect(readRegistry()[1].title).toBe(title);
