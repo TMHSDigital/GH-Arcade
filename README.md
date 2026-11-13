@@ -174,7 +174,7 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | **Settings and accessibility** | Volume, reduced motion (no shake or flashes), a colorblind-friendly palette, and rebindable keys. |
 | **Zero-asset audio** | Sound effects are synthesized live with the Web Audio API, so there are no audio files to download. |
 | **Fast loads** | Each game is its own page and bundle. Phaser is split into one shared file that your browser caches across games. |
-| **One command per game** | `npm run new-game` scaffolds a working game and adds it to the hub. No config to edit. |
+| **One command per game** | `npm run new-game` scaffolds a working game and adds it to the hub. No build config to edit. |
 
 <a id="quick-start"></a>
 
@@ -206,7 +206,7 @@ Then open **http://localhost:5173/GH-Arcade/**.
 
 ## Make your own game
 
-Adding a game takes three steps, and no config files.
+Adding a game takes three steps, and no build config to edit.
 
 ### 1. Scaffold it
 
@@ -218,7 +218,7 @@ This copies `games/_template/` to `games/space-dodge/`. The template is a small,
 
 ### 2. Describe it
 
-Edit the new entry in [`games/registry.json`](games/registry.json). This is what the hub card shows.
+Edit the new entry in [`games/registry.json`](games/registry.json). This is what the hub card shows. The scaffolder fills it with a placeholder description and a `new` tag, which appear on the live hub until you replace them.
 
 ```jsonc
 {

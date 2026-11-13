@@ -23,7 +23,7 @@ export default defineConfig({
   base: BASE,
   build: {
     target: 'es2020',
-    chunkSizeWarningLimit: 1600, // Phaser alone is ~1.2 MB minified; it is cached across games
+    chunkSizeWarningLimit: 1600, // Phaser alone is ~1.5 MB minified; it is cached across games
     rollupOptions: {
       input: {
         hub: resolve(root, 'index.html'),
