@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { clearRecentUnlocks } from './achievements';
 import type { ArcadeControls } from './controls';
-import { OptionMenu } from './menu';
+import { type MenuItem, OptionMenu } from './menu';
+import { SCENE } from './scenes';
 import { keyLabel } from './settings';
 import { isMuted, setMuted } from './sfx';
 import { NEON, neonText, PIXEL_FONT } from './ui';
@@ -50,6 +51,14 @@ export class PauseController {
       clearRecentUnlocks();
       fn();
     };
+    const items: MenuItem[] = [
+      { label: 'RESUME', onSelect: () => this.toggle() },
+      { label: 'RESTART', onSelect: () => leave(() => scene.scene.restart(restartData)) },
+      { label: 'MAIN MENU', onSelect: () => leave(() => scene.scene.start(SCENE.menu)) },
+      { label: 'ARCADE', onSelect: () => leave(() => window.location.assign('../../')) },
+    ];
+    // A game without a menu scene has nowhere for MAIN MENU to go; starting a missing scene leaves a blank canvas.
+    const hasMenu = scene.scene.manager.keys[SCENE.menu] !== undefined;
     this.menu = new OptionMenu(scene, all[0], {
       x: width / 2,
       y: height / 2 + 20,
@@ -58,12 +67,7 @@ export class PauseController {
       size: 16,
       depth: 1001,
       enabled: false,
-      items: [
-        { label: 'RESUME', onSelect: () => this.toggle() },
-        { label: 'RESTART', onSelect: () => leave(() => scene.scene.restart(restartData)) },
-        { label: 'MAIN MENU', onSelect: () => leave(() => scene.scene.start('Menu')) },
-        { label: 'ARCADE', onSelect: () => leave(() => window.location.assign('../../')) },
-      ],
+      items: hasMenu ? items : items.filter((item) => item.label !== 'MAIN MENU'),
     });
     const hint = neonText(scene, width / 2, height / 2 + 150, `${keyLabel('pause')} / START TO RESUME`, 10, NEON.white).setAlpha(0.6);
     this.overlay = scene.add

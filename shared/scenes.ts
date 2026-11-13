@@ -8,6 +8,13 @@ import { keyLabel } from './settings';
 import { isTouchDevice } from './touch';
 import { blinkingPrompt, fadeToScene, NEON, neonText, onStart } from './ui';
 
+/**
+ * Scene keys the shared modules rely on. Every game registers a menu scene as 'Menu', its gameplay
+ * scene as 'Game' and the shared ArcadeGameOverScene ('GameOver'); the pause menu, the menu's start
+ * prompt and the game-over options all navigate by these keys.
+ */
+export const SCENE = { menu: 'Menu', game: 'Game', gameOver: 'GameOver' } as const;
+
 export interface MenuOptions {
   gameId: string;
   /** Two title lines, drawn large in two neon colors. */
@@ -51,7 +58,7 @@ export function buildMenu(scene: Phaser.Scene, opts: MenuOptions): void {
     })
     .setOrigin(0.5);
 
-  const startScene = opts.startScene ?? 'Game';
+  const startScene = opts.startScene ?? SCENE.game;
   if (opts.modes) {
     let started = false;
     new OptionMenu(scene, new ArcadeControls(scene), {
@@ -126,8 +133,8 @@ export function showMatchResult(scene: Phaser.Scene, controls: ArcadeControls<st
       spacing: 300,
       depth: 41,
       items: [
-        { label: 'REMATCH', onSelect: () => go('Game', opts.rematchData) },
-        { label: 'MENU', onSelect: () => go('Menu') },
+        { label: 'REMATCH', onSelect: () => go(SCENE.game, opts.rematchData) },
+        { label: 'MENU', onSelect: () => go(SCENE.menu) },
       ],
     });
   });
@@ -144,11 +151,11 @@ export interface GameOverData {
 
 /**
  * Shared game-over screen: final score, high-score check, any trophies earned this run, and
- * Play again / Menu options. Register it as 'GameOver'.
+ * Play again / Menu options. Its key is SCENE.gameOver.
  */
 export class ArcadeGameOverScene extends Phaser.Scene {
   constructor() {
-    super('GameOver');
+    super(SCENE.gameOver);
   }
 
   create(data: GameOverData): void {
@@ -183,8 +190,8 @@ export class ArcadeGameOverScene extends Phaser.Scene {
         spacing: 300,
         size: 18,
         items: [
-          { label: 'PLAY AGAIN', onSelect: () => go(data.restartScene ?? 'Game', data.restartData ?? {}) },
-          { label: 'MENU', onSelect: () => go('Menu') },
+          { label: 'PLAY AGAIN', onSelect: () => go(data.restartScene ?? SCENE.game, data.restartData ?? {}) },
+          { label: 'MENU', onSelect: () => go(SCENE.menu) },
         ],
       });
     });

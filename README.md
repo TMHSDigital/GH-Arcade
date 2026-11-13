@@ -214,7 +214,7 @@ Adding a game takes three steps, and no config files.
 npm run new-game space-dodge "Space Dodge"
 ```
 
-This copies `games/_template/` to `games/space-dodge/`. The template is a small, playable Phaser game with keyboard, touch and gamepad controls, pause and high scores already wired up. The command also adds a card for it to the hub.
+This copies `games/_template/` to `games/space-dodge/`. The template is a small, playable Phaser game in the same shape as the shipped games: `config.ts`, a menu scene, a game scene and the shared game-over screen, with keyboard, touch and gamepad controls, pause, high scores and play counts already wired up. The command also adds a card for it to the hub and prints what is left to do by hand (card text, thumbnail, trophies).
 
 ### 2. Describe it
 
@@ -234,7 +234,7 @@ Edit the new entry in [`games/registry.json`](games/registry.json). This is what
 
 ### 3. Build it
 
-Run `npm run dev`, open `/GH-Arcade/games/space-dodge/` and start editing `main.ts`. Vite picks up every `games/*/index.html` automatically, and the service worker precaches it for offline play. Push to `main` and it's live.
+Run `npm run dev`, open `/GH-Arcade/games/space-dodge/` and start editing `scenes/GameScene.ts`. Vite picks up every `games/*/index.html` automatically, and the service worker precaches it for offline play. Push to `main` and it's live.
 
 ### The shared toolkit
 
@@ -260,6 +260,8 @@ class GameScene extends Phaser.Scene {
 
 startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 ```
+
+**Scene keys.** The shared modules find scenes by key, exported as `SCENE` from [`shared/scenes.ts`](shared/scenes.ts): the menu scene is `'Menu'`, the gameplay scene is `'Game'` and the shared game-over scene is `'GameOver'`. The pause menu's MAIN MENU and RESTART, the menu's start prompt and the game-over options all navigate by these keys, so keep them when you rename or add scenes. End a run with `this.scene.start(SCENE.gameOver, { gameId, score })`; that screen saves the high score and records the play.
 
 | Module | What it provides |
 | --- | --- |

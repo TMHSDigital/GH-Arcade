@@ -42,3 +42,13 @@ writeFileSync(registryPath, JSON.stringify(registry, null, 2) + '\n');
 
 console.log(`Created games/${slug} and added it to games/registry.json.`);
 console.log(`Run "npm run dev" and open /GH-Arcade/games/${slug}/`);
+console.log(
+  [
+    '',
+    'Still to do by hand:',
+    '  - games/registry.json: write the description, tags, accent color and controls hint for the hub card',
+    `  - public/thumbs/${slug}.jpg: add a 16:9 screenshot and set "thumbnail" in the registry entry (optional)`,
+    `  - shared/achievements.ts: add trophies with game: '${slug}' so the game shows up in the Trophies panel`,
+    '  - Keep the scene keys Menu, Game and GameOver (SCENE in shared/scenes.ts); pause and game over rely on them',
+  ].join('\n'),
+);
