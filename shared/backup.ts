@@ -8,6 +8,8 @@ import { isRecord, STORAGE_PREFIX as PREFIX } from './storage';
 const APP = 'gh-arcade';
 const BACKUP_VERSION = 1;
 const HIGH_SCORE = /^[a-z0-9]+(-[a-z0-9]+)*:highscore$/;
+/** A daily challenge best, e.g. "stack:daily:2026-11-12" (shared/rng.ts). */
+const DAILY_SCORE = /^[a-z0-9]+(-[a-z0-9]+)*:daily:\d{4}-\d{2}-\d{2}$/;
 
 export interface Backup {
   app: typeof APP;
@@ -48,7 +50,7 @@ export function exportBackup(): Backup {
 function problemWith(key: string, value: unknown): string | null {
   // Best scores were once saved per game under "<slug>:highscore". Backups from then still restore;
   // the stats module folds those keys into the trophies save on the next load.
-  if (HIGH_SCORE.test(key)) {
+  if (HIGH_SCORE.test(key) || DAILY_SCORE.test(key)) {
     return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? null : `"${key}" is not a score`;
   }
   // Settings and trophies are checked field by field when they are loaded; here they only need the right shape.

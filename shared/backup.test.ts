@@ -10,6 +10,7 @@ const saved = {
   'gh-arcade:snake:highscore': '50',
   'gh-arcade:space-dodge:highscore': '7',
   'gh-arcade:hub:sort': '"recent"',
+  'gh-arcade:stack:daily:2026-11-12': '1200',
   'unrelated:key': '"left alone"',
 };
 
@@ -19,7 +20,7 @@ describe('exportBackup', () => {
     const backup = exportBackup();
     expect(backup.app).toBe('gh-arcade');
     expect(backup.version).toBe(1);
-    expect(Object.keys(backup.data).sort()).toEqual(['hub:sort', 'settings', 'snake:highscore', 'space-dodge:highscore', 'trophies']);
+    expect(Object.keys(backup.data).sort()).toEqual(['hub:sort', 'settings', 'snake:highscore', 'space-dodge:highscore', 'stack:daily:2026-11-12', 'trophies']);
     expect(backup.data['snake:highscore']).toBe(50);
     expect(Number.isNaN(Date.parse(backup.exportedAt))).toBe(false);
   });
@@ -36,7 +37,8 @@ describe('importBackup', () => {
 
     const clean = installMemoryStorage();
     installWindow();
-    expect(importBackup(backup)).toEqual({ ok: true, keys: 5 });
+    expect(importBackup(backup)).toEqual({ ok: true, keys: 6 });
+    expect(clean.data.get('gh-arcade:stack:daily:2026-11-12')).toBe('1200');
     expect(clean.data.get('gh-arcade:snake:highscore')).toBe('50');
 
     const { settings, achievements } = await freshModules();
@@ -65,6 +67,7 @@ describe('importBackup', () => {
     ['a negative score', { app: 'gh-arcade', version: 1, data: { 'snake:highscore': -1 } }],
     ['settings that are not an object', { app: 'gh-arcade', version: 1, data: { settings: [1] } }],
     ['an unknown key', { app: 'gh-arcade', version: 1, data: { 'snake:highscore': 5, surprise: true } }],
+    ['a malformed daily key', { app: 'gh-arcade', version: 1, data: { 'stack:daily:tomorrow': 5 } }],
   ])('rejects %s without changing stored data', (_name, file) => {
     const storage = installMemoryStorage(saved);
     const before = new Map(storage.data);

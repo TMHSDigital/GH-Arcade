@@ -280,6 +280,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`achievements.ts`](shared/achievements.ts) | Trophies, stats and best scores. Each game lists its trophies in its own `trophies.ts` and gets type-checked `unlock()` and `addCounter()` helpers from `trophiesFor()`; `getHighScore()` returns a game's best. Unlocks pop up as a [toast](shared/toast.ts). |
 | [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key bindings) that every game reads on start. |
 | [`backup.ts`](shared/backup.ts) | Export, import and reset of everything saved on the device, used by the hub's settings dialog. |
+| [`rng.ts`](shared/rng.ts) | `createRng(seed)`: repeatable random numbers with `between`, `pick` and `shuffle`, plus `dailySeed()` and per-day best scores for daily challenges. |
 | [`pwa.ts`](shared/pwa.ts) | Registers the service worker that makes every page work offline, and announces when the arcade is ready offline or has updated. |
 
 > [!NOTE]
@@ -362,7 +363,8 @@ Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `co
 
 **Up next**
 
-- [ ] Daily challenge with a shared seed
+- [x] Daily challenge with a shared seed (Neon Stack)
+- [ ] Daily challenges for more games
 - [ ] Breakout level editor
 - [ ] More two-player modes
 - [ ] More pinball tables and maze layouts

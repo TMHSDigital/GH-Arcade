@@ -40,6 +40,11 @@ export class MenuScene extends Phaser.Scene {
       title: ['NEON', 'STACK'],
       colors: [NEON.purple, NEON.yellow],
       help: 'Move: ← → / drag    Rotate: ↑ X Z / tap    Hard drop: Space / flick up\nHold: C / Shift    Gamepad: d-pad, A B rotate, Y hold, up drops    Pause: P / Start',
+      // Daily: the same piece order for everyone on a given (UTC) date, with its own best score.
+      modes: [
+        { label: 'PLAY', data: {} },
+        { label: 'DAILY', data: { daily: true } },
+      ],
     });
   }
 }

@@ -7,6 +7,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 ### Added
 
 - Settings in the pause menu: volume, sound, reduced motion and colors can be changed without leaving a game, by keyboard, gamepad or touch.
+- Neon Stack has a Daily mode: everyone gets the same piece order on a given UTC date, with a best score per day.
 - Unit tests (Vitest), ESLint and a pull request check.
 - A Content-Security-Policy on every built page: the arcade loads only its own files and Google Fonts.
 - An ARCADE option on the game-over and match result screens.
