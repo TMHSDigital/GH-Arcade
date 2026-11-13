@@ -34,3 +34,7 @@ export const ACCELERATION = 9;
 /** Pixels of world travelled per metre shown on the HUD. */
 export const PX_PER_METRE = 12;
 export const COIN_POINTS = 25;
+/** Coins collected within this long of each other share one "+N" popup. */
+export const COIN_STREAK_MS = 140;
+/** How often the distance and coin readouts are refreshed. */
+export const HUD_REFRESH_MS = 100;

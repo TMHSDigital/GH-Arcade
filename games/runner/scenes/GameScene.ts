@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import {
   ACCELERATION,
   COIN_POINTS,
+  COIN_STREAK_MS,
   COYOTE_MS,
   DIVE_VELOCITY,
   DOUBLE_JUMP_VELOCITY,
@@ -9,6 +10,7 @@ import {
   GRAVITY,
   GROUND_Y,
   HEIGHT,
+  HUD_REFRESH_MS,
   JUMP_BUFFER_MS,
   JUMP_CUT,
   JUMP_VELOCITY,
@@ -73,6 +75,9 @@ export class GameScene extends Phaser.Scene {
   private gaps: Gap[] = [];
   private coins: Coin[] = [];
   private coinsTaken = 0;
+  /** Points from coins picked up in quick succession, shown as one "+N" popup when the streak ends. */
+  private coinStreak = { points: 0, x: 0, y: 0, at: 0 };
+  private hudAt = -Infinity;
 
   private y = GROUND_Y;
   private vy = 0;
@@ -112,6 +117,8 @@ export class GameScene extends Phaser.Scene {
     this.gaps = [];
     this.coins = [];
     this.coinsTaken = 0;
+    this.coinStreak = { points: 0, x: 0, y: 0, at: 0 };
+    this.hudAt = -Infinity;
     this.y = GROUND_Y;
     this.vy = 0;
     this.grounded = true;
@@ -379,9 +386,14 @@ export class GameScene extends Phaser.Scene {
         const sx = c.x - this.distance + PLAYER_X;
         this.burst.setParticleTint(NEON.yellow);
         this.burst.explode(6, sx, c.y);
-        floatText(this, sx, c.y - 12, `+${COIN_POINTS}`, NEON.yellow, 10);
+        this.coinStreak = { points: this.coinStreak.points + COIN_POINTS, x: sx, y: c.y - 12, at: this.elapsed };
         tone({ freq: 1320, toFreq: 1760, duration: 0.06, type: 'square', volume: 0.035 });
       }
+    }
+    // One popup for a whole row of coins instead of a new Text object per coin.
+    if (this.coinStreak.points > 0 && this.elapsed - this.coinStreak.at > COIN_STREAK_MS) {
+      floatText(this, this.coinStreak.x, this.coinStreak.y, `+${this.coinStreak.points}`, NEON.yellow, 10);
+      this.coinStreak.points = 0;
     }
   }
 
@@ -541,6 +553,10 @@ export class GameScene extends Phaser.Scene {
     const metres = Math.floor(this.distance / PX_PER_METRE);
     if (metres >= 1000) unlock('runner.1k');
     if (metres >= 3000) unlock('runner.3k');
+    // Changing a Text redraws and re-uploads its canvas, and the distance changes most frames at
+    // speed, so the HUD refreshes a few times a second instead.
+    if (this.elapsed - this.hudAt < HUD_REFRESH_MS) return;
+    this.hudAt = this.elapsed;
     this.distText.setText(`${metres}m`);
     this.coinText.setText(`COINS ${this.coinsTaken}`);
   }

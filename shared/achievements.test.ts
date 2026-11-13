@@ -59,6 +59,43 @@ describe('addCounter', () => {
   });
 });
 
+describe('counter persistence', () => {
+  it('does not write to storage on every increment', async () => {
+    const { a, storage } = await fresh();
+    for (let i = 0; i < 6; i++) a.addCounter('runner.coins');
+    expect(storage.data.has('gh-arcade:trophies')).toBe(false);
+    expect(a.getCounter('runner.coins')).toBe(6);
+  });
+
+  it('writes the counters when the run is recorded', async () => {
+    const { a, storage } = await fresh();
+    a.addCounter('runner.coins', 6);
+    a.recordPlay('runner', 150);
+    expect(JSON.parse(storage.data.get('gh-arcade:trophies')!).counters['runner.coins']).toBe(6);
+  });
+
+  it('writes the counters when one of them unlocks a trophy', async () => {
+    const { a, storage } = await fresh();
+    a.addCounter('stack.lines', 100);
+    expect(JSON.parse(storage.data.get('gh-arcade:trophies')!).counters['stack.lines']).toBe(100);
+  });
+
+  it('writes unsaved counters when the page is hidden, so closing the tab mid-run keeps them', async () => {
+    const storage = installMemoryStorage();
+    const handlers: Record<string, () => void> = {};
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: false }), addEventListener: (type: string, fn: () => void) => (handlers[type] = fn) });
+    vi.stubGlobal('document', { visibilityState: 'hidden', addEventListener: (type: string, fn: () => void) => (handlers[type] = fn) });
+    const { achievements: a } = await freshModules();
+    a.addCounter('runner.coins', 4);
+    expect(storage.data.has('gh-arcade:trophies')).toBe(false);
+    handlers.visibilitychange();
+    expect(JSON.parse(storage.data.get('gh-arcade:trophies')!).counters['runner.coins']).toBe(4);
+    a.addCounter('runner.coins', 1);
+    handlers.pagehide();
+    expect(JSON.parse(storage.data.get('gh-arcade:trophies')!).counters['runner.coins']).toBe(5);
+  });
+});
+
 describe('recordPlay', () => {
   it('accumulates plays, best and total score', async () => {
     const { a } = await fresh();

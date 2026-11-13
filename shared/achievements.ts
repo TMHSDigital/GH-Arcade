@@ -113,15 +113,32 @@ function read(): Save {
 }
 
 let save: Save = read();
+/** True while counters have changed in memory but not been written yet (see addCounter). */
+let dirty = false;
 // Another tab unlocked something, recorded a play or reset trophies: pick that up before the next save.
 onExternalChange(KEY, () => {
+  const unsaved = dirty ? save.counters : {};
   save = read();
+  // Counter progress from the run in this tab has not been written yet; do not lose it.
+  for (const [name, total] of Object.entries(unsaved)) save.counters[name] = Math.max(save.counters[name] ?? 0, total);
 });
+// Counters are written when a run ends or a trophy unlocks. If the player closes or leaves the tab
+// mid-run, this is the last chance to save them.
+if (typeof document !== 'undefined') {
+  const flush = () => {
+    if (dirty) persist();
+  };
+  window.addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flush();
+  });
+}
 const listeners = new Set<(t: Trophy) => void>();
 /** Trophies unlocked since the last drainRecentUnlocks(), e.g. to list on the game-over screen. */
 let recent: Trophy[] = [];
 
 function persist(): void {
+  dirty = false;
   saveJSON(KEY, { version: SAVE_VERSION, ...save });
 }
 
@@ -160,11 +177,15 @@ export function trophiesFor<T extends readonly TrophyDef[]>(): {
   return { unlock, addCounter };
 }
 
-/** Adds to a running total and unlocks any trophy whose target it reaches. Returns the new total. */
+/**
+ * Adds to a running total and unlocks any trophy whose target it reaches. Returns the new total.
+ * Games call this in the middle of play (every coin, every rock), so it only updates memory: the
+ * total is written with the next unlock, when the run is recorded, or when the page is hidden.
+ */
 export function addCounter(counter: string, amount = 1): number {
   const total = (save.counters[counter] ?? 0) + amount;
   save.counters[counter] = total;
-  persist();
+  dirty = true;
   for (const t of TROPHIES) if (t.counter === counter && t.target !== undefined && total >= t.target) unlock(t.id);
   return total;
 }
