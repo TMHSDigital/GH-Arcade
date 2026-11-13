@@ -4,6 +4,11 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 ## Unreleased
 
+### Added
+
+- Settings in the pause menu: volume, sound, reduced motion and colors can be changed without leaving a game, by keyboard, gamepad or touch.
+- Unit tests (Vitest), ESLint and a pull request check.
+
 ## 2026-11-12
 
 ### Fixed

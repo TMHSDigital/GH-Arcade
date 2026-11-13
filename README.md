@@ -167,7 +167,7 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | **Installable, works offline** | Install GH Arcade as an app from the hub. After one visit, every game plays with no connection. |
 | **Keyboard, touch or gamepad** | Every game supports all three. Plug in a controller and it just works, including pause on <kbd>Start</kbd>. |
 | **Two-player** | Neon Snake and Neon Pong have versus modes and Star Siege has co-op, on one keyboard or two gamepads. |
-| **Pause menu and game over** | Every game pauses into a menu: resume, restart, main menu or back to the arcade. Game over shows the trophies you just earned, with Play again and Menu options. |
+| **Pause menu and game over** | Every game pauses into a menu: resume, restart, settings (volume, sound, motion and colors), main menu or back to the arcade. Game over shows the trophies you just earned, with Play again and Menu options. |
 | **Page controls** | On-screen pause and fullscreen buttons, a loading indicator, and a hint to rotate your phone for games that play best in landscape. |
 | **Couch-friendly hub** | Browse the cabinets with the arrow keys or a gamepad: <kbd>A</kbd> opens a game, <kbd>LB</kbd> <kbd>RB</kbd> switch filters, <kbd>Y</kbd> shows trophies and <kbd>Start</kbd> opens settings. |
 | **Trophies and stats** | 43 trophies across the arcade, with plays and best scores per game in the Trophies panel. Saved on your device, no sign-up. |
@@ -268,7 +268,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | Module | What it provides |
 | --- | --- |
 | [`controls.ts`](shared/controls.ts) | `ArcadeControls`: keyboard, gamepad and on-screen touch input behind `isDown()`, `justPressed()` and `axisX`/`axisY`, with extra per-game bindings. |
-| [`pause.ts`](shared/pause.ts) | `PauseController`: pause and mute keys, a pause menu (resume, restart, main menu, arcade), and auto-pause when the tab loses focus. |
+| [`pause.ts`](shared/pause.ts) | `PauseController`: pause and mute keys, a pause menu (resume, restart, settings, main menu, arcade), and auto-pause when the tab loses focus. |
 | [`menu.ts`](shared/menu.ts) | `OptionMenu`: a row or column of choices that works with keys, gamepad, mouse and touch. |
 | [`chrome.ts`](shared/chrome.ts) | The page around the canvas: pause and fullscreen buttons, the loading indicator and the rotate hint. |
 | [`touch.ts`](shared/touch.ts) | `onSwipe()` gestures, plus `VirtualStick` and `VirtualButton` that appear only on touch screens. |

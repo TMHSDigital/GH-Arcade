@@ -16,17 +16,19 @@ export interface ArcadeGameOptions {
 
 /**
  * With reduced motion on, camera shake and flash become no-ops for every game, so no game has to
- * remember to check the setting before each effect.
+ * remember to check the setting before each effect. The setting is read on every call, so turning
+ * it on or off from the pause menu takes effect straight away.
  */
 function applyReducedMotion(): void {
-  if (!getSettings().reducedMotion) return;
-  const proto = Phaser.Cameras.Scene2D.Camera.prototype as unknown as Record<'shake' | 'flash', (...args: unknown[]) => unknown>;
-  proto.shake = function (this: unknown) {
-    return this;
-  };
-  proto.flash = function (this: unknown) {
-    return this;
-  };
+  const proto = Phaser.Cameras.Scene2D.Camera.prototype as unknown as Record<string, (...args: unknown[]) => unknown>;
+  if (proto.__motionAware) return;
+  for (const effect of ['shake', 'flash']) {
+    const original = proto[effect];
+    proto[effect] = function (this: unknown, ...args: unknown[]) {
+      return getSettings().reducedMotion ? this : original.apply(this, args);
+    };
+  }
+  proto.__motionAware = () => true;
 }
 
 /** Standard Phaser setup for arcade games: fixed logical resolution scaled to fit any screen. */

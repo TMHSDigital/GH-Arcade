@@ -30,13 +30,15 @@ export interface OptionMenuOptions {
 export class OptionMenu {
   private selected = 0;
   private enabled: boolean;
+  /** Frame in which the menu was enabled; input is ignored until the next one. */
+  private armedFrame = -1;
   private readonly texts: Phaser.GameObjects.Text[];
   private readonly marker: Phaser.GameObjects.Text;
   private readonly layout: 'row' | 'column';
   private readonly controls: ArcadeControls<string>[];
 
   constructor(
-    scene: Phaser.Scene,
+    private readonly scene: Phaser.Scene,
     controls: ArcadeControls<string> | ArcadeControls<string>[],
     private readonly opts: OptionMenuOptions,
   ) {
@@ -65,7 +67,9 @@ export class OptionMenu {
     this.setEnabled(this.enabled);
 
     const onUpdate = () => {
-      if (!this.enabled) return;
+      // The press that opened this menu (pause, or an option in another menu) is still "just pressed"
+      // during the frame it was enabled in, and must not also pick an option here.
+      if (!this.enabled || scene.game.loop.frame === this.armedFrame) return;
       const prev = this.layout === 'row' ? 'left' : 'up';
       const next = this.layout === 'row' ? 'right' : 'down';
       const pressed = (name: string) => this.controls.some((c) => c.justPressed(name));
@@ -82,7 +86,18 @@ export class OptionMenu {
     return [...this.texts, this.marker];
   }
 
+  /** Changes an option's text, e.g. to show the current value of a setting. */
+  setLabel(index: number, label: string): void {
+    this.texts[index].setText(label);
+    this.paint();
+  }
+
+  setVisible(on: boolean): void {
+    for (const o of [...this.texts, this.marker]) o.setVisible(on);
+  }
+
   setEnabled(on: boolean): void {
+    if (on && !this.enabled) this.armedFrame = this.scene.game.loop.frame;
     this.enabled = on;
     for (const t of this.texts) {
       if (on) t.setInteractive({ useHandCursor: true });
