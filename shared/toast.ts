@@ -1,6 +1,8 @@
+import './toast.css';
+
 /**
- * Small DOM toast for game pages (e.g. "Trophy unlocked"). It's plain HTML over the canvas, so it
- * stays crisp at any scale and works in every game without touching its scenes.
+ * Small DOM toast (e.g. "Trophy unlocked", "Ready to play offline"). It's plain HTML, so on game
+ * pages it sits over the canvas, stays crisp at any scale and needs nothing from the scenes.
  */
 
 let container: HTMLDivElement | null = null;

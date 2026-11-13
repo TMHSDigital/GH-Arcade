@@ -125,6 +125,10 @@ body {
   display: none;
 }
 
+.ios-install { margin: 20px auto 0; max-width: 420px; color: var(--muted); font-size: 14px; }
+.ios-install .text-button { margin: 0 0 0 8px; }
+.ios-install[hidden] { display: none; }
+
 main {
   max-width: 1120px;
   margin: 0 auto;

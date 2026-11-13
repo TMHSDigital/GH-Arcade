@@ -7,7 +7,7 @@ import { initHubNavigation } from './navigation';
 import { initSettingsPanel } from './settings-panel';
 import { initTrophiesPanel } from './trophies-panel';
 
-registerOffline();
+registerOffline('hub');
 
 // Chromium browsers fire this when the arcade can be installed as an app; show our own button for it.
 interface InstallPromptEvent extends Event {
@@ -29,6 +29,25 @@ installButton.addEventListener('click', async () => {
   installButton.hidden = true;
 });
 window.addEventListener('appinstalled', () => (installButton.hidden = true));
+
+// iOS Safari never fires beforeinstallprompt, so explain the manual route there, once.
+const iosHint = document.querySelector<HTMLParagraphElement>('#ios-install')!;
+const IOS_HINT_KEY = 'hub:ios-install-hint';
+function isIosBrowserTab(): boolean {
+  const ua = navigator.userAgent;
+  // iPadOS reports itself as a Mac; the touch points give it away.
+  const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const standalone =
+    (navigator as Navigator & { standalone?: boolean }).standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+  return ios && !standalone;
+}
+if (isIosBrowserTab() && !loadJSON<boolean>(IOS_HINT_KEY, false)) {
+  iosHint.hidden = false;
+  iosHint.querySelector('button')!.addEventListener('click', () => {
+    iosHint.hidden = true;
+    saveJSON(IOS_HINT_KEY, true);
+  });
+}
 
 interface GameEntry {
   slug: string;

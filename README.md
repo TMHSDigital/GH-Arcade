@@ -279,7 +279,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`sfx.ts`](shared/sfx.ts) | `tone()` and `noise()`: retro sound effects synthesized with Web Audio. |
 | [`achievements.ts`](shared/achievements.ts) | Trophies and stats: `unlock()` when something happens, `addCounter()` for running totals. Unlocks pop up as a [toast](shared/toast.ts). |
 | [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key bindings) that every game reads on start. |
-| [`pwa.ts`](shared/pwa.ts) | Registers the service worker that makes every page work offline. |
+| [`pwa.ts`](shared/pwa.ts) | Registers the service worker that makes every page work offline, and announces when the arcade is ready offline or has updated. |
 
 > [!NOTE]
 > Phaser is the default engine, but it's optional. A game is just an `index.html` with a script, so plain Canvas, Three.js or anything else Vite can bundle will work.

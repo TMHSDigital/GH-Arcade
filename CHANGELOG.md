@@ -8,6 +8,13 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 - Settings in the pause menu: volume, sound, reduced motion and colors can be changed without leaving a game, by keyboard, gamepad or touch.
 - Unit tests (Vitest), ESLint and a pull request check.
+- An ARCADE option on the game-over and match result screens.
+- Hub: sort by recently played, most played or name; trophy progress and a last-played marker on each card; average score and lifetime totals in the Trophies panel.
+- Notices when the arcade is ready to play offline and when it has updated, and install instructions on iPhone and iPad.
+
+### Fixed
+
+- A new version arriving while you play no longer reloads the game mid-run.
 
 ## 2026-11-12
 
