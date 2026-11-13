@@ -24,7 +24,7 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^22.20.4",
     "eslint": "^10.14.0",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.72.2",
     "vite": "^8.3.8",
     "vite-plugin-pwa": "^2.0.0",
