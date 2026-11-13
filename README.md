@@ -180,7 +180,7 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 
 ## Quick start
 
-Requires **Node 20+**.
+Requires **Node 22.12 or newer** (CI builds on Node 24).
 
 ```bash
 git clone https://github.com/TMHSDigital/GH-Arcade.git
