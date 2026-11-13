@@ -64,8 +64,18 @@ describe('recordPlay', () => {
     a.recordPlay('snake', 100);
     a.recordPlay('snake', 40);
     a.recordPlay('snake');
-    expect(a.getStats('snake')).toEqual({ plays: 3, best: 100, totalScore: 140 });
+    expect(a.getStats('snake')).toMatchObject({ plays: 3, best: 100, totalScore: 140 });
     expect(a.getCounter('arcade.plays')).toBe(3);
+  });
+
+  it('stamps the time of the last play and keeps it across a reload', async () => {
+    const { a, storage } = await fresh();
+    expect(a.getStats('snake').lastPlayed).toBeUndefined();
+    const before = Date.now();
+    a.recordPlay('snake', 5);
+    expect(a.getStats('snake').lastPlayed).toBeGreaterThanOrEqual(before);
+    const again = await fresh({ 'gh-arcade:trophies': storage.data.get('gh-arcade:trophies')! });
+    expect(again.a.getStats('snake').lastPlayed).toBe(a.getStats('snake').lastPlayed);
   });
 
   it('unlocks "play every game" only after every game has a play', async () => {
@@ -75,6 +85,17 @@ describe('recordPlay', () => {
     expect(a.isUnlocked('arcade.all')).toBe(false);
     a.recordPlay(games[games.length - 1], 1);
     expect(a.isUnlocked('arcade.all')).toBe(true);
+  });
+});
+
+describe('trophyProgress', () => {
+  it('counts a game\'s unlocked trophies out of its total', async () => {
+    const { a } = await fresh();
+    expect(a.trophyProgress('snake')).toEqual({ unlocked: 0, total: 4 });
+    a.unlock('snake.bonus');
+    a.unlock('pong.win');
+    expect(a.trophyProgress('snake')).toEqual({ unlocked: 1, total: 4 });
+    expect(a.trophyProgress('no-such-game')).toEqual({ unlocked: 0, total: 0 });
   });
 });
 

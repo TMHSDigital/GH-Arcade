@@ -1,7 +1,8 @@
 import './hub.css';
 import registry from '../../games/registry.json';
 import { registerOffline } from '../../shared/pwa';
-import { getHighScore } from '../../shared/storage';
+import { getStats, trophyProgress } from '../../shared/achievements';
+import { getHighScore, loadJSON, saveJSON } from '../../shared/storage';
 import { initHubNavigation } from './navigation';
 import { initSettingsPanel } from './settings-panel';
 import { initTrophiesPanel } from './trophies-panel';
@@ -44,15 +45,44 @@ const games = registry as GameEntry[];
 const grid = document.querySelector<HTMLUListElement>('#game-grid')!;
 const filters = document.querySelector<HTMLDivElement>('#filters')!;
 const count = document.querySelector<HTMLSpanElement>('#game-count')!;
+const sortSelect = document.querySelector<HTMLSelectElement>('#sort')!;
+
+const SORTS = ['featured', 'recent', 'plays', 'title'] as const;
+type Sort = (typeof SORTS)[number];
 
 let activeTag: string | null = null;
+// The chosen order is remembered; anything unexpected in storage falls back to registry order.
+const savedSort = loadJSON<unknown>('hub:sort', 'featured');
+let sort: Sort = SORTS.find((s) => s === savedSort) ?? 'featured';
 
-function card(game: GameEntry): HTMLLIElement {
+/** Orders the cards. Ties (and games never played) keep their registry order, so the grid stays stable. */
+function sorted(list: GameEntry[]): GameEntry[] {
+  if (sort === 'featured') return list;
+  const key: Record<Exclude<Sort, 'featured'>, (a: GameEntry, b: GameEntry) => number> = {
+    recent: (a, b) => (getStats(b.slug).lastPlayed ?? 0) - (getStats(a.slug).lastPlayed ?? 0),
+    plays: (a, b) => getStats(b.slug).plays - getStats(a.slug).plays,
+    title: (a, b) => a.title.localeCompare(b.title),
+  };
+  return [...list].sort(key[sort]);
+}
+
+/** The game with the most recent finished run, if any, so its card can say so. */
+function lastPlayedSlug(): string | null {
+  let best: GameEntry | null = null;
+  for (const g of games) {
+    const at = getStats(g.slug).lastPlayed ?? 0;
+    if (at > 0 && (!best || at > (getStats(best.slug).lastPlayed ?? 0))) best = g;
+  }
+  return best?.slug ?? null;
+}
+
+function card(game: GameEntry, isLastPlayed: boolean): HTMLLIElement {
   const li = document.createElement('li');
   li.className = 'card';
   li.style.setProperty('--accent', game.accent);
 
   const best = getHighScore(game.slug);
+  const trophies = trophyProgress(game.slug);
   // Relative link so it works under any base path (dev server and GitHub Pages).
   li.innerHTML = `
     <a class="card-link" href="games/${encodeURIComponent(game.slug)}/">
@@ -67,6 +97,8 @@ function card(game: GameEntry): HTMLLIElement {
         <div class="meta">
           ${game.tags.map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
           ${best > 0 ? `<span class="best">Best ${best.toLocaleString()}</span>` : ''}
+          ${trophies.total ? `<span class="trophies" title="Trophies unlocked">Trophies ${trophies.unlocked}/${trophies.total}</span>` : ''}
+          ${isLastPlayed ? '<span class="recent">Last played</span>' : ''}
         </div>
         ${game.controls ? `<p class="controls">${escapeHtml(game.controls)}</p>` : ''}
       </div>
@@ -76,8 +108,9 @@ function card(game: GameEntry): HTMLLIElement {
 }
 
 function render(): void {
-  const visible = activeTag ? games.filter((g) => g.tags.includes(activeTag!)) : games;
-  grid.replaceChildren(...visible.map(card));
+  const visible = sorted(activeTag ? games.filter((g) => g.tags.includes(activeTag!)) : games);
+  const last = lastPlayedSlug();
+  grid.replaceChildren(...visible.map((g) => card(g, g.slug === last)));
   count.textContent = `(${visible.length})`;
 }
 
@@ -104,8 +137,17 @@ function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
+sortSelect.value = sort;
+sortSelect.addEventListener('change', () => {
+  sort = SORTS.find((s) => s === sortSelect.value) ?? 'featured';
+  saveJSON('hub:sort', sort);
+  render();
+});
+
 renderFilters();
 render();
+// Trophies can be reset in their dialog, which changes the chips on the cards.
+document.querySelector('#trophies')?.addEventListener('close', render);
 
 // Panels are wired up after the grid is on screen, and one that fails must never hide the games.
 for (const init of [initSettingsPanel, initTrophiesPanel, initHubNavigation]) {

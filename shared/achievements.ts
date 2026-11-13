@@ -79,6 +79,8 @@ export interface GameStats {
   plays: number;
   best: number;
   totalScore: number;
+  /** When the last run finished (ms since epoch); missing for games not played since this was added. */
+  lastPlayed?: number;
 }
 
 interface Save {
@@ -104,7 +106,10 @@ function read(): Save {
   const games: Record<string, GameStats> = {};
   if (isRecord(data.games)) {
     for (const [slug, stats] of Object.entries(data.games)) {
-      if (isRecord(stats)) games[slug] = { plays: savedNumber(stats.plays), best: savedNumber(stats.best), totalScore: savedNumber(stats.totalScore) };
+      if (isRecord(stats)) {
+        games[slug] = { plays: savedNumber(stats.plays), best: savedNumber(stats.best), totalScore: savedNumber(stats.totalScore) };
+        if (savedNumber(stats.lastPlayed)) games[slug].lastPlayed = savedNumber(stats.lastPlayed);
+      }
     }
   }
   return { unlocked: numberMap(data.unlocked), counters: numberMap(data.counters), games };
@@ -163,6 +168,7 @@ export function recordPlay(game: string, score = 0): void {
   stats.plays++;
   stats.best = Math.max(stats.best, score);
   stats.totalScore += score;
+  stats.lastPlayed = Date.now();
   save.games[game] = stats;
   persist();
   addCounter('arcade.plays');
@@ -172,6 +178,12 @@ export function recordPlay(game: string, score = 0): void {
 
 export function getStats(game: string): GameStats {
   return save.games[game] ?? { plays: 0, best: 0, totalScore: 0 };
+}
+
+/** How many of a game's trophies are unlocked, e.g. for a "2/4" chip on its hub card. */
+export function trophyProgress(game: string): { unlocked: number; total: number } {
+  const own = TROPHIES.filter((t) => t.game === game);
+  return { unlocked: own.filter((t) => isUnlocked(t.id)).length, total: own.length };
 }
 
 /** Returns the trophies unlocked since the last call, and clears the list. */

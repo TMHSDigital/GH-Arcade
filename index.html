@@ -29,6 +29,15 @@
       <div class="toolbar">
         <h2 class="section-title">Cabinets <span id="game-count" class="count"></span></h2>
         <div id="filters" class="filters" role="group" aria-label="Filter by tag"></div>
+        <label class="sort">
+          <span>Sort</span>
+          <select id="sort">
+            <option value="featured">Featured</option>
+            <option value="recent">Recently played</option>
+            <option value="plays">Most played</option>
+            <option value="title">A to Z</option>
+          </select>
+        </label>
       </div>
       <ul id="game-grid" class="grid"></ul>
     </main>
