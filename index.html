@@ -60,7 +60,7 @@
         <p id="trophy-summary" class="hint"></p>
         <div id="trophy-list"></div>
         <div class="panel-foot">
-          <p class="hint">Trophies and stats are saved on this device.</p>
+          <p class="hint">Trophies and stats are saved on this device. Settings has a backup option.</p>
           <button id="reset-trophies" class="text-button" type="button">Reset trophies and stats</button>
         </div>
       </div>
@@ -104,6 +104,18 @@
           </table>
           <p id="binding-note" class="hint" role="status" hidden></p>
           <button id="reset-bindings" class="text-button" type="button">Reset controls</button>
+        </section>
+
+        <section id="your-data">
+          <h3>Your data</h3>
+          <p class="hint">Trophies, stats, best scores and settings are saved in this browser only. Download a backup to keep them safe or to move them to another device.</p>
+          <div class="data-actions">
+            <button id="export-data" class="text-button" type="button">Download backup</button>
+            <button id="import-data" class="text-button" type="button">Restore from backup</button>
+            <button id="reset-scores" class="text-button" type="button">Reset best scores</button>
+          </div>
+          <input id="import-file" type="file" accept="application/json,.json" hidden />
+          <p id="data-note" class="hint" role="status" hidden></p>
         </section>
 
         <div class="panel-foot">

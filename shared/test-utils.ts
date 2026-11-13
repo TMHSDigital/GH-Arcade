@@ -7,6 +7,8 @@ export interface MemoryStorage {
   setItem(key: string, value: string): void;
   removeItem(key: string): void;
   clear(): void;
+  key(index: number): string | null;
+  readonly length: number;
   /** The raw stored entries, for assertions. */
   readonly data: Map<string, string>;
 }
@@ -20,6 +22,10 @@ export function installMemoryStorage(initial: Record<string, string> = {}): Memo
     setItem: (key, value) => void data.set(key, String(value)),
     removeItem: (key) => void data.delete(key),
     clear: () => data.clear(),
+    key: (index) => [...data.keys()][index] ?? null,
+    get length() {
+      return data.size;
+    },
   };
   vi.stubGlobal('localStorage', storage);
   return storage;

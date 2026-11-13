@@ -3,6 +3,7 @@ import registry from '../../games/registry.json';
 import { registerOffline } from '../../shared/pwa';
 import { getStats, trophyProgress } from '../../shared/achievements';
 import { getHighScore, loadJSON, saveJSON } from '../../shared/storage';
+import { initDataPanel } from './data-panel';
 import { initHubNavigation } from './navigation';
 import { initSettingsPanel } from './settings-panel';
 import { initTrophiesPanel } from './trophies-panel';
@@ -169,7 +170,7 @@ render();
 document.querySelector('#trophies')?.addEventListener('close', render);
 
 // Panels are wired up after the grid is on screen, and one that fails must never hide the games.
-for (const init of [initSettingsPanel, initTrophiesPanel, initHubNavigation]) {
+for (const init of [initSettingsPanel, initDataPanel, initTrophiesPanel, initHubNavigation]) {
   try {
     init();
   } catch (err) {

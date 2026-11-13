@@ -1,0 +1,86 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { exportBackup, importBackup, resetHighScores } from './backup';
+import { freshModules, installMemoryStorage, installWindow } from './test-utils';
+
+afterEach(() => vi.unstubAllGlobals());
+
+const saved = {
+  'gh-arcade:settings': JSON.stringify({ version: 1, volume: 0.4, palette: 'colorblind' }),
+  'gh-arcade:trophies': JSON.stringify({ version: 1, unlocked: { 'snake.bonus': 123 }, counters: {}, games: { snake: { plays: 2, best: 50, totalScore: 80 } } }),
+  'gh-arcade:snake:highscore': '50',
+  'gh-arcade:space-dodge:highscore': '7',
+  'gh-arcade:hub:sort': '"recent"',
+  'unrelated:key': '"left alone"',
+};
+
+describe('exportBackup', () => {
+  it('collects every arcade key without the prefix and nothing else', () => {
+    installMemoryStorage(saved);
+    const backup = exportBackup();
+    expect(backup.app).toBe('gh-arcade');
+    expect(backup.version).toBe(1);
+    expect(Object.keys(backup.data).sort()).toEqual(['hub:sort', 'settings', 'snake:highscore', 'space-dodge:highscore', 'trophies']);
+    expect(backup.data['snake:highscore']).toBe(50);
+    expect(Number.isNaN(Date.parse(backup.exportedAt))).toBe(false);
+  });
+
+  it('returns an empty backup when storage is unavailable', () => {
+    expect(exportBackup().data).toEqual({});
+  });
+});
+
+describe('importBackup', () => {
+  it('restores an export on a clean profile', async () => {
+    installMemoryStorage(saved);
+    const backup = JSON.parse(JSON.stringify(exportBackup()));
+
+    const clean = installMemoryStorage();
+    installWindow();
+    expect(importBackup(backup)).toEqual({ ok: true, keys: 5 });
+    expect(clean.data.get('gh-arcade:snake:highscore')).toBe('50');
+
+    const { settings, achievements, storage } = await freshModules();
+    expect(settings.getSettings()).toMatchObject({ volume: 0.4, palette: 'colorblind' });
+    expect(achievements.isUnlocked('snake.bonus')).toBe(true);
+    expect(achievements.getStats('snake')).toMatchObject({ plays: 2, best: 50 });
+    expect(storage.getHighScore('space-dodge')).toBe(7);
+  });
+
+  it('replaces what was there, but leaves other sites\' keys alone', () => {
+    const storage = installMemoryStorage({ 'gh-arcade:pong:highscore': '900', 'unrelated:key': '"left alone"' });
+    importBackup({ app: 'gh-arcade', version: 1, data: { 'snake:highscore': 5 } });
+    expect(storage.data.has('gh-arcade:pong:highscore')).toBe(false);
+    expect(storage.data.get('gh-arcade:snake:highscore')).toBe('5');
+    expect(storage.data.get('unrelated:key')).toBe('"left alone"');
+  });
+
+  it.each([
+    ['not an object', 'nope'],
+    ['an array', [1, 2]],
+    ['another app', { app: 'other', version: 1, data: {} }],
+    ['missing data', { app: 'gh-arcade', version: 1 }],
+    ['a newer version', { app: 'gh-arcade', version: 99, data: {} }],
+    ['a bad score', { app: 'gh-arcade', version: 1, data: { 'snake:highscore': 'lots' } }],
+    ['a negative score', { app: 'gh-arcade', version: 1, data: { 'snake:highscore': -1 } }],
+    ['settings that are not an object', { app: 'gh-arcade', version: 1, data: { settings: [1] } }],
+    ['an unknown key', { app: 'gh-arcade', version: 1, data: { 'snake:highscore': 5, surprise: true } }],
+  ])('rejects %s without changing stored data', (_name, file) => {
+    const storage = installMemoryStorage(saved);
+    const before = new Map(storage.data);
+    const result = importBackup(file);
+    expect(result.ok).toBe(false);
+    expect(storage.data).toEqual(before);
+  });
+});
+
+describe('resetHighScores', () => {
+  it('removes every best score and nothing else', () => {
+    const storage = installMemoryStorage(saved);
+    expect(resetHighScores()).toBe(2);
+    expect([...storage.data.keys()].sort()).toEqual(['gh-arcade:hub:sort', 'gh-arcade:settings', 'gh-arcade:trophies', 'unrelated:key']);
+  });
+
+  it('does nothing when storage is unavailable', () => {
+    expect(resetHighScores()).toBe(0);
+  });
+});
