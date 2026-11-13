@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Usage: npm run new-game <slug> ["Display Title"]
 // Copies games/_template to games/<slug> and registers it on the hub.
-import { cpSync, existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
@@ -18,18 +18,42 @@ if (existsSync(dest)) {
   process.exit(1);
 }
 
-const title = titleArg ?? slug.split('-').map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
-
-cpSync(join(root, 'games', '_template'), dest, { recursive: true });
-for (const file of readdirSync(dest, { recursive: true })) {
-  const path = join(dest, String(file));
-  if (!/\.(ts|html|json|css)$/.test(path)) continue;
-  const text = readFileSync(path, 'utf8').replaceAll('__SLUG__', slug).replaceAll('__TITLE__', title);
-  writeFileSync(path, text);
+const title = (titleArg ?? slug.split('-').map((w) => w[0].toUpperCase() + w.slice(1)).join(' ')).trim();
+if (!title || /[\u0000-\u001f\u007f]/.test(title)) {
+  console.error('The title must not be empty or contain control characters.');
+  process.exit(1);
 }
 
+// Read the registry before writing anything, so a broken registry.json cannot leave a half-made game behind.
 const registryPath = join(root, 'games', 'registry.json');
 const registry = JSON.parse(readFileSync(registryPath, 'utf8'));
+if (registry.some((g) => g.slug === slug)) {
+  console.error(`games/registry.json already has a game with the slug "${slug}".`);
+  process.exit(1);
+}
+
+// The title is free text, so escape it for each kind of file it is written into.
+const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+/** Escapes for the inside of a single-quoted TypeScript string literal. */
+const escapeTsString = (s) => JSON.stringify(s).slice(1, -1).replace(/'/g, "\\'");
+
+try {
+  cpSync(join(root, 'games', '_template'), dest, { recursive: true });
+  for (const file of readdirSync(dest, { recursive: true })) {
+    const path = join(dest, String(file));
+    if (!/\.(ts|html|json|css)$/.test(path)) continue;
+    const safeTitle = path.endsWith('.html') ? escapeHtml(title) : escapeTsString(title);
+    // Function replacers: a plain replacement string would interpret "$$", "$&" and friends in the title.
+    const text = readFileSync(path, 'utf8')
+      .replaceAll('__SLUG__', () => slug)
+      .replaceAll('__TITLE__', () => safeTitle);
+    writeFileSync(path, text);
+  }
+} catch (err) {
+  rmSync(dest, { recursive: true, force: true });
+  throw err;
+}
+
 registry.push({
   slug,
   title,
