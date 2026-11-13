@@ -122,6 +122,22 @@ html, body {
   .game-loading { animation: none; }
 }
 
+/* The game failed to start (shared/chrome.ts showBootError). */
+.game-loading.failed {
+  pointer-events: auto;
+  animation: none;
+  text-align: center;
+  line-height: 1.8;
+  padding: 24px;
+}
+.game-loading.failed .game-loading-hint {
+  font: 14px system-ui, sans-serif;
+  letter-spacing: 0;
+  text-shadow: none;
+  color: #8a8ab8;
+}
+.game-loading.failed a { color: inherit; font-size: 11px; }
+
 /* Trophy toasts (shared/toast.ts). */
 .toast-stack {
   position: fixed;

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { onUnlock } from './achievements';
-import { hideLoader, initGameChrome } from './chrome';
+import { hideLoader, initGameChrome, showBootError } from './chrome';
 import { registerOffline } from './pwa';
 import { getSettings } from './settings';
 import { showToast } from './toast';
@@ -59,6 +59,10 @@ export function createArcadeGame(opts: ArcadeGameOptions): Phaser.Game {
  * Use this from each game's main.ts.
  */
 export async function startArcadeGame(opts: ArcadeGameOptions): Promise<Phaser.Game> {
+  // An error before the first frame (a scene's create() throwing, a failed import) would otherwise
+  // leave LOADING on screen forever. showBootError is a no-op once the game has rendered.
+  window.addEventListener('error', showBootError);
+  window.addEventListener('unhandledrejection', showBootError);
   registerOffline();
   initGameChrome();
   onUnlock((t) => showToast('Trophy unlocked', t.title));
@@ -67,5 +71,10 @@ export async function startArcadeGame(opts: ArcadeGameOptions): Promise<Phaser.G
   } catch {
     /* font loading unsupported; fall back to monospace */
   }
-  return createArcadeGame(opts);
+  try {
+    return createArcadeGame(opts);
+  } catch (err) {
+    showBootError();
+    throw err;
+  }
 }

@@ -54,6 +54,29 @@ export function hideLoader(): void {
   document.querySelector('.game-loading')?.remove();
 }
 
+/**
+ * Replaces the loading placeholder with a short failure message and a way back to the hub.
+ * Does nothing once the game has drawn its first frame (the placeholder is gone by then).
+ */
+export function showBootError(): void {
+  const loader = document.querySelector<HTMLElement>('.game-loading');
+  if (!loader || loader.classList.contains('failed')) return;
+  loader.classList.add('failed');
+  loader.removeAttribute('aria-hidden');
+  loader.setAttribute('role', 'alert');
+  const box = document.createElement('div');
+  const message = document.createElement('p');
+  message.textContent = "THIS GAME COULDN'T START";
+  const hint = document.createElement('p');
+  hint.className = 'game-loading-hint';
+  hint.textContent = 'Try reloading the page.';
+  const link = document.createElement('a');
+  link.href = '../../';
+  link.textContent = 'BACK TO THE ARCADE';
+  box.append(message, hint, link);
+  loader.replaceChildren(box);
+}
+
 function button(label: string, aria: string): HTMLButtonElement {
   const b = document.createElement('button');
   b.type = 'button';
