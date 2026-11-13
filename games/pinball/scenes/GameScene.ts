@@ -104,6 +104,7 @@ export class GameScene extends Phaser.Scene {
     this.clock = 0;
     this.state = 'ready';
     this.charge = 0;
+    this.saveUntil = 0;
     this.flashAt = new Map();
     this.touchSides = new Map();
     this.targetsUp = TARGETS.map(() => true);
