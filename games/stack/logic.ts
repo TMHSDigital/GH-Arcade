@@ -204,5 +204,7 @@ export const LINE_POINTS = [0, 100, 300, 500, 800];
 
 /** Seconds per row of gravity at a level (guideline curve), floored at one row per frame. */
 export function gravitySeconds(level: number): number {
-  return Math.max(Math.pow(0.8 - (level - 1) * 0.007, level - 1), 1 / 60);
+  // The curve's base goes negative past level 115; clamp it so high odd levels cannot produce huge values.
+  const base = Math.max(0.8 - (level - 1) * 0.007, 0);
+  return Math.max(Math.pow(base, level - 1), 1 / 60);
 }
