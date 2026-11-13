@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { clearRecentUnlocks } from './achievements';
 import type { ArcadeControls } from './controls';
 import { type MenuItem, OptionMenu } from './menu';
-import { SCENE } from './scenes';
+import { SCENE, toArcade } from './scenes';
 import { getSettings, keyLabel, updateSettings } from './settings';
 import { isMuted, setMuted } from './sfx';
 import { NEON, neonText, PIXEL_FONT } from './ui';
@@ -62,7 +62,7 @@ export class PauseController {
       { label: 'RESTART', onSelect: () => leave(() => scene.scene.restart(restartData)) },
       { label: 'SETTINGS', onSelect: () => this.showPage('settings') },
       { label: 'MAIN MENU', onSelect: () => leave(() => scene.scene.start(SCENE.menu)) },
-      { label: 'ARCADE', onSelect: () => leave(() => window.location.assign('../../')) },
+      { label: 'ARCADE', onSelect: () => leave(toArcade) },
     ];
     // A game without a menu scene has nowhere for MAIN MENU to go; starting a missing scene leaves a blank canvas.
     const hasMenu = scene.scene.manager.keys[SCENE.menu] !== undefined;

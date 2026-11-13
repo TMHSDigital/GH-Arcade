@@ -91,6 +91,11 @@ export function finishRun(gameId: string, score?: number): { isRecord: boolean; 
   return { isRecord, earned: drainRecentUnlocks() };
 }
 
+/** Leaves the game page for the hub, which is two folders up from every game. */
+export function toArcade(): void {
+  window.location.assign('../../');
+}
+
 function trophyLine(earned: Trophy[]): string {
   const names = earned.map((t) => t.title.toUpperCase());
   return `TROPHY: ${names.length > 2 ? `${names.slice(0, 2).join(', ')} +${names.length - 2} MORE` : names.join(', ')}`;
@@ -109,7 +114,7 @@ export interface MatchResultOptions {
 
 /**
  * End screen for two-player matches, drawn over the finished game: who won, the tally, any trophies
- * earned, and Rematch / Menu options that work with keyboard, gamepad and touch. Records the play.
+ * earned, and Rematch / Menu / Arcade options that work with keyboard, gamepad and touch. Records the play.
  */
 export function showMatchResult(
   scene: Phaser.Scene,
@@ -134,11 +139,12 @@ export function showMatchResult(
     new OptionMenu(scene, controls, {
       x: width / 2,
       y: 400,
-      spacing: 300,
+      spacing: 240,
       depth: 41,
       items: [
         { label: 'REMATCH', onSelect: () => go(SCENE.game, opts.rematchData) },
         { label: 'MENU', onSelect: () => go(SCENE.menu) },
+        { label: 'ARCADE', onSelect: toArcade },
       ],
     });
   });
@@ -155,7 +161,7 @@ export interface GameOverData {
 
 /**
  * Shared game-over screen: final score, high-score check, any trophies earned this run, and
- * Play again / Menu options. Its key is SCENE.gameOver.
+ * Play again / Menu / Arcade options. Its key is SCENE.gameOver.
  */
 export class ArcadeGameOverScene extends Phaser.Scene {
   constructor() {
@@ -191,11 +197,13 @@ export class ArcadeGameOverScene extends Phaser.Scene {
       new OptionMenu(this, new ArcadeControls(this), {
         x: width / 2,
         y: 450,
-        spacing: 300,
-        size: 18,
+        spacing: 240,
+        size: 16,
         items: [
           { label: 'PLAY AGAIN', onSelect: () => go(data.restartScene ?? SCENE.game, data.restartData ?? {}) },
           { label: 'MENU', onSelect: () => go(SCENE.menu) },
+          // The natural exit point: back to the hub without starting another run first.
+          { label: 'ARCADE', onSelect: toArcade },
         ],
       });
     });
