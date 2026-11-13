@@ -6,7 +6,8 @@ import type { Trophy, TrophyDef } from './trophy-types';
  * Trophies and per-game stats, saved on this device. No Phaser here, so the hub can list them.
  *
  * Each game lists its trophies in games/<slug>/trophies.ts and gets typed helpers for them from
- * `trophiesFor<typeof TROPHIES>()`: `unlock('snake.bonus')` when something happens, or
+ * `trophiesFor<typeof TROPHIES>()`: `unlock('snake.bonus')` when something happens,
+ * `reach('snake.score', score)` for trophies earned at a `threshold` within one run, or
  * `addCounter('stack.lines', 4)` for running totals (trophies tied to a counter unlock automatically
  * at their target). A mistyped id or counter fails the typecheck.
  * Plays and best scores are recorded when a run ends, via `finishRun()` in shared/scenes.ts.
@@ -24,6 +25,8 @@ const ARCADE_TROPHIES = [
 type ArcadeTrophyId = (typeof ARCADE_TROPHIES)[number]['id'];
 /** The counter names used by a list of trophies (never, if none of them has a counter). */
 type CounterOf<T extends readonly TrophyDef[]> = Extract<T[number], { counter: string }>['counter'];
+/** The ids of the trophies in a list that declare a `threshold`. */
+type ThresholdIdOf<T extends readonly TrophyDef[]> = Extract<T[number], { threshold: number }>['id'];
 
 // Every game declares its own trophies in games/<slug>/trophies.ts. They are plain data (no Phaser),
 // so collecting them here keeps the hub light.
@@ -172,9 +175,19 @@ export function unlock(id: string): boolean {
  */
 export function trophiesFor<T extends readonly TrophyDef[]>(): {
   unlock: (id: T[number]['id']) => boolean;
+  reach: (id: ThresholdIdOf<T>, value: number) => boolean;
   addCounter: (counter: CounterOf<T>, amount?: number) => number;
 } {
-  return { unlock, addCounter };
+  return { unlock, reach, addCounter };
+}
+
+/**
+ * Unlocks a trophy once `value` (this run's score, level, length...) has reached the `threshold`
+ * declared beside it in trophies.ts. Returns true if it was newly unlocked.
+ */
+export function reach(id: string, value: number): boolean {
+  const threshold = TROPHIES.find((t) => t.id === id)?.threshold;
+  return threshold !== undefined && value >= threshold && unlock(id);
 }
 
 /**

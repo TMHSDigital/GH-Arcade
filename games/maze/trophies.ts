@@ -8,6 +8,6 @@ import type { TrophyDef } from '../../shared/trophy-types';
 export const TROPHIES = [
   { id: 'maze.clear', title: 'Maze Runner', description: 'Clear every dot from a maze' },
   { id: 'maze.sweep', title: 'Clean Sweep', description: 'Catch all four chasers on one power cell' },
-  { id: 'maze.level3', title: 'Deeper In', description: 'Reach level 3 in Neon Maze' },
-  { id: 'maze.score', title: 'High Voltage', description: 'Score 10,000 in Neon Maze' },
+  { id: 'maze.level3', title: 'Deeper In', description: 'Reach level 3 in Neon Maze', threshold: 3 },
+  { id: 'maze.score', title: 'High Voltage', description: 'Score 10,000 in Neon Maze', threshold: 10000 },
 ] as const satisfies readonly TrophyDef[];

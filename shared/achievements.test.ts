@@ -202,6 +202,35 @@ describe('trophyProgress', () => {
   });
 });
 
+describe('reach', () => {
+  it('unlocks only once the value reaches the trophy threshold', async () => {
+    const { a } = await fresh();
+    expect(a.reach('snake.score', 999)).toBe(false);
+    expect(a.isUnlocked('snake.score')).toBe(false);
+    expect(a.reach('snake.score', 1000)).toBe(true);
+    expect(a.isUnlocked('snake.score')).toBe(true);
+    // Already unlocked: nothing new to report.
+    expect(a.reach('snake.score', 5000)).toBe(false);
+  });
+
+  it('never unlocks a trophy that declares no threshold', async () => {
+    const { a } = await fresh();
+    expect(a.reach('snake.bonus', 1_000_000)).toBe(false);
+    expect(a.isUnlocked('snake.bonus')).toBe(false);
+  });
+
+  it('every threshold and target is the number its description names', async () => {
+    const { a } = await fresh();
+    const numbered = a.TROPHIES.filter((t) => t.threshold !== undefined || t.target !== undefined);
+    expect(numbered.length).toBeGreaterThan(20);
+    for (const t of numbered) {
+      const n = (t.threshold ?? t.target)!;
+      const named = (t.description.match(/\d[\d,]*/g) ?? []).map((s) => Number(s.replaceAll(',', '')));
+      expect(named, `${t.id}: "${t.description}"`).toContain(n);
+    }
+  });
+});
+
 describe('recent unlocks', () => {
   it('drainRecentUnlocks returns new trophies once', async () => {
     const { a } = await fresh();

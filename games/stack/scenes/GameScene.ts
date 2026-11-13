@@ -48,7 +48,7 @@ import { isTouchDevice, VirtualButton } from '../../../shared/touch';
 import { burstEmitter, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
-const { addCounter, unlock } = trophiesFor<typeof TROPHIES>();
+const { addCounter, reach, unlock } = trophiesFor<typeof TROPHIES>();
 
 type Extra = 'rotCW' | 'rotCCW' | 'hold' | 'drop';
 
@@ -450,7 +450,7 @@ export class GameScene extends Phaser.Scene {
       this.lines += n;
       addCounter('stack.lines', n);
       this.level = 1 + Math.floor(this.lines / LINES_PER_LEVEL);
-      if (this.level >= 5) unlock('stack.level5');
+      reach('stack.level5', this.level);
       if (this.level > before) {
         showBanner(this, `LEVEL ${this.level}`, NEON.green, BOARD_Y + 120);
         [392, 523, 659, 784, 1047].forEach((f, i) => this.time.delayedCall(250 + i * 70, () => tone({ freq: f, duration: 0.1, volume: 0.07 })));

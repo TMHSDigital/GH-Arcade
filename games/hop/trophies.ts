@@ -8,6 +8,6 @@ import type { TrophyDef } from '../../shared/trophy-types';
 export const TROPHIES = [
   { id: 'hop.home', title: 'Safe Harbor', description: 'Reach a dock' },
   { id: 'hop.full', title: 'Full House', description: 'Fill all five docks' },
-  { id: 'hop.level3', title: 'Rush Hour', description: 'Reach level 3' },
-  { id: 'hop.score', title: 'Road Warrior', description: 'Score 5,000 points' },
+  { id: 'hop.level3', title: 'Rush Hour', description: 'Reach level 3', threshold: 3 },
+  { id: 'hop.score', title: 'Road Warrior', description: 'Score 5,000 points', threshold: 5000 },
 ] as const satisfies readonly TrophyDef[];

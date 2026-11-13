@@ -7,7 +7,7 @@ import type { TrophyDef } from '../../shared/trophy-types';
  */
 export const TROPHIES = [
   { id: 'breakout.clear', title: 'Brick by Brick', description: 'Clear the first level' },
-  { id: 'breakout.combo', title: 'Chain Reaction', description: 'Reach an x8 combo' },
-  { id: 'breakout.multi', title: 'Crowd Control', description: 'Have 5 balls in play at once' },
-  { id: 'breakout.score', title: 'High Roller', description: 'Score 10,000 points' },
+  { id: 'breakout.combo', title: 'Chain Reaction', description: 'Reach an x8 combo', threshold: 8 },
+  { id: 'breakout.multi', title: 'Crowd Control', description: 'Have 5 balls in play at once', threshold: 5 },
+  { id: 'breakout.score', title: 'High Roller', description: 'Score 10,000 points', threshold: 10000 },
 ] as const satisfies readonly TrophyDef[];

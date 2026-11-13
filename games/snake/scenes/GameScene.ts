@@ -24,7 +24,7 @@ import { isTouchDevice, onSwipe } from '../../../shared/touch';
 import { burstEmitter, fadeToScene, floatText, hex, HUD_STYLE, NEON, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
-const { unlock } = trophiesFor<typeof TROPHIES>();
+const { reach, unlock } = trophiesFor<typeof TROPHIES>();
 
 interface Player {
   id: 1 | 2;
@@ -278,8 +278,8 @@ export class GameScene extends Phaser.Scene {
       const points = foodPoints(this.eaten);
       this.score += points;
       floatText(this, x, y - 10, `+${points}`, NEON.pink);
-      if (p.segments.length >= 25) unlock('snake.len25');
-      if (p.segments.length >= 50) unlock('snake.len50');
+      reach('snake.len25', p.segments.length);
+      reach('snake.len50', p.segments.length);
     }
     this.food = this.randomFreeCell();
     // Bonus stars are a solo-mode scoring feature.
@@ -435,7 +435,7 @@ export class GameScene extends Phaser.Scene {
 
   private updateHud(): void {
     if (this.versus) return;
-    if (this.score >= 1000) unlock('snake.score');
+    reach('snake.score', this.score);
     this.scoreText.setText(this.score.toLocaleString());
     this.lengthText.setText(`LEN ${this.players[0].segments.length}`);
   }

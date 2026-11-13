@@ -6,10 +6,12 @@ import type { TrophyDef } from '../../shared/trophy-types';
  *
  *   import { trophiesFor } from '../../../shared/achievements';
  *   import type { TROPHIES } from '../trophies';
- *   const { unlock, addCounter } = trophiesFor<typeof TROPHIES>();
- *   unlock('__SLUG__.first');
+ *   const { unlock, reach, addCounter } = trophiesFor<typeof TROPHIES>();
+ *   reach('__SLUG__.first', dotsThisRun);   // unlocks at the row's `threshold`
+ *   addCounter('__SLUG__.dots');            // unlocks at the row's `target`, across runs
+ *   unlock('__SLUG__.secret');              // for one-off events
  */
 export const TROPHIES = [
-  // { id: '__SLUG__.first', title: 'First Steps', description: 'Collect 10 dots in one run' },
+  // { id: '__SLUG__.first', title: 'First Steps', description: 'Collect 10 dots in one run', threshold: 10 },
   // { id: '__SLUG__.dots', title: 'Dot Hoarder', description: 'Collect 500 dots in total', counter: '__SLUG__.dots', target: 500 },
 ] as const satisfies readonly TrophyDef[];

@@ -43,7 +43,7 @@ Tests live next to the code as `*.test.ts`. If you add logic that does not need 
 - **Use the shared palette.** Take colors from `NEON` in [`shared/ui.ts`](shared/ui.ts) so the colorblind palette applies, and honour `reducedMotion()` for decorative animation.
 - **Fill in the hub card.** Edit the game's entry in [`games/registry.json`](games/registry.json): description, tags, accent color and controls hint.
 - **Thumbnail.** Optional, but nice: a 16:9 JPEG screenshot of gameplay at `public/thumbs/<slug>.jpg`, kept small (the existing ones are under 20 KB), referenced as `"thumbnail": "thumbs/<slug>.jpg"`. Without one the card shows the first letter of the title.
-- **Trophies.** List up to four trophies in the game's own `trophies.ts`; the arcade picks the file up automatically. Unlock them through `trophiesFor<typeof TROPHIES>()`, which type-checks the ids.
+- **Trophies.** List up to four trophies in the game's own `trophies.ts`; the arcade picks the file up automatically. Unlock them through `trophiesFor<typeof TROPHIES>()`, which type-checks the ids. A trophy earned at a number (a score, a level) declares it as `threshold` beside its description, and the game calls `reach(id, value)` instead of comparing against the number itself.
 
 ## Style
 

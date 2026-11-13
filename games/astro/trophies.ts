@@ -7,7 +7,7 @@ import type { TrophyDef } from '../../shared/trophy-types';
  */
 export const TROPHIES = [
   { id: 'astro.saucer', title: 'Saucer Down', description: 'Shoot down a saucer' },
-  { id: 'astro.wave5', title: 'Wave Rider', description: 'Reach wave 5' },
-  { id: 'astro.score', title: 'Rock Crusher', description: 'Score 10,000 points' },
+  { id: 'astro.wave5', title: 'Wave Rider', description: 'Reach wave 5', threshold: 5 },
+  { id: 'astro.score', title: 'Rock Crusher', description: 'Score 10,000 points', threshold: 10000 },
   { id: 'astro.rocks', title: 'Demolition Crew', description: 'Destroy 500 rocks in total', counter: 'astro.rocks', target: 500 },
 ] as const satisfies readonly TrophyDef[];

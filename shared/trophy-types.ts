@@ -6,6 +6,11 @@ export interface TrophyDef {
   /** Unlocks automatically when this counter reaches `target`. */
   counter?: string;
   target?: number;
+  /**
+   * The value within one run (score, level, length) that earns this trophy. The game reports the
+   * current value with `reach(id, value)`, so the number is written once, beside the description.
+   */
+  threshold?: number;
 }
 
 export interface Trophy extends TrophyDef {

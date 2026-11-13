@@ -41,7 +41,7 @@ import { isTouchDevice } from '../../../shared/touch';
 import { burstEmitter, floatText, HUD_STYLE, NEON, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
-const { unlock } = trophiesFor<typeof TROPHIES>();
+const { reach, unlock } = trophiesFor<typeof TROPHIES>();
 
 interface Alien {
   img: Phaser.GameObjects.Image;
@@ -363,7 +363,7 @@ export class GameScene extends Phaser.Scene {
   private clearWave(): void {
     this.clearing = true;
     this.enemyShots = [];
-    if (this.wave >= 3) unlock('siege.wave3');
+    reach('siege.wave3', this.wave);
     if (this.coop) unlock('siege.coop');
     const bonus = 100 * this.wave;
     this.addScore(bonus);
@@ -551,7 +551,7 @@ export class GameScene extends Phaser.Scene {
 
   private addScore(points: number): void {
     this.score += points;
-    if (this.score >= 5000) unlock('siege.score');
+    reach('siege.score', this.score);
     this.scoreText.setText(this.score.toLocaleString());
   }
 

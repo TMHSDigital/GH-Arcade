@@ -52,7 +52,7 @@ import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, floatText, HUD_LABEL_STYLE, HUD_STYLE, NEON, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
-const { unlock } = trophiesFor<typeof TROPHIES>();
+const { reach, unlock } = trophiesFor<typeof TROPHIES>();
 
 interface Flipper {
   pivot: Point;
@@ -403,7 +403,7 @@ export class GameScene extends Phaser.Scene {
   private addScore(points: number): void {
     const gained = points * this.multiplier;
     this.score += gained;
-    if (this.score >= 50000) unlock('pinball.score');
+    reach('pinball.score', this.score);
     if (gained >= 1000) floatText(this, this.ball.x, this.ball.y - 20, `+${gained}`, NEON.yellow, 12);
     this.updateHud();
   }

@@ -277,7 +277,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`phaser-config.ts`](shared/phaser-config.ts) | `startArcadeGame()`: fit-to-screen Phaser setup with gamepads enabled, once the pixel font has loaded. |
 | [`storage.ts`](shared/storage.ts) | `loadJSON()` and `saveJSON()`, backed by `localStorage` that never throws. |
 | [`sfx.ts`](shared/sfx.ts) | `tone()` and `noise()`: retro sound effects synthesized with Web Audio. |
-| [`achievements.ts`](shared/achievements.ts) | Trophies, stats and best scores. Each game lists its trophies in its own `trophies.ts` and gets type-checked `unlock()` and `addCounter()` helpers from `trophiesFor()`; `getHighScore()` returns a game's best. Unlocks pop up as a [toast](shared/toast.ts). |
+| [`achievements.ts`](shared/achievements.ts) | Trophies, stats and best scores. Each game lists its trophies in its own `trophies.ts` and gets type-checked `unlock()`, `reach()` and `addCounter()` helpers from `trophiesFor()`; `getHighScore()` returns a game's best. Unlocks pop up as a [toast](shared/toast.ts). |
 | [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key bindings) that every game reads on start. |
 | [`backup.ts`](shared/backup.ts) | Export, import and reset of everything saved on the device, used by the hub's settings dialog. |
 | [`rng.ts`](shared/rng.ts) | `createRng(seed)`: repeatable random numbers with `between`, `pick` and `shuffle`, plus `dailySeed()` and per-day best scores for daily challenges. |
@@ -337,7 +337,7 @@ Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `co
 - **Shared Phaser chunk.** Phaser is about 340 KB gzipped. It's split into its own file so it downloads once and is cached for every game.
 - **Procedural art and audio.** Games draw their graphics in code and synthesize their sounds, so each game adds only a few KB on top of Phaser.
 - **One input layer.** Games ask `ArcadeControls` about actions ("left", "action") instead of keys, so keyboard, gamepad and touch all work without per-game plumbing.
-- **Rules separate from rendering where it pays off.** Neon Stack's rules are pure functions in `logic.ts`, which keeps rotation, wall kicks and line clears easy to test.
+- **Rules separate from rendering where it pays off.** Neon Stack's rules are pure functions in `logic.ts`, which keeps rotation, wall kicks and line clears easy to test. Snake, Maze, Runner and Hop keep theirs in Phaser-free modules too (`logic.ts`, `chase.ts`, `rules.ts`).
 - **Offline first.** Everything is precached at build time, and all pages share one font stylesheet so a single visit caches it for every game.
 
 </details>

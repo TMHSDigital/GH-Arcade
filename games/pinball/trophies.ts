@@ -9,5 +9,5 @@ export const TROPHIES = [
   { id: 'pinball.lanes', title: 'Lane Lighter', description: 'Light all three top lanes' },
   { id: 'pinball.bank', title: 'Target Practice', description: 'Knock down the whole drop-target bank' },
   { id: 'pinball.multi', title: 'Maxed Out', description: 'Reach the x5 multiplier' },
-  { id: 'pinball.score', title: 'Table Wizard', description: 'Score 50,000 in Neon Pinball' },
+  { id: 'pinball.score', title: 'Table Wizard', description: 'Score 50,000 in Neon Pinball', threshold: 50000 },
 ] as const satisfies readonly TrophyDef[];

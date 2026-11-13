@@ -37,7 +37,7 @@ import { isTouchDevice, VirtualButton, VirtualStick } from '../../../shared/touc
 import { burstEmitter, floatText, HUD_STYLE, NEON, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
-const { addCounter, unlock } = trophiesFor<typeof TROPHIES>();
+const { addCounter, reach, unlock } = trophiesFor<typeof TROPHIES>();
 
 interface Body {
   x: number;
@@ -176,7 +176,7 @@ export class GameScene extends Phaser.Scene {
 
   private nextWave(): void {
     this.wave++;
-    if (this.wave >= 5) unlock('astro.wave5');
+    reach('astro.wave5', this.wave);
     this.waveRocks = Math.min(FIRST_WAVE_ROCKS + this.wave - 1, MAX_WAVE_ROCKS);
     for (let i = 0; i < this.waveRocks; i++) {
       // Spawn on the edges, away from the ship.
@@ -460,7 +460,7 @@ export class GameScene extends Phaser.Scene {
 
   private addScore(points: number, x: number, y: number, color: number = NEON.cyan): void {
     this.score += points;
-    if (this.score >= 10000) unlock('astro.score');
+    reach('astro.score', this.score);
     floatText(this, x, y, `+${points}`, color, 10);
     if (this.score >= this.nextExtraLife) {
       this.nextExtraLife += EXTRA_LIFE_EVERY;

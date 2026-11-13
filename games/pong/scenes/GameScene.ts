@@ -29,7 +29,7 @@ import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
-const { unlock } = trophiesFor<typeof TROPHIES>();
+const { reach, unlock } = trophiesFor<typeof TROPHIES>();
 
 interface Paddle {
   side: -1 | 1;
@@ -255,7 +255,7 @@ export class GameScene extends Phaser.Scene {
     b.vy = Math.sin(angle) * b.speed + p.vy * SPIN;
     b.x = p.x - p.side * (PADDLE_W / 2 + BALL_SIZE / 2 + 1);
     this.rally++;
-    if (this.rally >= 20) unlock('pong.rally');
+    reach('pong.rally', this.rally);
     this.rallyText.setText(this.rally >= 5 ? `RALLY ${this.rally}` : '');
     // The CPU rethinks its aim each time the ball comes back; faster balls make it less precise.
     for (const q of this.paddles) if (q.cpu) q.aimError = Phaser.Math.FloatBetween(-1, 1) * CPU_ERROR * Math.min(b.speed / SERVE_SPEED, 1.8);

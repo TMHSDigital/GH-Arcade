@@ -7,7 +7,7 @@ import type { TrophyDef } from '../../shared/trophy-types';
  */
 export const TROPHIES = [
   { id: 'snake.bonus', title: 'Star Catcher', description: 'Eat a bonus star' },
-  { id: 'snake.len25', title: 'Growth Spurt', description: 'Reach length 25' },
-  { id: 'snake.len50', title: 'Neon Serpent', description: 'Reach length 50' },
-  { id: 'snake.score', title: 'Snake Charmer', description: 'Score 1,000 points' },
+  { id: 'snake.len25', title: 'Growth Spurt', description: 'Reach length 25', threshold: 25 },
+  { id: 'snake.len50', title: 'Neon Serpent', description: 'Reach length 50', threshold: 50 },
+  { id: 'snake.score', title: 'Snake Charmer', description: 'Score 1,000 points', threshold: 1000 },
 ] as const satisfies readonly TrophyDef[];

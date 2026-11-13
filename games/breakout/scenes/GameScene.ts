@@ -29,7 +29,7 @@ import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, floatText, HUD_STYLE, neonText, PIXEL_FONT, showBanner, sparkTexture } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
-const { unlock } = trophiesFor<typeof TROPHIES>();
+const { reach, unlock } = trophiesFor<typeof TROPHIES>();
 
 type Img = Phaser.Physics.Arcade.Image;
 
@@ -322,7 +322,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.combo++;
-    if (this.combo >= 8) unlock('breakout.combo');
+    reach('breakout.combo', this.combo);
     const points = 10 * (brick.getData('maxHp') as number) * Math.min(this.combo, 8);
     this.score += points;
     this.updateHud();
@@ -384,7 +384,7 @@ export class GameScene extends Phaser.Scene {
         if (!this.stuck && source) {
           this.spawnBall(false, source);
           this.spawnBall(false, source);
-          if (this.balls.countActive() >= 5) unlock('breakout.multi');
+          reach('breakout.multi', this.balls.countActive());
         }
         floatText(this, this.paddle.x, PADDLE_Y - 30, 'MULTI', color);
         break;
@@ -471,7 +471,7 @@ export class GameScene extends Phaser.Scene {
   // ---------------------------------------------------------------- hud
 
   private updateHud(): void {
-    if (this.score >= 10000) unlock('breakout.score');
+    reach('breakout.score', this.score);
     this.scoreText.setText(this.score.toLocaleString());
     this.comboText.setText(this.combo > 1 ? `COMBO x${Math.min(this.combo, 8)}` : '');
   }

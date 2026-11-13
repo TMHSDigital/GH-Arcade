@@ -6,8 +6,8 @@ import type { TrophyDef } from '../../shared/trophy-types';
  * from `trophiesFor<typeof TROPHIES>()`, which only accept the ids and counters listed here.
  */
 export const TROPHIES = [
-  { id: 'siege.wave3', title: 'Holding the Line', description: 'Clear wave 3' },
+  { id: 'siege.wave3', title: 'Holding the Line', description: 'Clear wave 3', threshold: 3 },
   { id: 'siege.mothership', title: 'Mothership Down', description: 'Shoot the mothership' },
-  { id: 'siege.score', title: 'Star Defender', description: 'Score 5,000 points' },
+  { id: 'siege.score', title: 'Star Defender', description: 'Score 5,000 points', threshold: 5000 },
   { id: 'siege.coop', title: 'Better Together', description: 'Clear a wave in two-player co-op' },
 ] as const satisfies readonly TrophyDef[];

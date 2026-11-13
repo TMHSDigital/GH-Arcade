@@ -46,7 +46,7 @@ import { onSwipe } from '../../../shared/touch';
 import { burstEmitter, floatText, HUD_STYLE, NEON, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
-const { unlock } = trophiesFor<typeof TROPHIES>();
+const { reach, unlock } = trophiesFor<typeof TROPHIES>();
 
 /** A chaser as the scene tracks it: the rule-relevant part from ../chase plus what drawing and timing need. */
 interface Chaser extends ChaserCore {
@@ -198,7 +198,7 @@ export class GameScene extends Phaser.Scene {
       this.afterDeath();
     } else if (this.phase === 'clearing' && phaseDone) {
       this.level++;
-      if (this.level >= 3) unlock('maze.level3');
+      reach('maze.level3', this.level);
       this.startLevel();
     } else if (this.phase === 'play' && this.clock >= this.freezeUntil) {
       this.tick(dt);
@@ -446,7 +446,7 @@ export class GameScene extends Phaser.Scene {
   private addScore(points: number): void {
     this.score += points;
     this.scoreText.setText(this.score.toLocaleString());
-    if (this.score >= 10000) unlock('maze.score');
+    reach('maze.score', this.score);
     if (!this.extraLifeGiven && this.score >= EXTRA_LIFE_AT) {
       this.extraLifeGiven = true;
       this.lives++;

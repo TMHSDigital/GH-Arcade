@@ -14,18 +14,33 @@ import {
   JUMP_BUFFER_MS,
   JUMP_CUT,
   JUMP_VELOCITY,
-  LEDGE_FORGIVENESS,
   MAX_SPEED,
   PLAYER_H,
   PLAYER_W,
   PLAYER_X,
-  PX_PER_METRE,
   SLIDE_H,
   START_SPEED,
   TOUCH_SLIDE_MS,
   WIDTH,
 } from '../config';
 import { MAX_PATTERN_LEVEL, PATTERNS, type Piece } from '../patterns';
+import {
+  type Block,
+  type Coin,
+  type Drone,
+  DRONE_BOTTOM,
+  DRONE_H,
+  droneOverhead,
+  type Gap,
+  gapUnder,
+  hitsGapWall,
+  hitsObstacle,
+  landsOnGround,
+  metresRun,
+  playerBox,
+  runScore,
+  touchesCoin,
+} from '../rules';
 import { getHighScore, trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
@@ -34,36 +49,14 @@ import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, floatText, hex, HUD_STYLE, NEON, neonText, sparkTexture } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
-const { addCounter, unlock } = trophiesFor<typeof TROPHIES>();
+const { addCounter, reach } = trophiesFor<typeof TROPHIES>();
 
-interface Block {
-  x: number;
-  w: number;
-  h: number;
-}
-interface Drone {
-  x: number;
-  w: number;
-}
-interface Gap {
-  x: number;
-  w: number;
-}
-interface Coin {
-  x: number;
-  y: number;
-  taken: boolean;
-}
 interface Building {
   x: number;
   w: number;
   h: number;
   windows: number[];
 }
-
-/** Drones hover with their underside here: you can't run under, but you can slide under. */
-const DRONE_BOTTOM = GROUND_Y - 30;
-const DRONE_H = 22;
 
 export class GameScene extends Phaser.Scene {
   /** Distance scrolled so far, in world pixels. Screen x = worldX - distance + PLAYER_X. */
@@ -267,10 +260,8 @@ export class GameScene extends Phaser.Scene {
       const prevY = this.y;
       this.y += this.vy * dt;
 
-      const overGap = this.gapUnder();
-      // Only land from above: once the feet have dropped into a gap the far edge is a wall, not a floor.
-      const fromAbove = prevY <= GROUND_Y + LEDGE_FORGIVENESS;
-      if (!overGap && fromAbove && this.y >= GROUND_Y && this.vy >= 0) {
+      const overGap = gapUnder(this.distance, this.gaps);
+      if (landsOnGround(overGap, prevY, this.y, this.vy)) {
         if (!this.grounded) this.land();
         this.y = GROUND_Y;
         this.vy = 0;
@@ -281,13 +272,12 @@ export class GameScene extends Phaser.Scene {
         this.grounded = false;
       }
       // Stay ducked while a drone is still overhead, so letting go a moment early isn't fatal.
-      this.sliding = this.grounded && (wantsSlide || (this.sliding && this.droneOverhead()));
+      this.sliding = this.grounded && (wantsSlide || (this.sliding && droneOverhead(this.distance, this.drones)));
       if (this.sliding && Math.floor(this.elapsed / 90) !== Math.floor((this.elapsed - deltaMs) / 90)) noise(0.05, 0.015);
 
       this.collectCoins();
-      // Still below the floor when the gap ends: the runner hits the far wall instead of sinking through the ground.
-      const hitGapWall = !overGap && this.y > GROUND_Y + LEDGE_FORGIVENESS;
-      if (this.y > HEIGHT + 60 || hitGapWall || this.hitsObstacle()) this.die();
+      const hit = hitsObstacle(playerBox(this.distance, this.y, this.sliding), this.blocks, this.drones);
+      if (this.y > HEIGHT + 60 || hitsGapWall(overGap, this.y) || hit) this.die();
       this.runPhase += dt * (this.speed / 40);
       this.trail.setPosition(PLAYER_X - 8, this.y - (this.sliding ? SLIDE_H : PLAYER_H) / 2);
       this.updateHud();
@@ -338,51 +328,15 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  /** The player's world x (their feet are centred here). */
-  private get worldX(): number {
-    return this.distance;
-  }
-
-  private gapUnder(): boolean {
-    // Fall only when the whole foot span is over the hole, so clipping an edge is forgiven.
-    const left = this.worldX - PLAYER_W / 2 + 6;
-    const right = this.worldX + PLAYER_W / 2 - 6;
-    return this.gaps.some((g) => left > g.x && right < g.x + g.w);
-  }
-
-  private playerBox(): { l: number; r: number; t: number; b: number } {
-    const h = this.sliding ? SLIDE_H : PLAYER_H;
-    const w = this.sliding ? PLAYER_H * 0.9 : PLAYER_W;
-    // A few pixels of forgiveness on every side.
-    return { l: this.worldX - w / 2 + 4, r: this.worldX + w / 2 - 4, t: this.y - h + 4, b: this.y - 2 };
-  }
-
-  private droneOverhead(): boolean {
-    const l = this.worldX - PLAYER_H * 0.45;
-    const r = this.worldX + PLAYER_H * 0.45;
-    return this.drones.some((d) => r > d.x && l < d.x + d.w);
-  }
-
-  private hitsObstacle(): boolean {
-    const p = this.playerBox();
-    for (const b of this.blocks) {
-      if (p.r > b.x && p.l < b.x + b.w && p.b > GROUND_Y - b.h) return true;
-    }
-    for (const d of this.drones) {
-      if (p.r > d.x && p.l < d.x + d.w && p.t < DRONE_BOTTOM && p.b > DRONE_BOTTOM - DRONE_H) return true;
-    }
-    return false;
-  }
-
   private collectCoins(): void {
-    const p = this.playerBox();
+    const p = playerBox(this.distance, this.y, this.sliding);
     for (const c of this.coins) {
       if (c.taken) continue;
-      if (c.x + 9 > p.l && c.x - 9 < p.r && c.y + 9 > p.t && c.y - 9 < p.b) {
+      if (touchesCoin(p, c)) {
         c.taken = true;
         this.coinsTaken++;
         addCounter('runner.coins');
-        if (this.coinsTaken >= 20) unlock('runner.coins');
+        reach('runner.coins', this.coinsTaken);
         const sx = c.x - this.distance + PLAYER_X;
         this.burst.setParticleTint(NEON.yellow);
         this.burst.explode(6, sx, c.y);
@@ -406,7 +360,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private get score(): number {
-    return Math.floor(this.distance / PX_PER_METRE) + this.coinsTaken * COIN_POINTS;
+    return runScore(this.distance, this.coinsTaken);
   }
 
   private die(): void {
@@ -418,7 +372,7 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.flash(180, 255, 46, 151);
     noise(0.5, 0.12);
     tone({ freq: 400, toFreq: 50, duration: 0.7, type: 'sawtooth', volume: 0.08 });
-    const metres = Math.floor(this.distance / PX_PER_METRE);
+    const metres = metresRun(this.distance);
     endRun(this, { gameId: GAME_ID, score: this.score, detail: `${metres}m   ${this.coinsTaken} COINS` }, 1300);
   }
 
@@ -550,9 +504,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateHud(): void {
-    const metres = Math.floor(this.distance / PX_PER_METRE);
-    if (metres >= 1000) unlock('runner.1k');
-    if (metres >= 3000) unlock('runner.3k');
+    const metres = metresRun(this.distance);
+    reach('runner.1k', metres);
+    reach('runner.3k', metres);
     // Changing a Text redraws and re-uploads its canvas, and the distance changes most frames at
     // speed, so the HUD refreshes a few times a second instead.
     if (this.elapsed - this.hudAt < HUD_REFRESH_MS) return;

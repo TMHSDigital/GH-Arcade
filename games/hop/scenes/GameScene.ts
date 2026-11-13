@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 import {
   CELL,
-  COLS,
   DOCK_COLS,
   DOCK_WIDTH,
   GAME_ID,
@@ -9,19 +8,31 @@ import {
   GRID_Y,
   HEIGHT,
   HOP_MS,
-  LANES,
-  POINTS_DOCK,
   POINTS_FULL_HOUSE,
-  POINTS_ORB,
-  POINTS_PER_SECOND_LEFT,
   POINTS_STEP,
-  SPEED_PER_LEVEL,
   START_COL,
   START_LIVES,
   START_ROW,
   TIME_LIMIT,
   WIDTH,
 } from '../config';
+import {
+  buildLanes,
+  DIRS,
+  type DirName,
+  dockAt,
+  dockCentre,
+  dockPoints,
+  freeDocks,
+  GRID_W,
+  hazardAt,
+  hopTarget,
+  type Item,
+  type Lane,
+  moveLanes,
+  submerged,
+  sweptAway,
+} from '../rules';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
@@ -31,32 +42,7 @@ import { onSwipe } from '../../../shared/touch';
 import { burstEmitter, floatText, HUD_STYLE, NEON, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
-const { unlock } = trophiesFor<typeof TROPHIES>();
-
-interface Item {
-  /** Left edge in pixels (relative to the grid), wraps around. */
-  x: number;
-  w: number;
-  /** Turtles only: phase offset for diving. */
-  phase: number;
-}
-
-interface Lane {
-  row: number;
-  kind: (typeof LANES)[number]['kind'];
-  item?: string;
-  speed: number;
-  items: Item[];
-}
-
-const GRID_W = COLS * CELL;
-/**
- * Lane items travel a loop this much longer than the grid on each side. The loop must be at least
- * the grid plus the longest item (5 cells), so an item can be completely hidden while it wraps.
- */
-const WRAP_MARGIN = CELL * 3;
-const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] } as const;
-type DirName = keyof typeof DIRS;
+const { reach, unlock } = trophiesFor<typeof TROPHIES>();
 
 const rowY = (row: number) => GRID_Y + row * CELL;
 
@@ -121,18 +107,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private startLevel(): void {
-    const speedFactor = 1 + (this.level - 1) * SPEED_PER_LEVEL;
-    this.lanes = LANES.map((spec, row) => {
-      const lane: Lane = { row, kind: spec.kind, item: spec.item, speed: (spec.speed ?? 0) * speedFactor, items: [] };
-      if (spec.item && spec.length && spec.count) {
-        const span = GRID_W + WRAP_MARGIN * 2;
-        const w = spec.length * CELL;
-        const spacing = span / spec.count;
-        const offset = Phaser.Math.Between(0, Math.floor(spacing));
-        for (let i = 0; i < spec.count; i++) lane.items.push({ x: -WRAP_MARGIN + offset + i * spacing, w, phase: Math.random() * 6 });
-      }
-      return lane;
-    });
+    this.lanes = buildLanes(this.level);
     this.docks = DOCK_COLS.map(() => false);
     this.levelText.setText(`LV ${this.level}`);
     this.resetHopper();
@@ -159,15 +134,13 @@ export class GameScene extends Phaser.Scene {
       this.queued = dir;
       return;
     }
-    const [dx, dy] = DIRS[dir];
-    const nextRow = this.row + dy;
-    // Hops snap to the nearest column, so riding a log never leaves you between cells.
-    const col = Phaser.Math.Clamp(Math.round((this.px - CELL / 2) / CELL) + dx, 0, COLS - 1);
-    if (nextRow < 0 || nextRow > START_ROW) return;
+    const target = hopTarget(this.px, this.row, dir);
+    if (!target) return;
+    const dy = DIRS[dir][1];
     this.facing = dir;
     this.hop = { fromX: this.px, fromRow: this.row, t: 0 };
-    this.px = col * CELL + CELL / 2;
-    this.row = nextRow;
+    this.px = target.px;
+    this.row = target.row;
     tone({ freq: dy < 0 ? 520 : 420, toFreq: dy < 0 ? 760 : 560, duration: 0.05, type: 'triangle', volume: 0.05 });
     if (this.row < this.furthest) {
       this.furthest = this.row;
@@ -184,7 +157,7 @@ export class GameScene extends Phaser.Scene {
     for (const name of Object.keys(DIRS) as DirName[]) if (this.controls.justPressed(name)) this.tryHop(name);
     if (this.controls.justPressed('action')) this.tryHop('up');
 
-    this.moveLanes(dt);
+    moveLanes(this.lanes, dt);
     if (this.orbDock >= 0 && this.elapsed > this.orbUntil) this.orbDock = -1;
     if (this.orbDock < 0 && Math.random() < dt / 9) this.placeOrb();
 
@@ -209,43 +182,15 @@ export class GameScene extends Phaser.Scene {
     this.render();
   }
 
-  private moveLanes(dt: number): void {
-    const span = GRID_W + WRAP_MARGIN * 2;
-    for (const lane of this.lanes) {
-      for (const it of lane.items) {
-        it.x += lane.speed * dt;
-        // Wrap only once the whole item is off screen. It reappears fully off the other side,
-        // whatever its width, instead of popping into view partway across the edge.
-        if (it.x > GRID_W) it.x -= span;
-        else if (it.x + it.w < 0) it.x += span;
-      }
-    }
-  }
-
-  /** Turtle groups spend part of each cycle underwater (from level 2), where they can't be stood on. */
-  private submerged(it: Item): boolean {
-    if (this.level < 2) return false;
-    return Math.sin(this.elapsed / 900 + it.phase) > 0.75;
-  }
-
-  private itemUnder(lane: Lane, x: number, pad: number): Item | undefined {
-    return lane.items.find((it) => x > it.x + pad && x < it.x + it.w - pad && !(lane.item === 'turtle' && this.submerged(it)));
-  }
-
   /** Continuous checks while standing: traffic, riding platforms and drifting off the edge. */
   private checkGround(dt: number): void {
     const lane = this.lanes[this.row];
-    if (lane.kind === 'road') {
-      // A few pixels of forgiveness at car bumpers.
-      if (lane.items.some((it) => this.px + CELL * 0.3 > it.x + 4 && this.px - CELL * 0.3 < it.x + it.w - 4)) this.die('SPLAT');
+    const hazard = hazardAt(lane, this.px, this.level, this.elapsed);
+    if (hazard) {
+      this.die(hazard);
     } else if (lane.kind === 'river') {
-      const ride = this.itemUnder(lane, this.px, 2);
-      if (!ride) {
-        this.die('SPLASH');
-        return;
-      }
       this.px += lane.speed * dt;
-      if (this.px < CELL * 0.25 || this.px > GRID_W - CELL * 0.25) this.die('SWEPT AWAY');
+      if (sweptAway(this.px)) this.die('SWEPT AWAY');
     }
   }
 
@@ -259,21 +204,16 @@ export class GameScene extends Phaser.Scene {
   }
 
   private reachGoal(): void {
-    const col = Math.round((this.px - CELL / 2) / CELL);
-    const dock = DOCK_COLS.findIndex((d) => col >= d && col < d + DOCK_WIDTH);
+    const dock = dockAt(this.px);
     if (dock < 0 || this.docks[dock]) {
       this.die(dock < 0 ? 'BONK' : 'TAKEN');
       return;
     }
     this.docks[dock] = true;
     // Center the hopper in the dock for the celebration.
-    this.px = (DOCK_COLS[dock] + DOCK_WIDTH / 2) * CELL;
-    const seconds = Math.ceil(this.timeLeft);
-    let points = POINTS_DOCK + seconds * POINTS_PER_SECOND_LEFT;
-    if (dock === this.orbDock) {
-      points += POINTS_ORB;
-      this.orbDock = -1;
-    }
+    this.px = dockCentre(dock);
+    const points = dockPoints(this.timeLeft, dock === this.orbDock);
+    if (dock === this.orbDock) this.orbDock = -1;
     this.addScore(points);
     unlock('hop.home');
     floatText(this, GRID_X + this.px, rowY(0) + CELL / 2, `+${points}`, NEON.green, 14);
@@ -288,7 +228,7 @@ export class GameScene extends Phaser.Scene {
       showBanner(this, `FULL HOUSE\n+${POINTS_FULL_HOUSE}`, NEON.yellow, HEIGHT / 2);
       this.time.delayedCall(1800, () => {
         this.level++;
-        if (this.level >= 3) unlock('hop.level3');
+        reach('hop.level3', this.level);
         this.startLevel();
       });
     } else {
@@ -297,7 +237,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private placeOrb(): void {
-    const free = this.docks.map((filled, i) => (filled ? -1 : i)).filter((i) => i >= 0);
+    const free = freeDocks(this.docks);
     if (!free.length) return;
     this.orbDock = Phaser.Utils.Array.GetRandom(free);
     this.orbUntil = this.elapsed + 6000;
@@ -327,7 +267,7 @@ export class GameScene extends Phaser.Scene {
 
   private addScore(points: number): void {
     this.score += points;
-    if (this.score >= 5000) unlock('hop.score');
+    reach('hop.score', this.score);
     this.scoreText.setText(this.score.toLocaleString());
   }
 
@@ -411,7 +351,7 @@ export class GameScene extends Phaser.Scene {
         break;
       }
       case 'turtle': {
-        const under = this.submerged(it);
+        const under = submerged(it, this.level, this.elapsed);
         const warn = this.level >= 2 && Math.sin(this.elapsed / 900 + it.phase) > 0.45;
         for (let i = 0; i < it.w / CELL; i++) {
           const cx = x + i * CELL + CELL / 2;
