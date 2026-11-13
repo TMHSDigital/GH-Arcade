@@ -14,7 +14,7 @@
 [![PWA](https://img.shields.io/badge/PWA-offline%20ready-3dff8a?style=flat-square&labelColor=05050d)](#features)
 [![Phaser](https://img.shields.io/badge/Phaser-3.90-a45bff?style=flat-square&labelColor=05050d)](https://phaser.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript&logoColor=white&labelColor=05050d)](https://www.typescriptlang.org)
-[![Vite](https://img.shields.io/badge/Vite-6-ffe45e?style=flat-square&logo=vite&logoColor=white&labelColor=05050d)](https://vite.dev)
+[![Vite](https://img.shields.io/badge/Vite-8-ffe45e?style=flat-square&logo=vite&logoColor=white&labelColor=05050d)](https://vite.dev)
 [![License: MIT](https://img.shields.io/badge/license-MIT-ff8a3d?style=flat-square&labelColor=05050d)](LICENSE)
 
 **A growing collection of free, open-source arcade games that run in your browser.**<br />
