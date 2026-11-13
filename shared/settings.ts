@@ -68,16 +68,22 @@ function defaults(): Settings {
   return { volume: 0.8, muted: false, reducedMotion: prefersReducedMotion(), palette: 'neon', bindings: {} };
 }
 
-function read(): Settings {
-  return { ...defaults(), ...loadJSON<Partial<Settings>>(KEY, {}) };
+/**
+ * Only what the player has explicitly changed is saved. Everything else resolves from defaults()
+ * on each load, so an option the player never touched (reduced motion) keeps following the OS.
+ */
+function readOverrides(): Partial<Settings> {
+  return loadJSON<Partial<Settings>>(KEY, {});
 }
 
-let current: Settings = read();
+let overrides: Partial<Settings> = readOverrides();
+let current: Settings = { ...defaults(), ...overrides };
 const listeners = new Set<(s: Settings) => void>();
 // Settings changed in another tab (e.g. on the hub while a game is open): adopt them, so a later
 // write from this tab, such as toggling mute, does not put the old values back.
 onExternalChange(KEY, () => {
-  current = read();
+  overrides = readOverrides();
+  current = { ...defaults(), ...overrides };
   listeners.forEach((fn) => fn(current));
 });
 
@@ -86,15 +92,17 @@ export function getSettings(): Readonly<Settings> {
 }
 
 export function updateSettings(patch: Partial<Settings>): Settings {
-  current = { ...current, ...patch };
-  saveJSON(KEY, current);
+  overrides = { ...overrides, ...patch };
+  current = { ...defaults(), ...overrides };
+  saveJSON(KEY, overrides);
   listeners.forEach((fn) => fn(current));
   return current;
 }
 
 export function resetSettings(): Settings {
+  overrides = {};
   current = defaults();
-  saveJSON(KEY, current);
+  saveJSON(KEY, overrides);
   listeners.forEach((fn) => fn(current));
   return current;
 }
