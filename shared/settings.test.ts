@@ -4,13 +4,14 @@ import { freshModules, installMemoryStorage, installWindow } from './test-utils'
 afterEach(() => vi.unstubAllGlobals());
 
 const KEY = 'gh-arcade:settings';
+const TOUCH = { haptics: true, scale: 1, mirrored: false };
 
 describe('defaults', () => {
   it('uses the defaults when nothing is stored', async () => {
     installMemoryStorage();
     installWindow(false);
     const { settings } = await freshModules();
-    expect(settings.getSettings()).toEqual({ volume: 0.8, muted: false, reducedMotion: false, palette: 'neon', bindings: {} });
+    expect(settings.getSettings()).toEqual({ volume: 0.8, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, touch: TOUCH });
   });
 
   it('reduced motion follows the OS preference', async () => {
@@ -39,7 +40,7 @@ describe('loading', () => {
     installMemoryStorage({ [KEY]: JSON.stringify({ volume: 7, muted: 'yes', palette: 'x', bindings: [1, 2] }) });
     installWindow();
     const { settings } = await freshModules();
-    expect(settings.getSettings()).toEqual({ volume: 1, muted: false, reducedMotion: false, palette: 'neon', bindings: {} });
+    expect(settings.getSettings()).toEqual({ volume: 1, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, touch: TOUCH });
   });
 
   it('keeps only well-formed bindings', async () => {
@@ -48,6 +49,35 @@ describe('loading', () => {
     installWindow();
     const { settings } = await freshModules();
     expect(settings.getSettings().bindings).toEqual({ action: { code: 75, label: 'K' } });
+  });
+});
+
+describe('touch settings', () => {
+  it('loads saved touch options and clamps the size', async () => {
+    installMemoryStorage({ [KEY]: JSON.stringify({ touch: { haptics: false, scale: 9, mirrored: true } }) });
+    installWindow();
+    const { settings } = await freshModules();
+    expect(settings.getSettings().touch).toEqual({ haptics: false, scale: 1.5, mirrored: true });
+  });
+
+  it('fills in defaults for missing or malformed touch fields', async () => {
+    installMemoryStorage({ [KEY]: JSON.stringify({ touch: { haptics: 'yes', scale: 'big', mirrored: true } }) });
+    installWindow();
+    let { settings } = await freshModules();
+    expect(settings.getSettings().touch).toEqual({ haptics: true, scale: 1, mirrored: true });
+
+    installMemoryStorage({ [KEY]: JSON.stringify({ touch: 'left' }) });
+    ({ settings } = await freshModules());
+    expect(settings.getSettings().touch).toEqual(TOUCH);
+  });
+
+  it('saves a change and keeps it across a reload', async () => {
+    installMemoryStorage();
+    installWindow();
+    let { settings } = await freshModules();
+    settings.updateSettings({ touch: { ...settings.getSettings().touch, mirrored: true, scale: 1.2 } });
+    ({ settings } = await freshModules());
+    expect(settings.getSettings().touch).toEqual({ haptics: true, scale: 1.2, mirrored: true });
   });
 });
 
@@ -112,7 +142,7 @@ describe('resetSettings', () => {
     const fn = vi.fn();
     settings.onSettingsChange(fn);
     const reset = settings.resetSettings();
-    expect(reset).toEqual({ volume: 0.8, muted: false, reducedMotion: false, palette: 'neon', bindings: {} });
+    expect(reset).toEqual({ volume: 0.8, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, touch: TOUCH });
     expect(fn).toHaveBeenCalledTimes(1);
   });
 });

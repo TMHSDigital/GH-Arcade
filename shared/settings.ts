@@ -42,6 +42,19 @@ export interface KeyBinding {
 
 export type Palette = 'neon' | 'colorblind';
 
+/** Options for the on-screen controls shown on touch screens. */
+export interface TouchSettings {
+  /** A short vibration when an on-screen button is pressed (where the device supports it). */
+  haptics: boolean;
+  /** Size multiplier for the on-screen stick and buttons. */
+  scale: number;
+  /** Left-handed layout: the stick and buttons swap sides. */
+  mirrored: boolean;
+}
+
+export const TOUCH_SCALE_MIN = 0.8;
+export const TOUCH_SCALE_MAX = 1.5;
+
 export interface Settings {
   /** Master volume, 0 to 1. */
   volume: number;
@@ -52,6 +65,7 @@ export interface Settings {
   palette: Palette;
   /** Custom keyboard keys per action, replacing that action's default keys. */
   bindings: Partial<Record<RebindableAction, KeyBinding>>;
+  touch: TouchSettings;
 }
 
 const KEY = 'settings';
@@ -76,6 +90,15 @@ function sanitize(raw: unknown): Partial<Settings> {
     }
     out.bindings = bindings;
   }
+  if (isRecord(raw.touch)) {
+    const t = raw.touch;
+    const base = defaults().touch;
+    out.touch = {
+      haptics: typeof t.haptics === 'boolean' ? t.haptics : base.haptics,
+      scale: typeof t.scale === 'number' && Number.isFinite(t.scale) ? Math.min(TOUCH_SCALE_MAX, Math.max(TOUCH_SCALE_MIN, t.scale)) : base.scale,
+      mirrored: typeof t.mirrored === 'boolean' ? t.mirrored : base.mirrored,
+    };
+  }
   return out;
 }
 
@@ -92,7 +115,14 @@ function prefersReducedMotion(): boolean {
 }
 
 function defaults(): Settings {
-  return { volume: 0.8, muted: false, reducedMotion: prefersReducedMotion(), palette: 'neon', bindings: {} };
+  return {
+    volume: 0.8,
+    muted: false,
+    reducedMotion: prefersReducedMotion(),
+    palette: 'neon',
+    bindings: {},
+    touch: { haptics: true, scale: 1, mirrored: false },
+  };
 }
 
 /**

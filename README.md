@@ -171,7 +171,7 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | **Page controls** | On-screen pause and fullscreen buttons, a loading indicator, and a hint to rotate your phone for games that play best in landscape. |
 | **Couch-friendly hub** | Browse the cabinets with the arrow keys or a gamepad: <kbd>A</kbd> opens a game, <kbd>LB</kbd> <kbd>RB</kbd> switch filters, <kbd>Y</kbd> shows trophies and <kbd>Start</kbd> opens settings. |
 | **Trophies and stats** | 43 trophies across the arcade, with plays and best scores per game in the Trophies panel. Saved on your device, no sign-up. |
-| **Settings and accessibility** | Volume, reduced motion (no shake or flashes), a colorblind-friendly palette, and rebindable keys. |
+| **Settings and accessibility** | Volume, reduced motion (no shake or flashes), a colorblind-friendly palette, rebindable keys, and touch options: button size, a left-handed layout and vibration. |
 | **Zero-asset audio** | Sound effects are synthesized live with the Web Audio API, so there are no audio files to download. |
 | **Fast loads** | Each game is its own page and bundle. Phaser is split into one shared file that your browser caches across games. |
 | **One command per game** | `npm run new-game` scaffolds a working game and adds it to the hub. No build config to edit. |

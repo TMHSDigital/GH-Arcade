@@ -1,10 +1,27 @@
 import Phaser from 'phaser';
+import { getSettings } from './settings';
 import { NEON, PIXEL_FONT } from './ui';
+
+export { isTouchDevice } from './device';
 
 export type SwipeDir = 'left' | 'right' | 'up' | 'down' | 'tap';
 
-export function isTouchDevice(): boolean {
-  return typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+/**
+ * Where an on-screen control goes given the player's touch settings: with the left-handed layout
+ * on, x is flipped across the middle of the screen. Use it for any touch-only UI a game places itself.
+ */
+export function mirrorX(scene: Phaser.Scene, x: number): number {
+  return getSettings().touch.mirrored ? scene.scale.gameSize.width - x : x;
+}
+
+/** A short vibration for an on-screen button press, if the player wants it and the device can. */
+function pulse(): void {
+  if (!getSettings().touch.haptics) return;
+  try {
+    navigator.vibrate?.(10);
+  } catch {
+    /* vibration blocked or unsupported */
+  }
 }
 
 export interface SwipeOptions {
@@ -63,7 +80,8 @@ function direction(dx: number, dy: number, threshold: number): SwipeDir | null {
 
 /**
  * On-screen analog stick. It appears wherever the player first touches inside its zone
- * (so it works for any hand size), and reports x/y in -1..1.
+ * (so it works for any hand size), and reports x/y in -1..1. Its size follows the player's touch
+ * scale, and the left-handed layout moves its zone to the other side of the screen.
  */
 export class VirtualStick {
   x = 0;
@@ -75,9 +93,13 @@ export class VirtualStick {
   constructor(
     scene: Phaser.Scene,
     zone: Phaser.Geom.Rectangle,
-    radius = 60,
+    baseRadius = 60,
   ) {
-    const home = { x: zone.x + radius + 30, y: zone.bottom - radius - 30 };
+    const { scale, mirrored } = getSettings().touch;
+    const radius = baseRadius * scale;
+    if (mirrored) zone = new Phaser.Geom.Rectangle(scene.scale.gameSize.width - zone.right, zone.y, zone.width, zone.height);
+    // Rests in the outer bottom corner of its zone, whichever side that is.
+    const home = { x: mirrored ? zone.right - radius - 30 : zone.x + radius + 30, y: zone.bottom - radius - 30 };
     this.base = scene.add.circle(home.x, home.y, radius, NEON.cyan, 0.08).setStrokeStyle(2, NEON.cyan, 0.5).setDepth(900);
     this.knob = scene.add.circle(home.x, home.y, radius * 0.45, NEON.cyan, 0.35).setDepth(901);
 
@@ -114,12 +136,17 @@ export class VirtualStick {
   }
 }
 
-/** Round on-screen button. Tracks its own pointer so it works alongside a stick (multi-touch). */
+/**
+ * Round on-screen button. Tracks its own pointer so it works alongside a stick (multi-touch).
+ * Its size and side follow the player's touch settings, and a press gives a short vibration.
+ */
 export class VirtualButton {
   private pointers = new Set<number>();
   private readonly circle: Phaser.GameObjects.Arc;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, label: string, color: number = NEON.pink, radius = 42) {
+  constructor(scene: Phaser.Scene, baseX: number, y: number, label: string, color: number = NEON.pink, baseRadius = 42) {
+    const x = mirrorX(scene, baseX);
+    const radius = baseRadius * getSettings().touch.scale;
     this.circle = scene.add.circle(x, y, radius, color, 0.12).setStrokeStyle(2, color, 0.7).setDepth(900);
     scene.add
       .text(x, y, label, { fontFamily: PIXEL_FONT, fontSize: '12px', color: '#e8e8ff' })
@@ -128,6 +155,7 @@ export class VirtualButton {
     const hit = new Phaser.Geom.Circle(x, y, radius * 1.3);
     scene.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
       if (hit.contains(p.x, p.y)) {
+        if (this.pointers.size === 0) pulse();
         this.pointers.add(p.id);
         this.circle.setFillStyle(color, 0.35);
       }

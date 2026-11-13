@@ -1,3 +1,4 @@
+import { isTouchDevice } from '../../shared/device';
 import { cssColor, PALETTES } from '../../shared/palette';
 import {
   DEFAULT_KEY_CODES,
@@ -9,6 +10,7 @@ import {
   REBINDABLE,
   type RebindableAction,
   resetSettings,
+  type Settings,
   updateSettings,
 } from '../../shared/settings';
 
@@ -46,6 +48,13 @@ export function initSettingsPanel(): void {
   const colorblind = dialog.querySelector<HTMLInputElement>('#colorblind')!;
   const swatches = dialog.querySelector<HTMLDivElement>('#swatches')!;
   const bindingList = dialog.querySelector<HTMLTableSectionElement>('#bindings')!;
+  const touchSection = dialog.querySelector<HTMLElement>('#touch-settings')!;
+  const touchScale = dialog.querySelector<HTMLInputElement>('#touch-scale')!;
+  const touchScaleValue = dialog.querySelector<HTMLOutputElement>('#touch-scale-value')!;
+  const touchMirrored = dialog.querySelector<HTMLInputElement>('#touch-mirrored')!;
+  const touchHaptics = dialog.querySelector<HTMLInputElement>('#touch-haptics')!;
+  // Only worth showing where there is a touch screen to use them on.
+  touchSection.hidden = !isTouchDevice();
   const bindingNote = dialog.querySelector<HTMLParagraphElement>('#binding-note')!;
   let listening: { action: RebindableAction; button: HTMLButtonElement } | null = null;
 
@@ -56,6 +65,10 @@ export function initSettingsPanel(): void {
     muted.checked = s.muted;
     motion.checked = s.reducedMotion;
     colorblind.checked = s.palette === 'colorblind';
+    touchScale.value = String(Math.round(s.touch.scale * 100));
+    touchScaleValue.value = `${touchScale.value}%`;
+    touchMirrored.checked = s.touch.mirrored;
+    touchHaptics.checked = s.touch.haptics;
     swatches.replaceChildren(
       ...Object.values(PALETTES[s.palette]).map((c) => {
         const chip = document.createElement('span');
@@ -139,6 +152,10 @@ export function initSettingsPanel(): void {
   muted.addEventListener('change', () => updateSettings({ muted: muted.checked }));
   motion.addEventListener('change', () => updateSettings({ reducedMotion: motion.checked }));
   colorblind.addEventListener('change', () => updateSettings({ palette: colorblind.checked ? 'colorblind' : 'neon' }));
+  const setTouch = (patch: Partial<Settings['touch']>) => updateSettings({ touch: { ...getSettings().touch, ...patch } });
+  touchScale.addEventListener('input', () => setTouch({ scale: Number(touchScale.value) / 100 }));
+  touchMirrored.addEventListener('change', () => setTouch({ mirrored: touchMirrored.checked }));
+  touchHaptics.addEventListener('change', () => setTouch({ haptics: touchHaptics.checked }));
   dialog.querySelector('#reset-bindings')!.addEventListener('click', () => {
     note('');
     updateSettings({ bindings: {} });

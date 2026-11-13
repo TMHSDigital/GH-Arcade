@@ -96,6 +96,23 @@
           <div id="swatches" class="swatches" aria-hidden="true"></div>
         </section>
 
+        <section id="touch-settings" hidden>
+          <h3>Touch controls</h3>
+          <label class="row">
+            <span>Button size</span>
+            <input id="touch-scale" type="range" min="80" max="150" step="10" />
+            <output id="touch-scale-value" for="touch-scale"></output>
+          </label>
+          <label class="row check">
+            <input id="touch-mirrored" type="checkbox" />
+            <span>Left-handed layout <small>The on-screen stick and buttons swap sides</small></span>
+          </label>
+          <label class="row check">
+            <input id="touch-haptics" type="checkbox" />
+            <span>Vibrate on button press <small>On devices that support it</small></span>
+          </label>
+        </section>
+
         <section>
           <h3>Keyboard controls</h3>
           <p class="hint">Click Change, then press a new key (Esc cancels). Gamepad and game-specific keys stay the same.</p>
