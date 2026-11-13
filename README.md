@@ -368,12 +368,7 @@ Have an idea? [Open an issue](https://github.com/TMHSDigital/GH-Arcade/issues/ne
 
 ## Contributing
 
-New games, level designs and bug fixes are welcome.
-
-1. Fork the repo and create a branch.
-2. Run `npm run new-game <slug>` and build your game.
-3. Check that `npm run build` passes.
-4. Open a pull request with a screenshot or GIF of your game.
+New games, level designs and bug fixes are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) covers setup, the checks to run and the conventions games follow. Notable changes are listed in [CHANGELOG.md](CHANGELOG.md), and security problems should be reported privately as described in [SECURITY.md](SECURITY.md).
 
 By contributing, you agree that your work is released under the project's MIT License.
 
