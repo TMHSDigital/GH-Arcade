@@ -4,7 +4,7 @@ import type { HtmlTagDescriptor, Plugin } from 'vite';
  * Everything the game pages have in common, defined once. Each games/<slug>/index.html holds only
  * what is specific to it (the canvas container and its script); this plugin adds the shared head
  * tags, the page title from games/registry.json, the back link and the loading placeholder, in dev
- * and in the build alike.
+ * and in the build alike. Built pages (the hub included) also get a Content-Security-Policy.
  */
 
 export interface GameInfo {
@@ -16,6 +16,32 @@ const FONTS = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Sp
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
+/**
+ * Content-Security-Policy for every page. GitHub Pages cannot send response headers, so it is a
+ * meta tag; it is defence in depth for a static site with no user content. The arcade loads its
+ * own scripts and styles, Google Fonts, and nothing else. Changing what the pages load (a new CDN,
+ * inline scripts, images from elsewhere) means updating this list.
+ */
+export const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self'",
+  // Phaser and the hub set styles from script, which CSP allows; nothing uses inline style attributes or blocks.
+  "style-src 'self' https://fonts.googleapis.com",
+  'font-src https://fonts.gstatic.com',
+  "img-src 'self' data: blob:",
+  "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com",
+  "worker-src 'self'",
+  "manifest-src 'self'",
+  "base-uri 'none'",
+  "object-src 'none'",
+  "form-action 'none'",
+].join('; ');
+
+/** The CSP meta tag, placed first in the head so it applies to everything after it. */
+export function cspTag(): HtmlTagDescriptor {
+  return { tag: 'meta', attrs: { 'http-equiv': 'Content-Security-Policy', content: CONTENT_SECURITY_POLICY }, injectTo: 'head-prepend' };
 }
 
 /** The slug of the game a page belongs to, or null for the hub and anything else. */
@@ -48,10 +74,12 @@ export function gamePages(games: GameInfo[]): Plugin {
       // Before Vite's own HTML handling, so the icon links get the base path like hand-written ones.
       order: 'pre',
       handler(_html, ctx) {
+        // The dev server needs inline scripts and a websocket for hot reload, so the policy is build-only.
+        const csp = ctx.server ? [] : [cspTag()];
         const slug = gameSlugOf(ctx.filename);
-        if (!slug) return;
+        if (!slug) return csp;
         // A game that is not in the registry yet still gets a sensible title.
-        return gamePageTags(titles.get(slug) ?? slug);
+        return [...csp, ...gamePageTags(titles.get(slug) ?? slug)];
       },
     },
   };

@@ -8,6 +8,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 - Settings in the pause menu: volume, sound, reduced motion and colors can be changed without leaving a game, by keyboard, gamepad or touch.
 - Unit tests (Vitest), ESLint and a pull request check.
+- A Content-Security-Policy on every built page: the arcade loads only its own files and Google Fonts.
 - An ARCADE option on the game-over and match result screens.
 - Hub: sort by recently played, most played or name; trophy progress and a last-played marker on each card; average score and lifetime totals in the Trophies panel.
 - Settings has a "Your data" section: download a backup of trophies, stats, best scores and settings, restore one, or reset best scores.
