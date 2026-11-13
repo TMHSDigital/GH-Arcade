@@ -8,6 +8,10 @@ updates:
       # One pull request for all minor and patch bumps; majors arrive on their own.
       npm-minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # typescript-eslint does not run on TypeScript 7 yet (issue #26). Remove this once it does.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /
