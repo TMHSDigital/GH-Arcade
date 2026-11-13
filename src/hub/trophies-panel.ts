@@ -30,13 +30,20 @@ export function initTrophiesPanel(): void {
           game === 'arcade'
             ? `${getCounter('arcade.plays')} ${getCounter('arcade.plays') === 1 ? 'game' : 'games'} played`
             : stats.plays
-              ? `Played ${stats.plays} · Best ${stats.best.toLocaleString()}`
+              ? `Played ${stats.plays} · Best ${stats.best.toLocaleString()}${
+                  // Two-player matches count as plays but carry no score, so only show an average when there is one.
+                  stats.totalScore > 0 ? ` · Average ${Math.round(stats.totalScore / stats.plays).toLocaleString()}` : ''
+                }`
               : 'Not played yet';
         const tiles = trophies
           .map((t) => {
             const done = isUnlocked(t.id);
-            const progress =
-              !done && t.counter && t.target ? ` (${Math.min(getCounter(t.counter), t.target)}/${t.target})` : '';
+            // Running totals stay visible after their trophy unlocks, as a lifetime stat.
+            let progress = '';
+            if (t.counter && t.target) {
+              const count = getCounter(t.counter);
+              progress = done ? ` (${count.toLocaleString()} so far)` : ` (${Math.min(count, t.target)}/${t.target})`;
+            }
             const when = done ? new Date(unlockedAt(t.id)!).toLocaleDateString() : 'Locked';
             return `<li class="trophy ${done ? 'done' : ''}">
               <strong>${escapeHtml(t.title)}</strong>
