@@ -222,7 +222,10 @@ export class GameScene extends Phaser.Scene {
       this.heartbeat(deltaMs);
       if (!this.waveClearing && this.rocks.length === 0 && !this.ufo) {
         this.waveClearing = true;
-        this.time.delayedCall(1500, () => this.nextWave());
+        this.time.delayedCall(1500, () => {
+          // Dying during the pause between waves must not start (or credit) the next one.
+          if (!this.over) this.nextWave();
+        });
       }
     }
     this.render();
