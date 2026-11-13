@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, WIDTH } from '../config';
 import { buildMenu } from '../../../shared/scenes';
+import { helpKeys } from '../../../shared/settings';
 import { NEON, reducedMotion } from '../../../shared/ui';
 
 /** Menu backdrop: two ghost paddles rallying a ball behind the title. */
@@ -17,7 +18,7 @@ export class MenuScene extends Phaser.Scene {
       gameId: GAME_ID,
       title: ['NEON', 'PONG'],
       colors: [NEON.cyan, NEON.pink],
-      help: 'Solo: ↑ ↓ / W S / stick / drag vs the CPU    Two players: P1 W S or pad 1, P2 ↑ ↓ or pad 2\nFirst to 7 wins    Pause: P / Start',
+      help: `Solo: ${helpKeys(['up', 'down'], '↑ ↓ / W S')} / stick / drag vs the CPU    Two players: P1 W S or pad 1, P2 ↑ ↓ or pad 2\nFirst to 7 wins    Pause: ${helpKeys('pause', 'P')} / Start`,
       modes: [
         { label: 'VS CPU', data: { players: 1 } },
         { label: '2 PLAYERS', data: { players: 2 } },

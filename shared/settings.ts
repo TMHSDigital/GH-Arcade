@@ -180,6 +180,18 @@ export function keyLabel(action: RebindableAction, first = false): string {
   return (first && !custom ? label.split(' / ')[0] : label).toUpperCase();
 }
 
+/**
+ * Key names for a game's help text. `written` is how the help words the default keys ("P", "← →",
+ * "arrows / WASD") and is returned as is while none of the actions is rebound. Once one is, each
+ * action's current keys are listed instead ("K", or "J, → / D"), so the help never names a key that
+ * no longer works.
+ */
+export function helpKeys(actions: RebindableAction | readonly RebindableAction[], written: string): string {
+  const list = typeof actions === 'string' ? [actions] : actions;
+  if (!list.some((action) => current.bindings[action])) return written;
+  return list.map((action) => current.bindings[action]?.label ?? DEFAULT_KEY_LABELS[action]).join(', ');
+}
+
 /** Calls `fn` whenever settings change. Returns an unsubscribe function. */
 export function onSettingsChange(fn: (s: Settings) => void): () => void {
   listeners.add(fn);

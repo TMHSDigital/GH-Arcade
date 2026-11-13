@@ -19,6 +19,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 ### Fixed
 
 - A new version arriving while you play no longer reloads the game mid-run.
+- Menu help text, and Neon Pinball's in-game help, name the keys you chose in Settings instead of the defaults.
 
 ## 2026-11-12
 

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_ID, GROUND_Y, HEIGHT, WIDTH } from '../config';
 import { buildMenu } from '../../../shared/scenes';
+import { helpKeys } from '../../../shared/settings';
 import { NEON, reducedMotion } from '../../../shared/ui';
 
 export class MenuScene extends Phaser.Scene {
@@ -16,7 +17,7 @@ export class MenuScene extends Phaser.Scene {
       gameId: GAME_ID,
       title: ['NEON', 'RUNNER'],
       colors: [NEON.pink, NEON.cyan],
-      help: 'Jump: tap / Space / ↑ / A (again in the air to double jump)    Slide: swipe down / ↓ / B\nPress down in the air to dive    Pause: P / Start',
+      help: `Jump: tap / ${helpKeys('action', 'Space')} / ${helpKeys('up', '↑')} / A (again in the air to double jump)    Slide: swipe down / ${helpKeys(['down', 'alt'], '↓')} / B\nPress down in the air to dive    Pause: ${helpKeys('pause', 'P')} / Start`,
     });
   }
 

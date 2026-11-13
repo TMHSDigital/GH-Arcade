@@ -159,4 +159,17 @@ describe('key helpers', () => {
     expect(settings.keyCodesFor('action')).toEqual([75]);
     expect(settings.keyLabel('action', true)).toBe('K');
   });
+
+  it('help text keeps its own wording until a key is rebound', async () => {
+    installMemoryStorage();
+    installWindow();
+    const { settings } = await freshModules();
+    expect(settings.helpKeys('pause', 'P')).toBe('P');
+    expect(settings.helpKeys(['left', 'right'], '← →')).toBe('← →');
+    settings.updateSettings({ bindings: { pause: { code: 75, label: 'K' }, left: { code: 74, label: 'J' } } });
+    expect(settings.helpKeys('pause', 'P')).toBe('K');
+    // One rebound key in a group lists every action's current keys, defaults included.
+    expect(settings.helpKeys(['left', 'right'], '← →')).toBe('J, → / D');
+    expect(settings.helpKeys('action', 'Space')).toBe('Space');
+  });
 });

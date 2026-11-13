@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_ID } from '../config';
 import { buildMenu } from '../../../shared/scenes';
+import { helpKeys } from '../../../shared/settings';
 import { NEON, reducedMotion } from '../../../shared/ui';
 
 /** Menu backdrop: a pair of flippers idly batting and three pulsing bumpers. */
@@ -17,7 +18,7 @@ export class MenuScene extends Phaser.Scene {
       gameId: GAME_ID,
       title: ['NEON', 'PINBALL'],
       colors: [NEON.pink, NEON.cyan],
-      help: 'Flippers: left / right, A D, Z /, LB RB, or hold each side of the screen\nLaunch: hold Space / Down / A and release    Pause: P / Start',
+      help: `Flippers: ${helpKeys(['left', 'right'], 'left / right, A D')}, Z /, LB RB, or hold each side of the screen\nLaunch: hold ${helpKeys('action', 'Space')} / ${helpKeys('down', 'Down')} / A and release    Pause: ${helpKeys('pause', 'P')} / Start`,
     });
   }
 

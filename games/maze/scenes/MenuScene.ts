@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, WIDTH } from '../config';
 import { buildMenu } from '../../../shared/scenes';
+import { helpKeys } from '../../../shared/settings';
 import { NEON, reducedMotion } from '../../../shared/ui';
 
 /** Menu backdrop: the runner loops a dotted track with a chaser on its tail. */
@@ -17,7 +18,7 @@ export class MenuScene extends Phaser.Scene {
       gameId: GAME_ID,
       title: ['NEON', 'MAZE'],
       colors: [NEON.yellow, NEON.blue],
-      help: 'Steer: arrows / WASD / d-pad / stick / swipe\nClear every dot, grab a power cell to turn the tables    Pause: P / Start',
+      help: `Steer: ${helpKeys(['left', 'right', 'up', 'down'], 'arrows / WASD')} / d-pad / stick / swipe\nClear every dot, grab a power cell to turn the tables    Pause: ${helpKeys('pause', 'P')} / Start`,
     });
   }
 

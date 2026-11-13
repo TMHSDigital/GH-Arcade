@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, WIDTH } from '../config';
 import { buildMenu } from '../../../shared/scenes';
+import { helpKeys } from '../../../shared/settings';
 import { NEON, reducedMotion } from '../../../shared/ui';
 
 /** Menu backdrop: dim lanes with cars and logs gliding past. */
@@ -17,7 +18,7 @@ export class MenuScene extends Phaser.Scene {
       gameId: GAME_ID,
       title: ['NEON', 'HOP'],
       colors: [NEON.blue, NEON.green],
-      help: 'Hop: arrows / WASD / d-pad / swipe (tap hops forward)\nCross the road, ride the logs and turtles, fill all five docks    Pause: P / Start',
+      help: `Hop: ${helpKeys(['left', 'right', 'up', 'down'], 'arrows / WASD')} / d-pad / swipe (tap hops forward)\nCross the road, ride the logs and turtles, fill all five docks    Pause: ${helpKeys('pause', 'P')} / Start`,
     });
   }
 

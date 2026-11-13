@@ -47,6 +47,7 @@ import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
+import { helpKeys } from '../../../shared/settings';
 import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, floatText, HUD_LABEL_STYLE, HUD_STYLE, NEON, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
@@ -130,7 +131,14 @@ export class GameScene extends Phaser.Scene {
     this.ballText = this.add.text(30, 168, '', value);
     this.add.text(30, 220, 'MULTIPLIER', label);
     this.multText = this.add.text(30, 238, '', { ...value, color: '#ffe45e' });
-    const help = ['FLIPPERS', 'LEFT / RIGHT', 'A D / Z /', 'LB RB', '', 'LAUNCH', 'HOLD SPACE / DOWN', '', 'TOUCH', 'HOLD EACH SIDE'];
+    // The rebindable keys follow the player's settings; Z and / are this game's own extras.
+    // The pixel font has no arrow glyphs, so arrows are spelled out.
+    const words: Record<string, string> = { '←': 'LEFT', '→': 'RIGHT', '↑': 'UP', '↓': 'DOWN' };
+    const spell = (keys: string) => keys.toUpperCase().replace(/[←→↑↓]/g, (arrow) => words[arrow]);
+    // One line per flipper once rebound, so the column stays clear of the table.
+    const flipKeys = spell(helpKeys(['left', 'right'], 'LEFT / RIGHT\nA D')).replace(', ', '\n');
+    const launchKeys = spell(`${helpKeys('action', 'SPACE')} / ${helpKeys('down', 'DOWN')}`);
+    const help = ['FLIPPERS', `${flipKeys} / Z /`, 'LB RB', '', 'LAUNCH', `HOLD ${launchKeys}`, '', 'TOUCH', 'HOLD EACH SIDE'];
     this.add.text(WIDTH - 30, 80, help.join('\n'), { ...label, align: 'right', lineSpacing: 8 }).setOrigin(1, 0);
 
     this.flippers = FLIPPER_PIVOTS.map((pivot, i) => {

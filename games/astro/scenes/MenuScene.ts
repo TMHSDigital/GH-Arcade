@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, WIDTH } from '../config';
 import { buildMenu } from '../../../shared/scenes';
+import { helpKeys } from '../../../shared/settings';
 import { NEON, reducedMotion } from '../../../shared/ui';
 
 interface Drifter {
@@ -43,7 +44,7 @@ export class MenuScene extends Phaser.Scene {
       gameId: GAME_ID,
       title: ['ASTRO', 'BLASTER'],
       colors: [NEON.orange, NEON.cyan],
-      help: 'Turn: ← → / stick    Thrust: ↑    Fire: Space / Z / A    Warp: Shift / X / B\nTouch: left stick, FIRE and WARP buttons    Pause: P / Start',
+      help: `Turn: ${helpKeys(['left', 'right'], '← →')} / stick    Thrust: ${helpKeys('up', '↑')}    Fire: ${helpKeys('action', 'Space')} / Z / A    Warp: ${helpKeys('alt', 'Shift / X')} / B\nTouch: left stick, FIRE and WARP buttons    Pause: ${helpKeys('pause', 'P')} / Start`,
     });
   }
 

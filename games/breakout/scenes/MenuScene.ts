@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, ROW_COLORS, WIDTH } from '../config';
 import { buildMenu } from '../../../shared/scenes';
+import { helpKeys } from '../../../shared/settings';
 import { reducedMotion } from '../../../shared/ui';
 
 export class MenuScene extends Phaser.Scene {
@@ -30,7 +31,7 @@ export class MenuScene extends Phaser.Scene {
     buildMenu(this, {
       gameId: GAME_ID,
       title: ['NEON', 'BREAKOUT'],
-      help: 'Move: mouse / touch / ← → / stick    Launch: click / space / A\nPause: P / Start    Mute: M',
+      help: `Move: mouse / touch / ${helpKeys(['left', 'right'], '← →')} / stick    Launch: click / ${helpKeys('action', 'space')} / A\nPause: ${helpKeys('pause', 'P')} / Start    Mute: ${helpKeys('mute', 'M')}`,
       startData: { level: 0, score: 0 },
     });
   }
