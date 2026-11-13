@@ -46,7 +46,10 @@ interface Lane {
 }
 
 const GRID_W = COLS * CELL;
-/** Items wrap across the grid plus this margin, so they slide fully off before reappearing. */
+/**
+ * Lane items travel a loop this much longer than the grid on each side. The loop must be at least
+ * the grid plus the longest item (5 cells), so an item can be completely hidden while it wraps.
+ */
 const WRAP_MARGIN = CELL * 3;
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] } as const;
 type DirName = keyof typeof DIRS;
@@ -207,8 +210,10 @@ export class GameScene extends Phaser.Scene {
     for (const lane of this.lanes) {
       for (const it of lane.items) {
         it.x += lane.speed * dt;
-        if (it.x > GRID_W + WRAP_MARGIN) it.x -= span;
-        else if (it.x + it.w < -WRAP_MARGIN) it.x += span;
+        // Wrap only once the whole item is off screen. It reappears fully off the other side,
+        // whatever its width, instead of popping into view partway across the edge.
+        if (it.x > GRID_W) it.x -= span;
+        else if (it.x + it.w < 0) it.x += span;
       }
     }
   }
