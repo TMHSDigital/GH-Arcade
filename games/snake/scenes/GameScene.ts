@@ -68,6 +68,7 @@ function line(x: number, y: number, dir: Cell): Cell[] {
 
 export class GameScene extends Phaser.Scene {
   private versus = false;
+  private readonly gradients = new Map<number, number[]>();
   private wins: [number, number] = [0, 0];
   private round = 1;
   private players: Player[] = [];
@@ -361,14 +362,26 @@ export class GameScene extends Phaser.Scene {
 
   // ---------------------------------------------------------------- render
 
+  /**
+   * The head-to-tail gradient for a snake of a given length. It only changes when the snake grows,
+   * so it is computed once per length instead of allocating three color objects per segment per frame.
+   */
+  private gradient(p: Player, total: number): number[] {
+    const cached = this.gradients.get(p.id);
+    if (cached && cached.length === total) return cached;
+    const from = Phaser.Display.Color.ValueToColor(p.colors[0]);
+    const to = Phaser.Display.Color.ValueToColor(p.colors[1]);
+    const colors = Array.from({ length: total }, (_, i) => {
+      const c = Phaser.Display.Color.Interpolate.ColorWithColor(from, to, Math.max(total - 1, 1), i);
+      return Phaser.Display.Color.GetColor(c.r, c.g, c.b);
+    });
+    this.gradients.set(p.id, colors);
+    return colors;
+  }
+
   private segmentColor(p: Player, i: number, total: number): number {
-    const c = Phaser.Display.Color.Interpolate.ColorWithColor(
-      Phaser.Display.Color.ValueToColor(p.colors[0]),
-      Phaser.Display.Color.ValueToColor(p.colors[1]),
-      Math.max(total - 1, 1),
-      i,
-    );
-    return Phaser.Display.Color.GetColor(c.r, c.g, c.b);
+    const colors = this.gradient(p, total);
+    return colors[Math.min(i, colors.length - 1)];
   }
 
   private render(t: number): void {
