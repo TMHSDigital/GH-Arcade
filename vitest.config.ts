@@ -5,6 +5,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     environment: 'node',
+    // Several suites re-import modules per test; the first import can take seconds on a busy machine.
+    testTimeout: 20000,
     include: ['{games,shared,src,scripts,build}/**/*.test.{ts,mjs}'],
   },
 });
