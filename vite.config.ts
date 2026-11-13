@@ -2,8 +2,8 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { readdirSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { gamePages } from './build/game-pages';
-import registry from './games/registry.json';
+import { gamePages } from './build/game-pages.ts';
+import registry from './games/registry.json' with { type: 'json' };
 
 const root = import.meta.dirname;
 const BASE = '/GH-Arcade/';
