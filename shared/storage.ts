@@ -1,4 +1,6 @@
 // localStorage can throw (private mode, blocked storage), so never let that break a game.
+// Saved values can also be stale, hand-edited or from another version: loadJSON only parses, and
+// each module checks the shape of what it reads before trusting it.
 const PREFIX = 'gh-arcade:';
 
 export function loadJSON<T>(key: string, fallback: T): T {
@@ -33,8 +35,18 @@ export function onExternalChange(key: string, fn: () => void): void {
   });
 }
 
+/** True for plain objects, the only shape saved sections are allowed to have. */
+export function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** A finite, non-negative number, or 0 for anything else found in saved data. */
+export function savedNumber(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
+}
+
 export function getHighScore(game: string): number {
-  return loadJSON<number>(`${game}:highscore`, 0);
+  return savedNumber(loadJSON<unknown>(`${game}:highscore`, 0));
 }
 
 /** Saves the score if it beats the stored best. Returns true when a new record was set. */

@@ -7,9 +7,6 @@ import { initSettingsPanel } from './settings-panel';
 import { initTrophiesPanel } from './trophies-panel';
 
 registerOffline();
-initSettingsPanel();
-initTrophiesPanel();
-initHubNavigation();
 
 // Chromium browsers fire this when the arcade can be installed as an app; show our own button for it.
 interface InstallPromptEvent extends Event {
@@ -109,6 +106,15 @@ function escapeHtml(s: string): string {
 
 renderFilters();
 render();
+
+// Panels are wired up after the grid is on screen, and one that fails must never hide the games.
+for (const init of [initSettingsPanel, initTrophiesPanel, initHubNavigation]) {
+  try {
+    init();
+  } catch (err) {
+    console.error('Hub panel failed to start', err);
+  }
+}
 // A hub restored from the back/forward cache still shows the bests from before the last game.
 window.addEventListener('pageshow', (e) => {
   if (e.persisted) render();

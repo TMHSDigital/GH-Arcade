@@ -1,4 +1,4 @@
-import { loadJSON, onExternalChange, saveJSON } from './storage';
+import { isRecord, loadJSON, onExternalChange, saveJSON, savedNumber } from './storage';
 
 /**
  * Trophies and per-game stats, saved on this device. No Phaser here, so the hub can list them.
@@ -88,8 +88,26 @@ interface Save {
 }
 
 const KEY = 'trophies';
+/** Bumped when the saved shape changes, so a later version can tell old saves apart. */
+const SAVE_VERSION = 1;
+
+function numberMap(raw: unknown): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (isRecord(raw)) for (const [k, v] of Object.entries(raw)) if (typeof v === 'number' && Number.isFinite(v)) out[k] = v;
+  return out;
+}
+
+/** Reads the save, keeping only well-formed parts, so stale or hand-edited data can never throw later. */
 function read(): Save {
-  return { unlocked: {}, counters: {}, games: {}, ...loadJSON<Partial<Save>>(KEY, {}) };
+  const raw = loadJSON<unknown>(KEY, {});
+  const data = isRecord(raw) ? raw : {};
+  const games: Record<string, GameStats> = {};
+  if (isRecord(data.games)) {
+    for (const [slug, stats] of Object.entries(data.games)) {
+      if (isRecord(stats)) games[slug] = { plays: savedNumber(stats.plays), best: savedNumber(stats.best), totalScore: savedNumber(stats.totalScore) };
+    }
+  }
+  return { unlocked: numberMap(data.unlocked), counters: numberMap(data.counters), games };
 }
 
 let save: Save = read();
@@ -102,7 +120,7 @@ const listeners = new Set<(t: Trophy) => void>();
 let recent: Trophy[] = [];
 
 function persist(): void {
-  saveJSON(KEY, save);
+  saveJSON(KEY, { version: SAVE_VERSION, ...save });
 }
 
 export function isUnlocked(id: string): boolean {

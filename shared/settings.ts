@@ -1,4 +1,4 @@
-import { loadJSON, onExternalChange, saveJSON } from './storage';
+import { isRecord, loadJSON, onExternalChange, saveJSON } from './storage';
 
 /**
  * Arcade-wide player settings, shared by the hub and every game (saved on this device).
@@ -55,6 +55,33 @@ export interface Settings {
 }
 
 const KEY = 'settings';
+/** Bumped when the saved shape changes, so a later version can tell old saves apart. */
+const SAVE_VERSION = 1;
+
+/** Keeps only the well-formed fields of a saved value; anything missing or malformed falls back to its default. */
+function sanitize(raw: unknown): Partial<Settings> {
+  if (!isRecord(raw)) return {};
+  const out: Partial<Settings> = {};
+  if (typeof raw.volume === 'number' && Number.isFinite(raw.volume)) out.volume = Math.min(1, Math.max(0, raw.volume));
+  if (typeof raw.muted === 'boolean') out.muted = raw.muted;
+  if (typeof raw.reducedMotion === 'boolean') out.reducedMotion = raw.reducedMotion;
+  if (raw.palette === 'neon' || raw.palette === 'colorblind') out.palette = raw.palette;
+  if (isRecord(raw.bindings)) {
+    const bindings: Settings['bindings'] = {};
+    for (const action of REBINDABLE) {
+      const b = raw.bindings[action];
+      if (isRecord(b) && typeof b.code === 'number' && Number.isFinite(b.code) && typeof b.label === 'string') {
+        bindings[action] = { code: b.code, label: b.label };
+      }
+    }
+    out.bindings = bindings;
+  }
+  return out;
+}
+
+function save(overrides: Partial<Settings>): void {
+  saveJSON(KEY, { version: SAVE_VERSION, ...overrides });
+}
 
 function prefersReducedMotion(): boolean {
   try {
@@ -73,7 +100,7 @@ function defaults(): Settings {
  * on each load, so an option the player never touched (reduced motion) keeps following the OS.
  */
 function readOverrides(): Partial<Settings> {
-  return loadJSON<Partial<Settings>>(KEY, {});
+  return sanitize(loadJSON<unknown>(KEY, {}));
 }
 
 let overrides: Partial<Settings> = readOverrides();
@@ -94,7 +121,7 @@ export function getSettings(): Readonly<Settings> {
 export function updateSettings(patch: Partial<Settings>): Settings {
   overrides = { ...overrides, ...patch };
   current = { ...defaults(), ...overrides };
-  saveJSON(KEY, overrides);
+  save(overrides);
   listeners.forEach((fn) => fn(current));
   return current;
 }
@@ -102,7 +129,7 @@ export function updateSettings(patch: Partial<Settings>): Settings {
 export function resetSettings(): Settings {
   overrides = {};
   current = defaults();
-  saveJSON(KEY, overrides);
+  save(overrides);
   listeners.forEach((fn) => fn(current));
   return current;
 }
