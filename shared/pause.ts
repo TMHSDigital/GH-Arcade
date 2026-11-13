@@ -59,7 +59,8 @@ export class PauseController {
     ];
     // A game without a menu scene has nowhere for MAIN MENU to go; starting a missing scene leaves a blank canvas.
     const hasMenu = scene.scene.manager.keys[SCENE.menu] !== undefined;
-    this.menu = new OptionMenu(scene, all[0], {
+    // Whoever paused should be able to work the menu, so it listens to every player's controls.
+    this.menu = new OptionMenu(scene, all, {
       x: width / 2,
       y: height / 2 + 20,
       layout: 'column',

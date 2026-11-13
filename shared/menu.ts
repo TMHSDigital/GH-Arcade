@@ -24,7 +24,8 @@ export interface OptionMenuOptions {
 /**
  * A list of neon options that works with every input: arrows, d-pad or stick to move, Space, Enter
  * or A to choose, or hover and click / tap an option directly. The selected option is highlighted
- * with a marker, so it's clear what the action button will do.
+ * with a marker, so it's clear what the action button will do. Pass several controls (one per
+ * player) to let every player in a local multiplayer game drive the menu.
  */
 export class OptionMenu {
   private selected = 0;
@@ -32,12 +33,14 @@ export class OptionMenu {
   private readonly texts: Phaser.GameObjects.Text[];
   private readonly marker: Phaser.GameObjects.Text;
   private readonly layout: 'row' | 'column';
+  private readonly controls: ArcadeControls<string>[];
 
   constructor(
     scene: Phaser.Scene,
-    private readonly controls: ArcadeControls<string>,
+    controls: ArcadeControls<string> | ArcadeControls<string>[],
     private readonly opts: OptionMenuOptions,
   ) {
+    this.controls = Array.isArray(controls) ? controls : [controls];
     this.layout = opts.layout ?? 'row';
     this.enabled = opts.enabled ?? true;
     const size = opts.size ?? 16;
@@ -65,9 +68,10 @@ export class OptionMenu {
       if (!this.enabled) return;
       const prev = this.layout === 'row' ? 'left' : 'up';
       const next = this.layout === 'row' ? 'right' : 'down';
-      if (this.controls.justPressed(prev)) this.move(-1);
-      if (this.controls.justPressed(next)) this.move(1);
-      if (this.controls.justPressed('action')) this.choose(this.selected);
+      const pressed = (name: string) => this.controls.some((c) => c.justPressed(name));
+      if (pressed(prev)) this.move(-1);
+      if (pressed(next)) this.move(1);
+      if (pressed('action')) this.choose(this.selected);
     };
     scene.events.on(Phaser.Scenes.Events.UPDATE, onUpdate);
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.events.off(Phaser.Scenes.Events.UPDATE, onUpdate));
