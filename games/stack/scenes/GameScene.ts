@@ -41,6 +41,7 @@ import {
 import { addCounter, unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
+import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, VirtualButton } from '../../../shared/touch';
 import { burstEmitter, NEON, neonText, PIXEL_FONT, showBanner } from '../../../shared/ui';
@@ -458,13 +459,7 @@ export class GameScene extends Phaser.Scene {
         this.greyRows = i + 1;
       });
     }
-    this.time.delayedCall(VISIBLE_ROWS * 45 + 900, () =>
-      this.scene.start('GameOver', {
-        gameId: GAME_ID,
-        score: this.score,
-        detail: `LEVEL ${this.level}   LINES ${this.lines}`,
-      }),
-    );
+    endRun(this, { gameId: GAME_ID, score: this.score, detail: `LEVEL ${this.level}   LINES ${this.lines}` }, VISIBLE_ROWS * 45 + 900);
   }
 
   // ---------------------------------------------------------------- render

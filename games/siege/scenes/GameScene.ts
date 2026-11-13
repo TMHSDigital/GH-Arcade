@@ -35,6 +35,7 @@ import { ALIEN_POINTS, type AlienKind, makeSprites, ROW_KINDS } from '../sprites
 import { unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
+import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice } from '../../../shared/touch';
 import { burstEmitter, floatText, NEON, neonText, PIXEL_FONT, showBanner } from '../../../shared/ui';
@@ -542,9 +543,7 @@ export class GameScene extends Phaser.Scene {
   private endGame(detail: string): void {
     if (this.over) return;
     this.over = true;
-    this.time.delayedCall(1800, () =>
-      this.scene.start('GameOver', { gameId: GAME_ID, score: this.score, detail, restartData: { players: this.coop ? 2 : 1 } }),
-    );
+    endRun(this, { gameId: GAME_ID, score: this.score, detail, restartData: { players: this.coop ? 2 : 1 } }, 1800);
   }
 
   private addScore(points: number): void {

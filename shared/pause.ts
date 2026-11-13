@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { clearRecentUnlocks } from './achievements';
 import type { ArcadeControls } from './controls';
 import { type MenuItem, OptionMenu } from './menu';
-import { SCENE, toArcade } from './scenes';
+import { restartDataFor, SCENE, setRestartData, toArcade } from './scenes';
 import { getSettings, keyLabel, updateSettings } from './settings';
 import { isMuted, setMuted } from './sfx';
 import { NEON, neonText, PIXEL_FONT } from './ui';
@@ -45,7 +45,9 @@ export class PauseController {
   ) {
     const { width, height } = scene.scale.gameSize;
     const all = Array.isArray(controls) ? controls : [controls];
-    const restartData = opts.restartData ?? (scene.sys.settings.data as object | undefined) ?? {};
+    // Recorded for the game-over screen too, so RESTART and PLAY AGAIN always agree.
+    setRestartData(scene, opts.restartData);
+    const restartData = restartDataFor(scene);
 
     // Dark enough that in-game banners behind it never compete with the menu text.
     const dim = scene.add.rectangle(0, 0, width, height, NEON.bg, 0.9).setOrigin(0);

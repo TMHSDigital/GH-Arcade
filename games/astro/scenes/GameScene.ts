@@ -31,6 +31,7 @@ import {
 import { addCounter, unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
+import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, VirtualButton, VirtualStick } from '../../../shared/touch';
 import { burstEmitter, floatText, NEON, PIXEL_FONT, showBanner } from '../../../shared/ui';
@@ -488,9 +489,7 @@ export class GameScene extends Phaser.Scene {
 
     if (this.lives <= 0) {
       this.over = true;
-      this.time.delayedCall(2000, () =>
-        this.scene.start('GameOver', { gameId: GAME_ID, score: this.score, detail: `REACHED WAVE ${this.wave}` }),
-      );
+      endRun(this, { gameId: GAME_ID, score: this.score, detail: `REACHED WAVE ${this.wave}` }, 2000);
       return;
     }
     this.time.delayedCall(RESPAWN_DELAY_MS, () => this.respawn());

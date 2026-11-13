@@ -24,6 +24,7 @@ import {
 import { unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
+import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { floatText, neonText, PIXEL_FONT, showBanner } from '../../../shared/ui';
 
@@ -431,14 +432,7 @@ export class GameScene extends Phaser.Scene {
 
     if (this.lives <= 0) {
       this.levelDone = true;
-      this.time.delayedCall(700, () =>
-        this.scene.start('GameOver', {
-          gameId: GAME_ID,
-          score: this.score,
-          detail: `REACHED LEVEL ${this.level + 1}`,
-          restartData: { level: 0, score: 0 },
-        }),
-      );
+      endRun(this, { gameId: GAME_ID, score: this.score, detail: `REACHED LEVEL ${this.level + 1}` }, 700);
       return;
     }
     this.stuck = true;

@@ -27,6 +27,7 @@ import { MAX_PATTERN_LEVEL, PATTERNS, type Piece } from '../patterns';
 import { addCounter, getHighScore, unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
+import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, floatText, hex, NEON, neonText, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
 
@@ -403,9 +404,7 @@ export class GameScene extends Phaser.Scene {
     noise(0.5, 0.12);
     tone({ freq: 400, toFreq: 50, duration: 0.7, type: 'sawtooth', volume: 0.08 });
     const metres = Math.floor(this.distance / PX_PER_METRE);
-    this.time.delayedCall(1300, () =>
-      this.scene.start('GameOver', { gameId: GAME_ID, score: this.score, detail: `${metres}m   ${this.coinsTaken} COINS` }),
-    );
+    endRun(this, { gameId: GAME_ID, score: this.score, detail: `${metres}m   ${this.coinsTaken} COINS` }, 1300);
   }
 
   // ---------------------------------------------------------------- render

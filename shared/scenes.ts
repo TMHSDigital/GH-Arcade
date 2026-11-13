@@ -89,6 +89,41 @@ export function finishRun(gameId: string, score?: number): { isRecord: boolean; 
   return { isRecord, earned: drainRecentUnlocks() };
 }
 
+const restartData = new WeakMap<Phaser.Scene, object>();
+
+/**
+ * Sets the data a scene is restarted with (pause menu RESTART, game over PLAY AGAIN). PauseController
+ * calls this with its `restartData` option, so each game states it once. Pass undefined to clear it.
+ */
+export function setRestartData(scene: Phaser.Scene, data: object | undefined): void {
+  if (data) restartData.set(scene, data);
+  else restartData.delete(scene);
+}
+
+/** The data to restart a scene with: what setRestartData recorded, else whatever the scene was started with. */
+export function restartDataFor(scene: Phaser.Scene): object {
+  return restartData.get(scene) ?? (scene.sys.settings.data as object | undefined) ?? {};
+}
+
+const endedScenes = new WeakSet<Phaser.Scene>();
+
+/**
+ * Ends a run: after `delayMs` (time for the death effects to play), hands over to the shared
+ * game-over screen. Only the first call per run counts, so two things ending the run in the same
+ * moment cannot start the screen twice. PLAY AGAIN restarts with `data.restartData`, or with the
+ * same data the pause menu's RESTART uses.
+ */
+export function endRun(scene: Phaser.Scene, data: GameOverData, delayMs = 0): void {
+  if (endedScenes.has(scene)) return;
+  endedScenes.add(scene);
+  // Scene instances are reused, so the guard is lifted when this run's scene shuts down.
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => endedScenes.delete(scene));
+  const payload: GameOverData = { ...data, restartData: data.restartData ?? restartDataFor(scene) };
+  const start = () => scene.scene.start(SCENE.gameOver, payload);
+  if (delayMs > 0) scene.time.delayedCall(delayMs, start);
+  else start();
+}
+
 /** Leaves the game page for the hub, which is two folders up from every game. */
 export function toArcade(): void {
   window.location.assign('../../');

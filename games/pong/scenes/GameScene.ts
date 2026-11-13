@@ -24,7 +24,7 @@ import {
 import { unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
-import { showMatchResult } from '../../../shared/scenes';
+import { endRun, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, hex, NEON, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
 
@@ -288,7 +288,7 @@ export class GameScene extends Phaser.Scene {
       // Points for every goal, plus a win bonus that grows with the margin.
       const score = you.score * 100 + (won ? 500 + (POINTS_TO_WIN - other.score) * 100 : 0);
       const detail = won ? `YOU WIN ${you.score}-${other.score}` : `CPU WINS ${other.score}-${you.score}`;
-      this.time.delayedCall(900, () => this.scene.start('GameOver', { gameId: GAME_ID, score, detail, restartData: { players: 1 } }));
+      endRun(this, { gameId: GAME_ID, score, detail }, 900);
       return;
     }
     unlock('pong.versus');

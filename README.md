@@ -263,7 +263,7 @@ class GameScene extends Phaser.Scene {
 startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 ```
 
-**Scene keys.** The shared modules find scenes by key, exported as `SCENE` from [`shared/scenes.ts`](shared/scenes.ts): the menu scene is `'Menu'`, the gameplay scene is `'Game'` and the shared game-over scene is `'GameOver'`. The pause menu's MAIN MENU and RESTART, the menu's start prompt and the game-over options all navigate by these keys, so keep them when you rename or add scenes. End a run with `this.scene.start(SCENE.gameOver, { gameId, score })`; that screen saves the high score and records the play.
+**Scene keys.** The shared modules find scenes by key, exported as `SCENE` from [`shared/scenes.ts`](shared/scenes.ts): the menu scene is `'Menu'`, the gameplay scene is `'Game'` and the shared game-over scene is `'GameOver'`. The pause menu's MAIN MENU and RESTART, the menu's start prompt and the game-over options all navigate by these keys, so keep them when you rename or add scenes. End a run with `endRun(this, { gameId, score })` from the same module; the game-over screen it starts saves the best score and records the play.
 
 | Module | What it provides |
 | --- | --- |

@@ -25,6 +25,7 @@ import {
 import { unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
+import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { onSwipe } from '../../../shared/touch';
 import { burstEmitter, floatText, NEON, PIXEL_FONT, showBanner } from '../../../shared/ui';
@@ -315,9 +316,7 @@ export class GameScene extends Phaser.Scene {
     tone({ freq: 360, toFreq: 60, duration: 0.5, type: 'sawtooth', volume: 0.07 });
     if (this.lives <= 0) {
       this.over = true;
-      this.time.delayedCall(1400, () =>
-        this.scene.start('GameOver', { gameId: GAME_ID, score: this.score, detail: `REACHED LEVEL ${this.level}` }),
-      );
+      endRun(this, { gameId: GAME_ID, score: this.score, detail: `REACHED LEVEL ${this.level}` }, 1400);
       return;
     }
     this.time.delayedCall(1100, () => this.resetHopper());

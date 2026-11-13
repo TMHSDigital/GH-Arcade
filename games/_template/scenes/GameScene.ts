@@ -2,14 +2,14 @@ import Phaser from 'phaser';
 import { DOT_POINTS, GAME_ID, HEIGHT, ROUND_SECONDS, SPEED, WIDTH } from '../config';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
-import { SCENE } from '../../../shared/scenes';
+import { endRun, SCENE } from '../../../shared/scenes';
 import { tone } from '../../../shared/sfx';
 import { drawGrid, NEON, PIXEL_FONT } from '../../../shared/ui';
 
 /**
  * Starter game: move the glowing square and collect dots before the timer runs out. Replace with
  * your game. Keyboard, gamepad and touch all work through ArcadeControls; P / Esc / Start pauses.
- * When the run ends, start the shared GameOver scene: it saves the high score and records the play.
+ * When the run ends, call endRun(): the shared game-over screen saves the best score and records the play.
  */
 export class GameScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Image;
@@ -63,13 +63,13 @@ export class GameScene extends Phaser.Scene {
 
     this.timeLeft -= deltaMs / 1000;
     this.hud.setText(`SCORE ${this.score}   TIME ${Math.max(0, Math.ceil(this.timeLeft))}`);
-    if (this.timeLeft <= 0) this.endRun();
+    if (this.timeLeft <= 0) this.finish();
   }
 
-  private endRun(): void {
+  private finish(): void {
     this.over = true;
     this.player.setVelocity(0, 0);
-    this.scene.start(SCENE.gameOver, { gameId: GAME_ID, score: this.score, detail: `${this.score / DOT_POINTS} DOTS` });
+    endRun(this, { gameId: GAME_ID, score: this.score, detail: `${this.score / DOT_POINTS} DOTS` });
   }
 
   private moveDot(): void {

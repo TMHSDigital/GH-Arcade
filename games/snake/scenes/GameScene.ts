@@ -22,7 +22,7 @@ import {
 import { getHighScore, unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
-import { showMatchResult } from '../../../shared/scenes';
+import { endRun, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, onSwipe } from '../../../shared/touch';
 import { burstEmitter, fadeToScene, floatText, hex, NEON, neonText, PIXEL_FONT, showBanner } from '../../../shared/ui';
@@ -353,9 +353,7 @@ export class GameScene extends Phaser.Scene {
       this.over = true;
       this.bonus = null;
       const p = this.players[0];
-      this.time.delayedCall(dissolveMs + 700, () =>
-        this.scene.start('GameOver', { gameId: GAME_ID, score: this.score, detail: `LENGTH ${p.segments.length}` }),
-      );
+      endRun(this, { gameId: GAME_ID, score: this.score, detail: `LENGTH ${p.segments.length}` }, dissolveMs + 700);
       return;
     }
 

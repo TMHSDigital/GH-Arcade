@@ -40,6 +40,7 @@ import { BONUS_CELL, DIRS, find, HOUSE_EXIT, HOUSE_Y, MAZE, OPPOSITE, open, tile
 import { unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
+import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { onSwipe } from '../../../shared/touch';
 import { burstEmitter, floatText, NEON, PIXEL_FONT, showBanner } from '../../../shared/ui';
@@ -517,9 +518,7 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     this.setPhase('over');
-    this.time.delayedCall(500, () =>
-      this.scene.start('GameOver', { gameId: GAME_ID, score: this.score, detail: `REACHED LEVEL ${this.level}` }),
-    );
+    endRun(this, { gameId: GAME_ID, score: this.score, detail: `REACHED LEVEL ${this.level}` }, 500);
   }
 
   private clearLevel(): void {
