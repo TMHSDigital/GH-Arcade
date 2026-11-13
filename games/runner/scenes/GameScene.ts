@@ -23,7 +23,7 @@ import {
   TOUCH_SLIDE_MS,
   WIDTH,
 } from '../config';
-import { PATTERNS, type Piece } from '../patterns';
+import { MAX_PATTERN_LEVEL, PATTERNS, type Piece } from '../patterns';
 import { addCounter, unlock } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
@@ -296,7 +296,7 @@ export class GameScene extends Phaser.Scene {
   private spawnPatterns(): void {
     const horizon = this.distance + WIDTH + 200;
     while (this.nextPatternAt < horizon) {
-      const level = Math.min(3, Math.floor((this.speed - START_SPEED) / 110));
+      const level = Math.min(MAX_PATTERN_LEVEL, Math.floor((this.speed - START_SPEED) / 110));
       const pool = PATTERNS.filter((p) => p.minLevel <= level);
       const pattern = Phaser.Utils.Array.GetRandom(pool);
       // Gaps between obstacles stretch with speed so reaction time stays fair.

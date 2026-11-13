@@ -23,6 +23,9 @@ export interface Pattern {
   pieces: Piece[];
 }
 
+/** Highest difficulty tier. The runner's speed maps to a level from 0 to this; every level needs a pattern. */
+export const MAX_PATTERN_LEVEL = 3;
+
 /** Coin row height above the ground for a coin you collect while running. */
 const RUN = 30;
 /** Coin height that needs a jump. */
