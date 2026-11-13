@@ -326,7 +326,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private moveChaser(ch: Chaser, dt: number): void {
-    let dist = this.chaserSpeed(ch) * dt;
+    const dist = this.chaserSpeed(ch) * dt;
     switch (ch.state) {
       case 'house':
         if (this.clock - this.roundStart >= ch.releaseAt) ch.state = 'leaving';

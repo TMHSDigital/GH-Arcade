@@ -197,6 +197,8 @@ Then open **http://localhost:5173/GH-Arcade/**.
 | `npm run build` | Type-check, then production build into `dist/` (including the service worker) |
 | `npm run preview` | Serve the production build locally, to test offline mode and installing |
 | `npm run typecheck` | TypeScript check only |
+| `npm run lint` | Lint with ESLint |
+| `npm test` | Run the unit tests (Vitest) |
 | `npm run new-game <slug> ["Title"]` | Scaffold a new game |
 
 > [!TIP]

@@ -25,11 +25,14 @@ The dev server prints a local URL. The hub is at `/GH-Arcade/` and each game at 
 ## Checks
 
 ```bash
-npm run typecheck   # TypeScript, strict
+npm run lint        # ESLint
+npm test            # unit tests (Vitest) for the Phaser-free modules
 npm run build       # typecheck plus the production build
 ```
 
-Both must pass. There is no automated test suite yet, so please play through what you changed with a keyboard and, if you can, a gamepad and a touch screen.
+All three must pass; pull requests run them automatically. The tests cover rules, data tables and saved data, not gameplay, so please also play through what you changed with a keyboard and, if you can, a gamepad and a touch screen.
+
+Tests live next to the code as `*.test.ts`. If you add logic that does not need Phaser (rules, scoring, level data), keep it in its own module and add a test for it.
 
 ## Conventions for games
 

@@ -19,6 +19,7 @@ if (existsSync(dest)) {
 }
 
 const title = (titleArg ?? slug.split('-').map((w) => w[0].toUpperCase() + w.slice(1)).join(' ')).trim();
+// eslint-disable-next-line no-control-regex -- rejecting control characters is the point
 if (!title || /[\u0000-\u001f\u007f]/.test(title)) {
   console.error('The title must not be empty or contain control characters.');
   process.exit(1);
