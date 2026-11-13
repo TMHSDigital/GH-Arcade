@@ -16,6 +16,10 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 - Settings has a "Your data" section: download a backup of trophies, stats, best scores and settings, restore one, or reset best scores.
 - Notices when the arcade is ready to play offline and when it has updated, and install instructions on iPhone and iPad.
 
+### Changed
+
+- The games now run on Phaser 4. Game authors: glows go through `addGlow()` from `shared/ui.ts`, since Phaser 4 replaces `preFX` with filters.
+
 ### Fixed
 
 - A new version arriving while you play no longer reloads the game mid-run.

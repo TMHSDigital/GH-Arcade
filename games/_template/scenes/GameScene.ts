@@ -4,7 +4,7 @@ import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun, SCENE } from '../../../shared/scenes';
 import { tone } from '../../../shared/sfx';
-import { drawGrid, hudText, NEON } from '../../../shared/ui';
+import { addGlow, drawGrid, hudText, NEON } from '../../../shared/ui';
 
 /**
  * Starter game: move the glowing square and collect dots before the timer runs out. Replace with
@@ -40,7 +40,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.player = this.physics.add.image(WIDTH / 2, HEIGHT / 2, 'player').setTint(NEON.cyan).setCollideWorldBounds(true);
-    this.player.preFX?.addGlow(NEON.cyan, 4);
+    addGlow(this.player, NEON.cyan, 4);
     this.dot = this.physics.add.image(0, 0, 'dot').setTint(NEON.pink);
     this.moveDot();
 

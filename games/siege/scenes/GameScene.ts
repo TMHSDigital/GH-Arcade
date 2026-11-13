@@ -38,7 +38,7 @@ import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice } from '../../../shared/touch';
-import { burstEmitter, floatText, HUD_STYLE, NEON, neonText, showBanner } from '../../../shared/ui';
+import { addGlow, burstEmitter, floatText, HUD_STYLE, NEON, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -153,7 +153,7 @@ export class GameScene extends Phaser.Scene {
     this.gfx = this.add.graphics();
     this.burst = burstEmitter(this, 240, 600);
     this.motherImg = this.add.image(-100, MOTHERSHIP_Y, 'mothership').setTint(NEON.pink).setVisible(false);
-    this.motherImg.preFX?.addGlow(NEON.pink, 3, 0, false);
+    addGlow(this.motherImg, NEON.pink, 3);
 
     const style = HUD_STYLE;
     this.scoreText = this.add.text(WIDTH / 2, 24, '0', style).setOrigin(0.5).setDepth(10);
@@ -175,7 +175,7 @@ export class GameScene extends Phaser.Scene {
     const color = id === 1 ? NEON.cyan : NEON.pink;
     const x = this.coop ? (id === 1 ? WIDTH * 0.35 : WIDTH * 0.65) : WIDTH / 2;
     const img = this.add.image(x, PLAYER_Y, 'cannon').setTint(color).setDepth(5);
-    img.preFX?.addGlow(color, 3, 0, false);
+    addGlow(img, color, 3);
     const ship: Ship = {
       id,
       img,

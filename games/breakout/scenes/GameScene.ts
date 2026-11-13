@@ -26,7 +26,7 @@ import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
-import { burstEmitter, floatText, HUD_STYLE, neonText, PIXEL_FONT, showBanner, sparkTexture } from '../../../shared/ui';
+import { addGlow, burstEmitter, floatText, HUD_STYLE, neonText, PIXEL_FONT, showBanner, sparkTexture } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -109,7 +109,7 @@ export class GameScene extends Phaser.Scene {
 
     this.paddle = this.physics.add.image(WIDTH / 2, PADDLE_Y, 'paddle').setTint(COLORS.cyan).setImmovable(true);
     this.paddle.setCollideWorldBounds(true);
-    this.paddle.preFX?.addGlow(COLORS.cyan, 4, 0, false);
+    addGlow(this.paddle, COLORS.cyan, 4);
 
     this.balls = this.physics.add.group();
     this.powerups = this.physics.add.group();
@@ -186,7 +186,7 @@ export class GameScene extends Phaser.Scene {
     const ball = this.balls.create(x, y, 'ball') as Img;
     ball.setCircle(BALL_RADIUS).setBounce(1).setCollideWorldBounds(true);
     (ball.body as Phaser.Physics.Arcade.Body).onWorldBounds = true;
-    ball.preFX?.addGlow(COLORS.white, 4, 0, false);
+    addGlow(ball, COLORS.white, 4);
 
     const trail = this.add.particles(0, 0, sparkTexture(this), {
       follow: ball,
@@ -315,8 +315,8 @@ export class GameScene extends Phaser.Scene {
     if (hp > 0) {
       brick.setData('hp', hp);
       this.styleBrick(brick);
-      brick.setTintFill(COLORS.white);
-      this.time.delayedCall(60, () => brick.active && brick.setTint(color));
+      brick.setTint(COLORS.white).setTintMode(Phaser.TintModes.FILL);
+      this.time.delayedCall(60, () => brick.active && brick.setTint(color).setTintMode(Phaser.TintModes.MULTIPLY));
       tone({ freq: 160, duration: 0.06, type: 'sawtooth', volume: 0.06 });
       return;
     }
@@ -348,7 +348,7 @@ export class GameScene extends Phaser.Scene {
 
     const pill = this.powerups.create(x, y, 'pill') as Img;
     pill.setTint(color).setVelocityY(150).setData('kind', kind);
-    pill.preFX?.addGlow(color, 3, 0, false);
+    addGlow(pill, color, 3);
     const text = this.add
       .text(x, y, label, { fontFamily: PIXEL_FONT, fontSize: '10px', color: '#05050d' })
       .setOrigin(0.5)

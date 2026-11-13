@@ -539,7 +539,7 @@ export class GameScene extends Phaser.Scene {
       const y = py(BONUS_CELL.y);
       const s = 8 + Math.sin(now / 120) * 1.5;
       g.fillStyle(NEON.purple, 0.3).fillCircle(x, y, 13);
-      g.fillStyle(NEON.purple, 1).fillPoints([{ x, y: y - s }, { x: x + s, y }, { x, y: y + s }, { x: x - s, y }], true);
+      g.fillStyle(NEON.purple, 1).beginPath().moveTo(x, y - s).lineTo(x + s, y).lineTo(x, y + s).lineTo(x - s, y).closePath().fillPath();
       g.fillStyle(NEON.white, 0.9).fillRect(x - 2, y - 2, 4, 4);
     }
 

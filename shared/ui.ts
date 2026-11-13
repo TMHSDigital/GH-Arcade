@@ -110,6 +110,12 @@ export function showBanner(scene: Phaser.Scene, text: string, color: number = NE
   });
 }
 
+/** Adds a soft neon glow around an image. Does nothing on the Canvas renderer, which has no filters. */
+export function addGlow(image: Phaser.GameObjects.Image, color: number, strength: number): void {
+  // Filters are clipped to the image's own bounds unless the padding override is cleared.
+  image.enableFilters().filters?.internal.addGlow(color, strength, 0, 1, false).setPaddingOverride(null);
+}
+
 /** Creates (once) and returns the key of a small white dot texture for particle effects. */
 export function sparkTexture(scene: Phaser.Scene): string {
   if (!scene.textures.exists('spark')) {
