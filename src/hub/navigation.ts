@@ -5,6 +5,8 @@
  * LB / RB switch tag filters, Y opens Trophies, Start opens Settings.
  */
 
+import { PAD, STICK_PRESS } from '../../shared/gamepad';
+
 const REPEAT_DELAY_MS = 380;
 const REPEAT_RATE_MS = 140;
 
@@ -75,16 +77,16 @@ export function initHubNavigation(): void {
       const down = new Set<string>();
       const b = (i: number) => !!pad.buttons[i]?.pressed;
       const [ax, ay] = [pad.axes[0] ?? 0, pad.axes[1] ?? 0];
-      if (b(14) || ax < -0.5) down.add('left');
-      if (b(15) || ax > 0.5) down.add('right');
-      if (b(12) || ay < -0.5) down.add('up');
-      if (b(13) || ay > 0.5) down.add('down');
-      if (b(0)) down.add('a');
-      if (b(1)) down.add('b');
-      if (b(3)) down.add('y');
-      if (b(4)) down.add('lb');
-      if (b(5)) down.add('rb');
-      if (b(9)) down.add('start');
+      if (b(PAD.left) || ax < -STICK_PRESS) down.add('left');
+      if (b(PAD.right) || ax > STICK_PRESS) down.add('right');
+      if (b(PAD.up) || ay < -STICK_PRESS) down.add('up');
+      if (b(PAD.down) || ay > STICK_PRESS) down.add('down');
+      if (b(PAD.a)) down.add('a');
+      if (b(PAD.b)) down.add('b');
+      if (b(PAD.y)) down.add('y');
+      if (b(PAD.lb)) down.add('lb');
+      if (b(PAD.rb)) down.add('rb');
+      if (b(PAD.start)) down.add('start');
       const pressed = (k: string) => down.has(k) && !prev.has(k);
 
       const dialog = openDialog();

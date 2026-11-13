@@ -86,7 +86,7 @@ function main() {
   }
 
   console.log(`Created games/${slug} and added it to games/registry.json.`);
-  console.log(`Run "npm run dev" and open /GH-Arcade/games/${slug}/`);
+  console.log(`Run "npm run dev" and open games/${slug}/ under the URL it prints.`);
   console.log(
     [
       '',

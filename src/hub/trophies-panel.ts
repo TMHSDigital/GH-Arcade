@@ -1,13 +1,10 @@
 import registry from '../../games/registry.json';
+import { escapeHtml } from './html';
 import { getCounter, getStats, isUnlocked, resetTrophies, TROPHIES, unlockedAt } from '../../shared/achievements';
 
 const gameTitles: Record<string, string> = Object.fromEntries(
   (registry as { slug: string; title: string }[]).map((g) => [g.slug, g.title]),
 );
-
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-}
 
 /** Wires up the Trophies dialog: every trophy grouped by game, with plays and best scores. */
 export function initTrophiesPanel(): void {

@@ -1,7 +1,9 @@
 // localStorage can throw (private mode, blocked storage), so never let that break a game.
 // Saved values can also be stale, hand-edited or from another version: loadJSON only parses, and
 // each module checks the shape of what it reads before trusting it.
-const PREFIX = 'gh-arcade:';
+/** Every key the arcade stores starts with this. */
+export const STORAGE_PREFIX = 'gh-arcade:';
+const PREFIX = STORAGE_PREFIX;
 
 export function loadJSON<T>(key: string, fallback: T): T {
   try {

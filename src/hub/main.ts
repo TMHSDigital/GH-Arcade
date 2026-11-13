@@ -4,6 +4,7 @@ import { registerOffline } from '../../shared/pwa';
 import { getStats, trophyProgress } from '../../shared/achievements';
 import { getHighScore, loadJSON, saveJSON } from '../../shared/storage';
 import { initDataPanel } from './data-panel';
+import { escapeHtml } from './html';
 import { initHubNavigation } from './navigation';
 import { initSettingsPanel } from './settings-panel';
 import { initTrophiesPanel } from './trophies-panel';
@@ -151,10 +152,6 @@ function renderFilters(): void {
     return b;
   };
   filters.replaceChildren(make('All', null), ...tags.map((t) => make(t, t)));
-}
-
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
 sortSelect.value = sort;

@@ -1,4 +1,4 @@
-import { isRecord } from './storage';
+import { isRecord, STORAGE_PREFIX as PREFIX } from './storage';
 
 /**
  * Backup and restore of everything the arcade saves on this device (settings, trophies, stats,
@@ -6,7 +6,6 @@ import { isRecord } from './storage';
  * drives it.
  */
 
-const PREFIX = 'gh-arcade:';
 const APP = 'gh-arcade';
 const BACKUP_VERSION = 1;
 const HIGH_SCORE = /^[a-z0-9]+(-[a-z0-9]+)*:highscore$/;

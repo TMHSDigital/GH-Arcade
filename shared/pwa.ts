@@ -1,8 +1,9 @@
 import { registerSW } from 'virtual:pwa-register';
+import { STORAGE_PREFIX } from './storage';
 import { showToast } from './toast';
 
 /** Set just before the hub reloads itself for an update, so the fresh page can say what happened. */
-const UPDATED_FLAG = 'gh-arcade:updated';
+const UPDATED_FLAG = `${STORAGE_PREFIX}updated`;
 
 /**
  * Registers the arcade's service worker so every page works offline after the first visit, and

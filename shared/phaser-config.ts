@@ -32,7 +32,7 @@ function applyReducedMotion(): void {
 }
 
 /** Standard Phaser setup for arcade games: fixed logical resolution scaled to fit any screen. */
-export function createArcadeGame(opts: ArcadeGameOptions): Phaser.Game {
+function createArcadeGame(opts: ArcadeGameOptions): Phaser.Game {
   applyReducedMotion();
   const game = new Phaser.Game({
     type: Phaser.AUTO,

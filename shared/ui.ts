@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { type AccentName, PALETTES } from './palette';
+import { type AccentName, cssColor, PALETTES } from './palette';
 import { getSettings, keyCodesFor } from './settings';
 
 export const PIXEL_FONT = '"Press Start 2P", monospace';
@@ -17,9 +17,8 @@ export function reducedMotion(): boolean {
   return getSettings().reducedMotion;
 }
 
-export function hex(color: number): string {
-  return `#${color.toString(16).padStart(6, '0')}`;
-}
+/** A color number as a CSS hex string, e.g. for Phaser text styles. Same helper the hub uses for swatches. */
+export const hex = cssColor;
 
 /** Neon text: bright fill with a same-color shadow blur for the glow. */
 export function neonText(
@@ -62,7 +61,7 @@ export function blinkingPrompt(scene: Phaser.Scene, x: number, y: number, text: 
   return prompt;
 }
 
-/** Faint grid backdrop used by every game. */
+/** Faint grid backdrop, available to any scene (the Snake menu and the game template use it). */
 export function drawGrid(scene: Phaser.Scene, width: number, height: number, step = 40, color: number = NEON.purple): void {
   const g = scene.add.graphics().setDepth(-10);
   g.lineStyle(1, color, 0.08);

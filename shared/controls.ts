@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { PAD, STICK_PRESS } from './gamepad';
 import { getSettings, type RebindableAction } from './settings';
 
 /**
@@ -19,21 +20,21 @@ import { getSettings, type RebindableAction } from './settings';
 export interface Binding {
   /** Phaser key names (e.g. 'LEFT', 'A', 'SPACE') or keyCodes. */
   keys?: (string | number)[];
-  /** Standard gamepad button indices (0 A, 1 B, 2 X, 3 Y, 4/5 bumpers, 7 right trigger, 8 Back, 9 Start, 12-15 d-pad). */
+  /** Standard gamepad button indices; see PAD in shared/gamepad.ts for the named ones. */
   buttons?: number[];
   /** Left-stick direction that also triggers this binding. */
   stick?: 'left' | 'right' | 'up' | 'down';
 }
 
-export const DEFAULT_BINDINGS = {
-  left: { keys: ['LEFT', 'A'], buttons: [14], stick: 'left' },
-  right: { keys: ['RIGHT', 'D'], buttons: [15], stick: 'right' },
-  up: { keys: ['UP', 'W'], buttons: [12], stick: 'up' },
-  down: { keys: ['DOWN', 'S'], buttons: [13], stick: 'down' },
-  action: { keys: ['SPACE', 'ENTER'], buttons: [0] },
-  alt: { keys: ['SHIFT', 'X'], buttons: [1] },
-  pause: { keys: ['P', 'ESC'], buttons: [9] },
-  mute: { keys: ['M'], buttons: [8] },
+const DEFAULT_BINDINGS = {
+  left: { keys: ['LEFT', 'A'], buttons: [PAD.left], stick: 'left' },
+  right: { keys: ['RIGHT', 'D'], buttons: [PAD.right], stick: 'right' },
+  up: { keys: ['UP', 'W'], buttons: [PAD.up], stick: 'up' },
+  down: { keys: ['DOWN', 'S'], buttons: [PAD.down], stick: 'down' },
+  action: { keys: ['SPACE', 'ENTER'], buttons: [PAD.a] },
+  alt: { keys: ['SHIFT', 'X'], buttons: [PAD.b] },
+  pause: { keys: ['P', 'ESC'], buttons: [PAD.start] },
+  mute: { keys: ['M'], buttons: [PAD.back] },
 } satisfies Record<RebindableAction, Binding>;
 
 export type DefaultAction = keyof typeof DEFAULT_BINDINGS;
@@ -50,8 +51,6 @@ export interface ControlsOptions {
 }
 
 const STICK_DEADZONE = 0.25;
-/** How far the stick must move before it counts as a digital direction press. */
-const STICK_PRESS = 0.5;
 
 export class ArcadeControls<Extra extends string = never> {
   private readonly bindings: Record<string, Binding>;

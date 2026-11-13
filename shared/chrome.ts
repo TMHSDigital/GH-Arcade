@@ -1,4 +1,5 @@
 import { PAUSE_REQUEST_EVENT, PAUSE_STATE_EVENT } from './pause';
+import { STORAGE_PREFIX } from './storage';
 import { isTouchDevice } from './touch';
 
 /**
@@ -88,7 +89,7 @@ function button(label: string, aria: string): HTMLButtonElement {
 
 /** On phones held upright, suggest turning sideways (the games are landscape). Dismissible. */
 function initRotateHint(): void {
-  const KEY = 'gh-arcade:rotate-dismissed';
+  const KEY = `${STORAGE_PREFIX}rotate-dismissed`;
   let dismissed = false;
   try {
     dismissed = sessionStorage.getItem(KEY) === '1';
