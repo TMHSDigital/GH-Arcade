@@ -3,6 +3,7 @@ import registry from '../../games/registry.json';
 import { registerOffline } from '../../shared/pwa';
 import { getHighScore, getStats, trophyProgress } from '../../shared/achievements';
 import { loadJSON, saveJSON } from '../../shared/storage';
+import { initStorageNotice } from '../../shared/storage-notice';
 import { initDataPanel } from './data-panel';
 import { escapeHtml } from './html';
 import { initHubNavigation } from './navigation';
@@ -10,6 +11,7 @@ import { initSettingsPanel } from './settings-panel';
 import { initTrophiesPanel } from './trophies-panel';
 
 registerOffline('hub');
+initStorageNotice();
 
 // Chromium browsers fire this when the arcade can be installed as an app; show our own button for it.
 interface InstallPromptEvent extends Event {

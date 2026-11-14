@@ -3,6 +3,7 @@ import { onUnlock } from './achievements';
 import { hideLoader, initGameChrome, showBootError } from './chrome';
 import { registerOffline } from './pwa';
 import { getSettings } from './settings';
+import { initStorageNotice } from './storage-notice';
 import { showToast } from './toast';
 import { PIXEL_FONT } from './ui';
 
@@ -68,6 +69,7 @@ export async function startArcadeGame(opts: ArcadeGameOptions): Promise<Phaser.G
   registerOffline();
   initGameChrome((opts.width ?? 800) / (opts.height ?? 600));
   onUnlock((t) => showToast('Trophy unlocked', t.title));
+  initStorageNotice();
   try {
     await Promise.race([document.fonts.load(`16px ${PIXEL_FONT}`), new Promise((r) => setTimeout(r, 1500))]);
   } catch {

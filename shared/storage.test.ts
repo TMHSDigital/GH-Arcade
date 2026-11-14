@@ -50,6 +50,77 @@ describe('saveJSON', () => {
     });
     expect(() => saveJSON('thing', 1)).not.toThrow();
   });
+
+  it('says whether the value was saved', () => {
+    installMemoryStorage();
+    expect(saveJSON('thing', 1)).toBe(true);
+    vi.stubGlobal('localStorage', {
+      setItem: () => {
+        throw new Error('quota');
+      },
+    });
+    expect(saveJSON('thing', 1)).toBe(false);
+  });
+});
+
+describe('onSaveFailed', () => {
+  // The "already failed" flag lives in the module, so each test loads its own copy.
+  const fresh = async () => {
+    vi.resetModules();
+    return import('./storage');
+  };
+  const blockStorage = () =>
+    vi.stubGlobal('localStorage', {
+      setItem: () => {
+        throw new Error('blocked');
+      },
+    });
+
+  it('stays quiet while saving works', async () => {
+    const storage = await fresh();
+    installMemoryStorage();
+    const fn = vi.fn();
+    storage.onSaveFailed(fn);
+    storage.saveJSON('thing', 1);
+    expect(storage.checkStorage()).toBe(true);
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  it('leaves nothing behind after checking', async () => {
+    const storage = await fresh();
+    const memory = installMemoryStorage();
+    storage.checkStorage();
+    expect(memory.data.size).toBe(0);
+  });
+
+  it('fires once, however many saves fail', async () => {
+    const storage = await fresh();
+    blockStorage();
+    const fn = vi.fn();
+    storage.onSaveFailed(fn);
+    storage.saveJSON('a', 1);
+    storage.saveJSON('b', 2);
+    expect(storage.checkStorage()).toBe(false);
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('fires straight away for a listener added after a failure', async () => {
+    const storage = await fresh();
+    blockStorage();
+    storage.saveJSON('a', 1);
+    const fn = vi.fn();
+    storage.onSaveFailed(fn);
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('notices blocked storage from the check alone', async () => {
+    const storage = await fresh();
+    // No localStorage global at all.
+    const fn = vi.fn();
+    storage.onSaveFailed(fn);
+    expect(storage.checkStorage()).toBe(false);
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('savedNumber', () => {

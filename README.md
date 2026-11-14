@@ -275,7 +275,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`scenes.ts`](shared/scenes.ts) | `buildMenu()` title screens and the shared `ArcadeGameOverScene` with high-score checks. |
 | [`ui.ts`](shared/ui.ts) | Neon text, the HUD text style, banners, score popups, particle bursts and the shared color palette. |
 | [`phaser-config.ts`](shared/phaser-config.ts) | `startArcadeGame()`: fit-to-screen Phaser setup with gamepads enabled, once the pixel font has loaded. |
-| [`storage.ts`](shared/storage.ts) | `loadJSON()` and `saveJSON()`, backed by `localStorage` that never throws. |
+| [`storage.ts`](shared/storage.ts) | `loadJSON()` and `saveJSON()`, backed by `localStorage` that never throws. If the browser blocks saved data, every page says so once (`storage-notice.ts`). |
 | [`sfx.ts`](shared/sfx.ts) | `tone()` and `noise()`: retro sound effects synthesized with Web Audio. |
 | [`achievements.ts`](shared/achievements.ts) | Trophies, stats and best scores. Each game lists its trophies in its own `trophies.ts` and gets type-checked `unlock()`, `reach()` and `addCounter()` helpers from `trophiesFor()`; `getHighScore()` returns a game's best. Unlocks pop up as a [toast](shared/toast.ts). |
 | [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key bindings) that every game reads on start. |
