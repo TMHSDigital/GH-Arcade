@@ -279,7 +279,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`sfx.ts`](shared/sfx.ts) | `tone()` and `noise()`: retro sound effects synthesized with Web Audio. |
 | [`achievements.ts`](shared/achievements.ts) | Trophies, stats and best scores. Each game lists its trophies in its own `trophies.ts` and gets type-checked `unlock()`, `reach()` and `addCounter()` helpers from `trophiesFor()`; `getHighScore()` returns a game's best and `getTopScores()` its five highest. Unlocks pop up as a [toast](shared/toast.ts). |
 | [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key bindings) that every game reads on start. |
-| [`backup.ts`](shared/backup.ts) | Export, import and reset of everything saved on the device, used by the hub's settings dialog. |
+| [`backup.ts`](shared/backup.ts) | Export, import (replace or merge) and reset of everything saved on the device, used by the hub's settings dialog. |
 | [`rng.ts`](shared/rng.ts) | `createRng(seed)`: repeatable random numbers with `between`, `pick` and `shuffle`, plus what a daily challenge needs: `dailySeed()`, `dailyRng()`, `DAILY_MODES` for the menu, per-day best scores and `dailyResult()` for the game-over line. |
 | [`pwa.ts`](shared/pwa.ts) | Registers the service worker that makes every page work offline, and announces when the arcade is ready offline or has updated. |
 

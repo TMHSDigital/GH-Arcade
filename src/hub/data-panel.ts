@@ -1,9 +1,9 @@
 import { resetBestScores } from '../../shared/achievements';
-import { exportBackup, importBackup } from '../../shared/backup';
+import { exportBackup, importBackup, mergeBackup } from '../../shared/backup';
 
 /**
  * Wires up the "Your data" section of the settings dialog: download a backup of everything saved
- * on this device, restore one, or clear the best scores.
+ * on this device, restore one (replacing what is here), merge one in, or clear the best scores.
  */
 export function initDataPanel(): void {
   const section = document.querySelector<HTMLElement>('#your-data')!;
@@ -26,7 +26,14 @@ export function initDataPanel(): void {
     say('Backup downloaded. Keep the file somewhere safe.');
   });
 
-  section.querySelector('#import-data')!.addEventListener('click', () => fileInput.click());
+  // Both buttons open the same file picker; this remembers which one asked.
+  let merging = false;
+  const choose = (merge: boolean) => {
+    merging = merge;
+    fileInput.click();
+  };
+  section.querySelector('#import-data')!.addEventListener('click', () => choose(false));
+  section.querySelector('#merge-data')!.addEventListener('click', () => choose(true));
   fileInput.addEventListener('change', async () => {
     const file = fileInput.files?.[0];
     // Clear the input so choosing the same file again still fires a change event.
@@ -39,8 +46,11 @@ export function initDataPanel(): void {
       say('That file could not be read as a backup. Nothing was changed.');
       return;
     }
-    if (!window.confirm('Replace the trophies, stats, best scores and settings on this device with the ones in this backup?')) return;
-    const result = importBackup(parsed);
+    const question = merging
+      ? 'Add the trophies, stats and best scores in this backup to the ones on this device? Nothing here is removed, and your settings stay as they are.'
+      : 'Replace the trophies, stats, best scores and settings on this device with the ones in this backup?';
+    if (!window.confirm(question)) return;
+    const result = merging ? mergeBackup(parsed) : importBackup(parsed);
     if (!result.ok) {
       say(`${result.reason} Nothing was changed.`);
       return;
