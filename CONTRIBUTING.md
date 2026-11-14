@@ -38,6 +38,7 @@ Tests live next to the code as `*.test.ts`. If you add logic that does not need 
 
 - **Use the shared toolkit.** Input goes through `ArcadeControls`, pausing through `PauseController`, menus through `buildMenu` and `OptionMenu`, and the end of a run through `endRun()`, which starts the shared game-over scene. The README has a table of what is in [`shared/`](shared).
 - **Keep the scene keys.** The shared modules find scenes by key: the menu is `'Menu'`, gameplay is `'Game'` and the shared game-over scene is `'GameOver'`. They are exported as `SCENE` from [`shared/scenes.ts`](shared/scenes.ts).
+- **Mark impacts with `impact()`.** For a crash, a lost life or a big hit, call `impact(this, controls, ms, intensity)` from [`shared/ui.ts`](shared/ui.ts) instead of shaking the camera yourself: it shakes the screen and rumbles the gamepad of the player it happened to. In a two-player game, pass only that player's controls.
 - **Respect the pause guard.** Start `update()` with `if (this.pause.isPaused) return;` and check it in pointer handlers too.
 - **Procedural art and audio.** Draw graphics in code and synthesize sounds with `tone()` and `noise()` from [`shared/sfx.ts`](shared/sfx.ts). Do not add image, audio or font files for a game; this keeps each game to a few KB on top of Phaser.
 - **Use the shared palette.** Take colors from `NEON` in [`shared/ui.ts`](shared/ui.ts) so the colorblind palette applies, and honour `reducedMotion()` for decorative animation.
