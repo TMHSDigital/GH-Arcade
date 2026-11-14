@@ -19,6 +19,8 @@ export interface OptionMenuOptions {
   depth?: number;
   /** Start disabled (e.g. a pause menu that only works while paused). */
   enabled?: boolean;
+  /** The option highlighted when the menu opens (the first one by default). */
+  selected?: number;
 }
 
 /**
@@ -104,7 +106,8 @@ export class OptionMenu {
       else t.disableInteractive();
     }
     if (on) {
-      this.selected = 0;
+      const first = this.opts.selected ?? 0;
+      this.selected = first >= 0 && first < this.texts.length ? first : 0;
       this.paint();
     }
   }

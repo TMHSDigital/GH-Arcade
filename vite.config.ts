@@ -76,6 +76,8 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         // Multi-page site: every page is precached by its own URL, so no single-page fallback.
         navigateFallback: null,
+        // A game page opened on a mode (games/stack/?mode=daily, shared/modes.ts) is still the precached page.
+        ignoreURLParametersMatching: [/^utm_/, /^fbclid$/, /^mode$/],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {

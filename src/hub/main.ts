@@ -2,7 +2,8 @@ import './hub.css';
 import registry from '../../games/registry.json';
 import { registerOffline } from '../../shared/pwa';
 import { getHighScore, getStats, trophyProgress } from '../../shared/achievements';
-import { DAILY_TAG, getDailyBest } from '../../shared/rng';
+import { modeQuery } from '../../shared/modes';
+import { DAILY_MODE_LABEL, DAILY_TAG, getDailyBest } from '../../shared/rng';
 import { loadJSON, saveJSON } from '../../shared/storage';
 import { initStorageNotice } from '../../shared/storage-notice';
 import { initDataPanel } from './data-panel';
@@ -113,9 +114,10 @@ function card(game: GameEntry, isLastPlayed: boolean): HTMLLIElement {
   const trophies = trophyProgress(game.slug);
   // Games with a daily challenge say whether today's has been played (the day is the UTC date, as in the games).
   const daily = game.tags.includes(DAILY_TAG) ? getDailyBest(game.slug) : -1;
-  // Relative link so it works under any base path (dev server and GitHub Pages).
+  // Relative link so it works under any base path (dev server and GitHub Pages). While today's daily
+  // challenge is waiting, the card opens the game's menu on DAILY.
   li.innerHTML = `
-    <a class="card-link" href="games/${encodeURIComponent(game.slug)}/">
+    <a class="card-link" href="games/${encodeURIComponent(game.slug)}/${daily === 0 ? modeQuery(DAILY_MODE_LABEL) : ''}">
       <div class="card-art" aria-hidden="true">${
         game.thumbnail
           ? `<img src="${escapeHtml(game.thumbnail)}" alt="" loading="lazy" decoding="async" />`
@@ -129,7 +131,7 @@ function card(game: GameEntry, isLastPlayed: boolean): HTMLLIElement {
           ${best > 0 ? `<span class="best">Best ${best.toLocaleString()}</span>` : ''}
           ${trophies.total ? `<span class="trophies" title="Trophies unlocked">Trophies ${trophies.unlocked}/${trophies.total}</span>` : ''}
           ${daily > 0 ? `<span class="daily done" title="Your best in today's daily challenge">Daily ${daily.toLocaleString()}</span>` : ''}
-          ${daily === 0 ? '<span class="daily" title="Today\'s daily challenge is waiting">Daily: not played</span>' : ''}
+          ${daily === 0 ? '<span class="daily" title="Today\'s daily challenge is waiting: this card opens on it">Daily: not played</span>' : ''}
           ${isLastPlayed ? '<span class="recent">Last played</span>' : ''}
         </div>
         ${game.controls ? `<p class="controls">${escapeHtml(game.controls)}</p>` : ''}

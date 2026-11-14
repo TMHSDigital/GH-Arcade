@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import { clearRecentUnlocks, drainRecentUnlocks, getHighScore, recordRun, TOP_SIZE, type Trophy } from './achievements';
 import { ArcadeControls } from './controls';
 import { OptionMenu } from './menu';
+import { modeIndex, modeQuery } from './modes';
+import { DAILY_MODE_LABEL } from './rng';
 import { tone } from './sfx';
 import { keyLabel } from './settings';
 import { canShare, resultText, shareResult } from './share';
@@ -66,6 +68,11 @@ export function buildMenu(scene: Phaser.Scene, opts: MenuOptions): void {
       x: width / 2,
       y: 410,
       spacing: 300,
+      // A link such as "?mode=daily" opens the menu on that mode (shared/modes.ts).
+      selected: modeIndex(
+        opts.modes.map((m) => m.label),
+        window.location.search,
+      ),
       items: opts.modes.map((m) => ({
         label: m.label,
         onSelect: () => {
@@ -240,7 +247,9 @@ export class ArcadeGameOverScene extends Phaser.Scene {
         if (chosen) return;
         // The page is titled "<game> · GH Arcade" (build/game-pages.ts).
         const text = resultText({ title: document.title.split(' · ')[0], score: data.score, daily: data.daily });
-        const outcome = await shareResult(text, window.location.origin + window.location.pathname);
+        // A daily result links to the daily, so whoever opens it lands on the same challenge.
+        const page = window.location.origin + window.location.pathname;
+        const outcome = await shareResult(text, data.daily ? page + modeQuery(DAILY_MODE_LABEL) : page);
         if (outcome === 'copied') showToast('Copied', 'Paste your result anywhere');
         else if (outcome === 'failed') showToast("Couldn't share", 'Pick SHARE with a key, click or tap');
       };

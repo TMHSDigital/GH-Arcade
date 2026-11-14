@@ -146,13 +146,16 @@ export function dailyStreak(game: string, today: string = dailySeed()): number {
 /** The tag in games/registry.json that marks a game with a daily challenge; the hub shows today's result for those. */
 export const DAILY_TAG = 'daily';
 
+/** The menu label of the daily mode. Links name it too: games/<slug>/?mode=daily (shared/modes.ts). */
+export const DAILY_MODE_LABEL = 'DAILY';
+
 /**
  * Menu choices for a game with a daily challenge, for `modes` in buildMenu(): the game scene gets
  * `{ daily: true }` when the player picks DAILY.
  */
 export const DAILY_MODES = [
   { label: 'PLAY', data: {} },
-  { label: 'DAILY', data: { daily: true } },
+  { label: DAILY_MODE_LABEL, data: { daily: true } },
 ];
 
 /**
