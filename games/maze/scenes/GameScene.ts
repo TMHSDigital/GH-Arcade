@@ -36,7 +36,7 @@ import {
   targetFor,
   touches,
 } from '../chase';
-import { BONUS_CELL, find, HOUSE_EXIT, HOUSE_Y, MAZE, OPPOSITE, open, tile, VEC, wrapX, type Dir } from '../maze';
+import { BONUS_CELL, find, HOUSE_EXIT, HOUSE_Y, maze, OPPOSITE, open, tile, useLayout, VEC, wrapX, type Dir } from '../maze';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
@@ -136,7 +136,9 @@ export class GameScene extends Phaser.Scene {
 
   private startLevel(): void {
     this.dots.clear();
-    MAZE.forEach((row, y) =>
+    // Each level plays the next maze layout, round again after the last.
+    useLayout(this.level - 1);
+    maze().forEach((row, y) =>
       [...row].forEach((ch, x) => {
         if (ch === '.') this.dots.set(y * COLS + x, 'dot');
         else if (ch === 'o') this.dots.set(y * COLS + x, 'power');

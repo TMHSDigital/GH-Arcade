@@ -91,7 +91,7 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/maze/"><img src=".github/assets/maze.gif" alt="Neon Maze gameplay: a runner clearing dots while chasers close in, then turning on them after a power cell" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/maze/">Neon Maze</a></h3>
-      <p>Clear the maze while four chasers close in, each with its own tactics. Grab a power cell and turn the hunt around for points that double with every catch.</p>
+      <p>Clear the maze while four chasers close in, each with its own tactics. Each level moves on to the next maze layout. Grab a power cell and turn the hunt around for points that double with every catch.</p>
     </td>
   </tr>
   <tr>
@@ -317,7 +317,7 @@ GH-Arcade/
 │   ├── siege/              # Star Siege (pixel art in sprites.ts)
 │   ├── hop/                # Neon Hop (lane layout in config.ts)
 │   ├── pong/               # Neon Pong
-│   ├── maze/               # Neon Maze (the maze layout in maze.ts)
+│   ├── maze/               # Neon Maze (the maze layouts in maze.ts)
 │   └── pinball/            # Neon Pinball (table geometry in table.ts)
 ├── shared/                 # Toolkit shared by all games (controls, pause, touch, scenes, ui, ...)
 ├── public/                 # Favicon, app icons and hub thumbnails, copied as-is
@@ -369,6 +369,7 @@ Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `co
 - [ ] Daily challenges for more games
 - [ ] Breakout level editor
 - [ ] More two-player modes
+- [x] A second maze layout for Neon Maze (levels alternate between the two)
 - [ ] More pinball tables and maze layouts
 
 Have an idea? [Open an issue](https://github.com/TMHSDigital/GH-Arcade/issues/new).

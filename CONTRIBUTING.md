@@ -45,6 +45,13 @@ Tests live next to the code as `*.test.ts`. If you add logic that does not need 
 - **Thumbnail.** Optional, but nice: a 16:9 JPEG screenshot of gameplay at `public/thumbs/<slug>.jpg`, kept small (the existing ones are under 20 KB), referenced as `"thumbnail": "thumbs/<slug>.jpg"`. Without one the card shows the first letter of the title.
 - **Trophies.** List up to four trophies in the game's own `trophies.ts`; the arcade picks the file up automatically. Unlock them through `trophiesFor<typeof TROPHIES>()`, which type-checks the ids. A trophy earned at a number (a score, a level) declares it as `threshold` beside its description, and the game calls `reach(id, value)` instead of comparing against the number itself.
 
+## Level designs
+
+Levels are plain text grids, so a new one needs no engine knowledge.
+
+- **Neon Maze.** Layouts live in [`games/maze/maze.ts`](games/maze/maze.ts), each written as its left half (the right half is mirrored). Add yours to `LAYOUTS`; levels play them in order and start over after the last. Keep rows 6 to 12 and the runner's start as they are, join your corridors to that middle block, and leave no dead ends. `npm test` checks every layout for all of this, so a layout that passes is playable.
+- **Neon Breakout.** Brick layouts are the `LEVELS` list in [`games/breakout/config.ts`](games/breakout/config.ts): one string per row, with `.` for a gap and `1` to `3` for how many hits a brick takes.
+
 ## Style
 
 - TypeScript, two-space indentation, single quotes, semicolons. Match the file you are editing.
