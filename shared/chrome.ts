@@ -2,11 +2,12 @@ import { PAUSE_REQUEST_EVENT, PAUSE_STATE_EVENT } from './pause';
 import { STORAGE_PREFIX } from './storage';
 import { toolbarStrip } from './toolbar-strip';
 import { isTouchDevice } from './touch';
+import { keepScreenAwake } from './wake-lock';
 
 /**
  * Page-level controls around every game canvas (plain HTML, so they stay crisp and reachable on
  * any screen): a pause button for touch players, a fullscreen toggle, the loading indicator, and a
- * hint to turn phones sideways. `aspect` is the game's width divided by its height.
+ * hint to turn phones sideways. It also keeps the screen awake while a run is in progress. `aspect` is the game's width divided by its height.
  */
 export function initGameChrome(aspect: number): void {
   keepToolbarClear(aspect);
@@ -25,6 +26,8 @@ export function initGameChrome(aspect: number): void {
     pause.hidden = !available;
     pause.textContent = paused ? 'Resume' : 'Pause';
     pause.setAttribute('aria-label', paused ? 'Resume the game' : 'Pause the game');
+    // A run in progress keeps the screen on (a gamepad alone would let it dim); pause, menus and game over let it sleep.
+    keepScreenAwake(available && !paused);
   });
   bar.append(pause);
 
