@@ -180,6 +180,29 @@ export function keyLabel(action: RebindableAction, first = false): string {
   return (first && !custom ? label.split(' / ')[0] : label).toUpperCase();
 }
 
+/** Actions both players share in two-player modes, where every other key belongs to one seat. */
+export type SharedAction = 'pause' | 'mute';
+
+/** keyCodes of the two keyboard halves in two-player modes: W A S D Space Shift, and the arrows Enter Ctrl. */
+const SEAT_KEY_CODES: readonly number[] = [87, 65, 83, 68, 32, 16, 38, 37, 40, 39, 13, 17];
+
+/** The player's own key for a shared action, unless one of the two-player seats already uses that key. */
+function sharedBinding(action: SharedAction): KeyBinding | undefined {
+  const custom = current.bindings[action];
+  return custom && !SEAT_KEY_CODES.includes(custom.code) ? custom : undefined;
+}
+
+/** The keyCodes that trigger Pause or Mute in two-player modes: the custom key if no seat uses it, or the defaults. */
+export function sharedKeyCodes(action: SharedAction): number[] {
+  const custom = sharedBinding(action);
+  return custom ? [custom.code] : DEFAULT_KEY_CODES[action];
+}
+
+/** Like keyLabel(), for Pause or Mute in two-player modes. */
+export function sharedKeyLabel(action: SharedAction): string {
+  return (sharedBinding(action)?.label ?? DEFAULT_KEY_LABELS[action]).toUpperCase();
+}
+
 /**
  * Key names for a game's help text. `written` is how the help words the default keys ("P", "← →",
  * "arrows / WASD") and is returned as is while none of the actions is rebound. Once one is, each

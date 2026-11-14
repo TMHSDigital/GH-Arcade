@@ -3,7 +3,7 @@ import { clearRecentUnlocks } from './achievements';
 import type { ArcadeControls } from './controls';
 import { type MenuItem, OptionMenu } from './menu';
 import { restartDataFor, SCENE, setRestartData, toArcade } from './scenes';
-import { getSettings, keyLabel, updateSettings } from './settings';
+import { getSettings, keyLabel, type SharedAction, sharedKeyLabel, updateSettings } from './settings';
 import { isMuted, setMuted } from './sfx';
 import { NEON, neonText, PIXEL_FONT } from './ui';
 
@@ -37,6 +37,8 @@ export class PauseController {
   private readonly title: Phaser.GameObjects.Text;
   private readonly hint: Phaser.GameObjects.Text;
   private readonly resumeHint: string;
+  /** Two-player modes share Pause and Mute, which can differ from the solo keys. */
+  private readonly seated: boolean;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -45,6 +47,7 @@ export class PauseController {
   ) {
     const { width, height } = scene.scale.gameSize;
     const all = Array.isArray(controls) ? controls : [controls];
+    this.seated = all.some((c) => c.seated);
     // Recorded for the game-over screen too, so RESTART and PLAY AGAIN always agree.
     setRestartData(scene, opts.restartData);
     const restartData = restartDataFor(scene);
@@ -84,7 +87,7 @@ export class PauseController {
       ],
     });
     this.settingsMenu.setVisible(false);
-    this.resumeHint = `${keyLabel('pause')} / START TO RESUME`;
+    this.resumeHint = `${this.label('pause')} / START TO RESUME`;
     this.hint = neonText(scene, width / 2, height / 2 + 170, this.resumeHint, 10, NEON.white).setAlpha(0.6);
     this.overlay = scene.add
       .container(0, 0, [dim, this.title, this.hint, ...this.menu.objects, ...this.settingsMenu.objects])
@@ -191,6 +194,11 @@ export class PauseController {
   }
 
   private updateMuteText(): void {
-    this.muteText.setText(isMuted() ? `MUTED (${keyLabel('mute')})` : '');
+    this.muteText.setText(isMuted() ? `MUTED (${this.label('mute')})` : '');
+  }
+
+  /** The key that works for a shared action in this mode. */
+  private label(action: SharedAction): string {
+    return this.seated ? sharedKeyLabel(action) : keyLabel(action);
   }
 }

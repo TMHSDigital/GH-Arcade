@@ -22,6 +22,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 ### Fixed
 
+- A rebound Pause or Mute key now works in two-player modes too.
 - A new version arriving while you play no longer reloads the game mid-run.
 - Neon Pinball: with the left-handed touch layout, holding the left half of the screen launches the ball.
 - Menu help text, and Neon Pinball's in-game help, name the keys you chose in Settings instead of the defaults.

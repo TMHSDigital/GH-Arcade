@@ -172,4 +172,19 @@ describe('key helpers', () => {
     expect(settings.helpKeys(['left', 'right'], '← →')).toBe('J, → / D');
     expect(settings.helpKeys('action', 'Space')).toBe('Space');
   });
+
+  it('two-player modes share a rebound Pause or Mute key unless a seat uses it', async () => {
+    installMemoryStorage();
+    installWindow();
+    const { settings } = await freshModules();
+    expect(settings.sharedKeyCodes('pause')).toEqual([80, 27]);
+    expect(settings.sharedKeyLabel('pause')).toBe('P / ESC');
+    settings.updateSettings({ bindings: { pause: { code: 75, label: 'k' }, mute: { code: 87, label: 'W' } } });
+    expect(settings.sharedKeyCodes('pause')).toEqual([75]);
+    expect(settings.sharedKeyLabel('pause')).toBe('K');
+    // W is player 1's up key, so Mute falls back to its default there.
+    expect(settings.sharedKeyCodes('mute')).toEqual([77]);
+    expect(settings.sharedKeyLabel('mute')).toBe('M');
+    expect(settings.keyLabel('mute')).toBe('W');
+  });
 });

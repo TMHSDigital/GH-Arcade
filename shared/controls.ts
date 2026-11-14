@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { PAD, STICK_PRESS } from './gamepad';
-import { getSettings, type RebindableAction } from './settings';
+import { getSettings, type RebindableAction, type SharedAction, sharedKeyCodes } from './settings';
 
 /**
  * Unified input for arcade games: keyboard, gamepad and on-screen touch controls behind one API.
@@ -39,10 +39,13 @@ const DEFAULT_BINDINGS = {
 
 export type DefaultAction = keyof typeof DEFAULT_BINDINGS;
 
-/** Keyboard halves for local two-player games (each player also gets their own gamepad). */
-const PLAYER_KEYS: Record<1 | 2, Record<DefaultAction, (string | number)[]>> = {
-  1: { left: ['A'], right: ['D'], up: ['W'], down: ['S'], action: ['SPACE'], alt: ['SHIFT'], pause: ['P', 'ESC'], mute: ['M'] },
-  2: { left: ['LEFT'], right: ['RIGHT'], up: ['UP'], down: ['DOWN'], action: ['ENTER'], alt: ['CTRL'], pause: ['P', 'ESC'], mute: ['M'] },
+/**
+ * Keyboard halves for local two-player games (each player also gets their own gamepad). Pause and
+ * Mute are shared by both seats and follow the player's settings; see sharedKeyCodes().
+ */
+const PLAYER_KEYS: Record<1 | 2, Record<Exclude<DefaultAction, SharedAction>, (string | number)[]>> = {
+  1: { left: ['A'], right: ['D'], up: ['W'], down: ['S'], action: ['SPACE'], alt: ['SHIFT'] },
+  2: { left: ['LEFT'], right: ['RIGHT'], up: ['UP'], down: ['DOWN'], action: ['ENTER'], alt: ['CTRL'] },
 };
 
 export interface ControlsOptions {
@@ -97,13 +100,20 @@ export class ArcadeControls<Extra extends string = never> {
     const custom = getSettings().bindings;
     for (const [name, b] of Object.entries(DEFAULT_BINDINGS) as [DefaultAction, Binding][]) {
       const keys = this.options.player
-        ? PLAYER_KEYS[this.options.player][name]
+        ? name === 'pause' || name === 'mute'
+          ? sharedKeyCodes(name)
+          : PLAYER_KEYS[this.options.player][name]
         : custom[name]
           ? [custom[name]!.code]
           : b.keys;
       out[name] = { ...b, keys };
     }
     return out;
+  }
+
+  /** True for a seat in a local two-player game, false for a solo player. */
+  get seated(): boolean {
+    return this.options.player !== undefined;
   }
 
   /** This seat's gamepad: the first connected pad for solo play, or pad 1 / pad 2 in two-player games. */
