@@ -35,7 +35,8 @@ type Page = 'main' | 'settings' | 'touch' | 'none';
 
 /**
  * Standard pause and mute behaviour: P / Esc / Start (or the on-screen pause button) toggle pause,
- * M / Back toggle mute, and the game pauses itself when the tab or window loses focus.
+ * M / Back toggle mute, and the game pauses itself when the tab or window loses focus or a gamepad
+ * disconnects.
  * Pausing freezes physics, tweens and timers and shows a menu: Resume, Restart, Settings, Main menu,
  * Arcade. Settings opens a second page for volume, sound, motion and colors, so players (touch
  * players included) can change them without leaving the game. On touch screens it also leads to a
@@ -145,6 +146,9 @@ export class PauseController {
     const onBlur = () => {
       if (!this.paused) this.toggle();
     };
+    // A gamepad that drops out mid-run (flat battery, lost connection) would leave the game running
+    // with nobody steering, so that pauses too.
+    const onPadLost = () => onBlur();
     const onRequest = () => this.toggle();
     const onPostUpdate = () => {
       this.resuming = false;
@@ -154,11 +158,13 @@ export class PauseController {
     scene.events.on(Phaser.Scenes.Events.POST_UPDATE, onPostUpdate);
     scene.game.events.on(Phaser.Core.Events.BLUR, onBlur);
     window.addEventListener(PAUSE_REQUEST_EVENT, onRequest);
+    window.addEventListener('gamepaddisconnected', onPadLost);
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       scene.events.off(Phaser.Scenes.Events.UPDATE, onUpdate);
       scene.events.off(Phaser.Scenes.Events.POST_UPDATE, onPostUpdate);
       scene.game.events.off(Phaser.Core.Events.BLUR, onBlur);
       window.removeEventListener(PAUSE_REQUEST_EVENT, onRequest);
+      window.removeEventListener('gamepaddisconnected', onPadLost);
       window.dispatchEvent(new CustomEvent(PAUSE_STATE_EVENT, { detail: { paused: false, available: false } }));
     });
     // Let the page's pause button know a pausable game is running.

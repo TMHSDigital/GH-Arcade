@@ -165,7 +165,7 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | --- | --- |
 | **Plays anywhere** | A static site on GitHub Pages. Loads straight in the browser on desktop, tablet or phone. |
 | **Installable, works offline** | Install GH Arcade as an app from the hub. After one visit, every game plays with no connection. |
-| **Keyboard, touch or gamepad** | Every game supports all three. Plug in a controller and it just works, including pause on <kbd>Start</kbd>. |
+| **Keyboard, touch or gamepad** | Every game supports all three. Plug in a controller and it just works, including pause on <kbd>Start</kbd>. If a controller disconnects mid-run, the game pauses. |
 | **Two-player** | Neon Snake and Neon Pong have versus modes and Star Siege has co-op, on one keyboard or two gamepads. |
 | **Daily challenges** | Neon Stack, Neon Hop, Neon Runner and Neon Snake have a Daily mode: the same game for everyone on a given UTC date, with its own best score and a streak. (In Snake the food and bonus stars follow a shared sequence, so runs match for as long as players steer the same way.) A hub card whose daily is still waiting opens the game on DAILY, and a shared daily result links to it (`games/<slug>/?mode=daily`). |
 | **Pause menu and game over** | Every game pauses into a menu: resume, restart, settings (volume, sound, motion and colors), main menu or back to the arcade. Game over shows the trophies you just earned, with Play again, Menu and Arcade options. |
@@ -269,7 +269,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | Module | What it provides |
 | --- | --- |
 | [`controls.ts`](shared/controls.ts) | `ArcadeControls`: keyboard, gamepad and on-screen touch input behind `isDown()`, `justPressed()` and `axisX`/`axisY`, with extra per-game bindings. |
-| [`pause.ts`](shared/pause.ts) | `PauseController`: pause and mute keys, a pause menu (resume, restart, settings, main menu, arcade), and auto-pause when the tab loses focus. |
+| [`pause.ts`](shared/pause.ts) | `PauseController`: pause and mute keys, a pause menu (resume, restart, settings, main menu, arcade), and auto-pause when the tab loses focus or a gamepad disconnects. |
 | [`menu.ts`](shared/menu.ts) | `OptionMenu`: a row or column of choices that works with keys, gamepad, mouse and touch. |
 | [`modes.ts`](shared/modes.ts) | Links to a menu mode: `?mode=<label>` in a game's address opens its menu on that mode (`?mode=daily`, `?mode=2-players`). `buildMenu()` reads it, so games with `modes` need nothing extra. |
 | [`chrome.ts`](shared/chrome.ts) | The page around the canvas: pause and fullscreen buttons, the loading indicator and the rotate hint. |
