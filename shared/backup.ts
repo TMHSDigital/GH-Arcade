@@ -56,6 +56,8 @@ function problemWith(key: string, value: unknown): string | null {
   // Settings and trophies are checked field by field when they are loaded; here they only need the right shape.
   if (key === 'settings' || key === 'trophies') return isRecord(value) ? null : `"${key}" is not an object`;
   if (key === 'hub:sort') return typeof value === 'string' ? null : `"${key}" is not text`;
+  // The hub's tag filter: a tag, or null for "All".
+  if (key === 'hub:tag') return typeof value === 'string' || value === null ? null : `"${key}" is not a tag`;
   if (key === 'hub:ios-install-hint') return typeof value === 'boolean' ? null : `"${key}" is not true or false`;
   return `"${key}" is not something the arcade saves`;
 }

@@ -73,7 +73,10 @@ const sortSelect = document.querySelector<HTMLSelectElement>('#sort')!;
 const SORTS = ['featured', 'recent', 'plays', 'title'] as const;
 type Sort = (typeof SORTS)[number];
 
-let activeTag: string | null = null;
+// The chosen tag is remembered too, so the filter is still on after a game. A tag that no game has
+// any more (or anything unexpected in storage) falls back to "All".
+const savedTag = loadJSON<unknown>('hub:tag', null);
+let activeTag: string | null = typeof savedTag === 'string' && games.some((g) => g.tags.includes(savedTag)) ? savedTag : null;
 // The chosen order is remembered; anything unexpected in storage falls back to registry order.
 const savedSort = loadJSON<unknown>('hub:sort', 'featured');
 let sort: Sort = SORTS.find((s) => s === savedSort) ?? 'featured';
@@ -147,6 +150,7 @@ function renderFilters(): void {
     b.setAttribute('aria-pressed', String(activeTag === tag));
     b.addEventListener('click', () => {
       activeTag = tag;
+      saveJSON('hub:tag', tag);
       filters.querySelectorAll('button').forEach((el) => el.setAttribute('aria-pressed', 'false'));
       b.setAttribute('aria-pressed', 'true');
       render();

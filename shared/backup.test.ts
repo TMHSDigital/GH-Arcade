@@ -76,3 +76,21 @@ describe('importBackup', () => {
     expect(storage.data).toEqual(before);
   });
 });
+
+describe('the hub tag filter in a backup', () => {
+  it('round-trips a chosen tag and "All"', () => {
+    for (const tag of ['"2-player"', 'null']) {
+      const storage = installMemoryStorage({ 'gh-arcade:hub:tag': tag });
+      const backup = JSON.parse(JSON.stringify(exportBackup()));
+      storage.clear();
+      expect(importBackup(backup)).toEqual({ ok: true, keys: 1 });
+      expect(storage.data.get('gh-arcade:hub:tag')).toBe(tag);
+    }
+  });
+
+  it('rejects a tag that is not text', () => {
+    installMemoryStorage();
+    const result = importBackup({ app: 'gh-arcade', version: 1, data: { 'hub:tag': 7 } });
+    expect(result.ok).toBe(false);
+  });
+});
