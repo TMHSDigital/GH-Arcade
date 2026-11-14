@@ -6,6 +6,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 ### Added
 
+- Installed app shortcuts open the first four featured games directly, following the game registry's order.
 - Settings in the pause menu: volume, sound, reduced motion and colors can be changed without leaving a game, by keyboard, gamepad or touch.
 - Neon Stack has a Daily mode: everyone gets the same piece order on a given UTC date, with a best score per day.
 - Touch options in Settings (on touch devices): on-screen button size, a left-handed layout and vibration on press.
