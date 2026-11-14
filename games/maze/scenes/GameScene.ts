@@ -43,7 +43,7 @@ import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { onSwipe } from '../../../shared/touch';
-import { burstEmitter, floatText, HUD_STYLE, NEON, showBanner } from '../../../shared/ui';
+import { burstEmitter, floatText, HUD_STYLE, NEON, showBanner, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -458,7 +458,7 @@ export class GameScene extends Phaser.Scene {
   private die(): void {
     this.setPhase('dying', DEATH_MS);
     this.bonus = null;
-    this.cameras.main.shake(200, 0.01);
+    impact(this, this.controls, 200, 0.01);
     this.burst.setParticleTint(NEON.yellow);
     this.burst.explode(40, px(this.runner.x), py(this.runner.y));
     noise(0.3, 0.1);

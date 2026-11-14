@@ -49,7 +49,7 @@ import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { getSettings, helpKeys } from '../../../shared/settings';
 import { noise, tone } from '../../../shared/sfx';
-import { burstEmitter, floatText, HUD_LABEL_STYLE, HUD_STYLE, NEON, showBanner } from '../../../shared/ui';
+import { burstEmitter, floatText, HUD_LABEL_STYLE, HUD_STYLE, NEON, showBanner, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -412,7 +412,7 @@ export class GameScene extends Phaser.Scene {
     this.ballsLeft--;
     noise(0.3, 0.08);
     tone({ freq: 400, toFreq: 90, duration: 0.5, type: 'sawtooth', volume: 0.07 });
-    this.cameras.main.shake(180, 0.006);
+    impact(this, this.controls, 180, 0.006);
     if (this.ballsLeft > 0) {
       this.saveUntil = 0;
       showBanner(this, `BALL ${BALLS - this.ballsLeft + 1}`, NEON.cyan, HEIGHT / 2);

@@ -47,7 +47,7 @@ import { PauseController } from '../../../shared/pause';
 import { dailyResult, dailyRng, dailySeed, getDailyBest, type Rng } from '../../../shared/rng';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
-import { burstEmitter, floatText, hex, HUD_STYLE, NEON, neonText, sparkTexture } from '../../../shared/ui';
+import { burstEmitter, floatText, hex, HUD_STYLE, NEON, neonText, sparkTexture, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { addCounter, reach } = trophiesFor<typeof TROPHIES>();
@@ -384,7 +384,7 @@ export class GameScene extends Phaser.Scene {
     this.trail.stop();
     this.burst.setParticleTint(NEON.cyan);
     this.burst.explode(40, PLAYER_X, Math.min(this.y, GROUND_Y) - PLAYER_H / 2);
-    this.cameras.main.shake(300, 0.012);
+    impact(this, this.controls, 300, 0.012);
     this.cameras.main.flash(180, 255, 46, 151);
     noise(0.5, 0.12);
     tone({ freq: 400, toFreq: 50, duration: 0.7, type: 'sawtooth', volume: 0.08 });

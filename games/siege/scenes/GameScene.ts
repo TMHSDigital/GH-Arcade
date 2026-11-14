@@ -38,7 +38,7 @@ import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice } from '../../../shared/touch';
-import { addGlow, burstEmitter, floatText, HUD_STYLE, NEON, neonText, showBanner } from '../../../shared/ui';
+import { addGlow, burstEmitter, floatText, HUD_STYLE, impact, NEON, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -526,7 +526,7 @@ export class GameScene extends Phaser.Scene {
     this.drawLives(ship);
     this.burst.setParticleTint(ship.color);
     this.burst.explode(34, ship.img.x, PLAYER_Y);
-    this.cameras.main.shake(260, 0.01);
+    impact(this, ship.controls, 260, 0.01);
     this.cameras.main.flash(160, 255, 46, 151);
     noise(0.5, 0.12);
     tone({ freq: 280, toFreq: 40, duration: 0.6, type: 'sawtooth', volume: 0.08 });

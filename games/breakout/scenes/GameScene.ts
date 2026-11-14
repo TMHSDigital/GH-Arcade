@@ -26,7 +26,7 @@ import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
-import { addGlow, burstEmitter, floatText, HUD_STYLE, neonText, PIXEL_FONT, showBanner, sparkTexture } from '../../../shared/ui';
+import { addGlow, burstEmitter, floatText, HUD_STYLE, neonText, PIXEL_FONT, showBanner, sparkTexture, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -330,7 +330,7 @@ export class GameScene extends Phaser.Scene {
 
     this.burst.setParticleTint(color);
     this.burst.explode(18, brick.x, brick.y);
-    this.cameras.main.shake(70, 0.004);
+    impact(this, this.controls, 70, 0.004);
     tone({ freq: 520 + Math.min(this.combo, 12) * 60, duration: 0.09, volume: 0.07 });
 
     if (Math.random() < POWERUP_CHANCE) this.spawnPowerUp(brick.x, brick.y);
@@ -415,7 +415,7 @@ export class GameScene extends Phaser.Scene {
     this.combo = 0;
     this.updateLives();
     this.updateHud();
-    this.cameras.main.shake(250, 0.012);
+    impact(this, this.controls, 250, 0.012);
     this.cameras.main.flash(200, 255, 46, 151);
     noise(0.35, 0.12);
     tone({ freq: 300, toFreq: 60, duration: 0.5, type: 'sawtooth', volume: 0.08 });

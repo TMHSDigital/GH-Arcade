@@ -168,11 +168,11 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | **Keyboard, touch or gamepad** | Every game supports all three. Plug in a controller and it just works, including pause on <kbd>Start</kbd>. If a controller disconnects mid-run, the game pauses. |
 | **Two-player** | Neon Snake and Neon Pong have versus modes and Star Siege has co-op, on one keyboard or two gamepads. |
 | **Daily challenges** | Neon Stack, Neon Hop, Neon Runner and Neon Snake have a Daily mode: the same game for everyone on a given UTC date, with its own best score and a streak. (In Snake the food and bonus stars follow a shared sequence, so runs match for as long as players steer the same way.) The hub counts down to the next challenge (midnight UTC), a card whose daily is still waiting opens the game on DAILY, and a shared daily result links to it (`games/<slug>/?mode=daily`). |
-| **Pause menu and game over** | Every game pauses into a menu: resume, restart, settings (volume, sound, motion and colors), main menu or back to the arcade. Game over shows the trophies you just earned, with Play again, Menu and Arcade options. |
+| **Pause menu and game over** | Every game pauses into a menu: resume, restart, settings (volume, sound, motion, colors and gamepad rumble), main menu or back to the arcade. Game over shows the trophies you just earned, with Play again, Menu and Arcade options. |
 | **Page controls** | On-screen pause and fullscreen buttons, a loading indicator, and a hint to rotate your phone for games that play best in landscape. The screen stays on during a run, even when you play with a gamepad, and may sleep again once you pause or the run ends. |
 | **Couch-friendly hub** | Browse the cabinets with the arrow keys or a gamepad: <kbd>A</kbd> opens a game, <kbd>LB</kbd> <kbd>RB</kbd> switch filters, <kbd>Y</kbd> shows trophies and <kbd>Start</kbd> opens settings. Inside a panel, up and down move between its controls (and scroll it), left and right change a slider, <kbd>A</kbd> presses a button or ticks a box, and <kbd>B</kbd> closes it. |
 | **Trophies and stats** | 43 trophies across the arcade, with plays and best scores per game in the Trophies panel. Saved on your device, no sign-up. |
-| **Settings and accessibility** | Volume, reduced motion (no shake or flashes), a colorblind-friendly palette, rebindable keys and gamepad buttons, and touch options: button size, a left-handed layout and vibration. |
+| **Settings and accessibility** | Volume, reduced motion (no shake or flashes), a colorblind-friendly palette, rebindable keys and gamepad buttons, gamepad rumble on impacts (can be turned off), and touch options: button size, a left-handed layout and vibration. |
 | **Zero-asset audio** | Sound effects are synthesized live with the Web Audio API, so there are no audio files to download. |
 | **Fast loads** | Each game is its own page and bundle. Phaser is split into one shared file that your browser caches across games. |
 | **One command per game** | `npm run new-game` scaffolds a working game and adds it to the hub. No build config to edit. |
@@ -268,19 +268,19 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 
 | Module | What it provides |
 | --- | --- |
-| [`controls.ts`](shared/controls.ts) | `ArcadeControls`: keyboard, gamepad and on-screen touch input behind `isDown()`, `justPressed()` and `axisX`/`axisY`, with extra per-game bindings. |
+| [`controls.ts`](shared/controls.ts) | `ArcadeControls`: keyboard, gamepad and on-screen touch input behind `isDown()`, `justPressed()` and `axisX`/`axisY`, with extra per-game bindings, and `rumble()` for that player's gamepad. |
 | [`pause.ts`](shared/pause.ts) | `PauseController`: pause and mute keys, a pause menu (resume, restart, settings, main menu, arcade), and auto-pause when the tab loses focus or a gamepad disconnects. |
 | [`menu.ts`](shared/menu.ts) | `OptionMenu`: a row or column of choices that works with keys, gamepad, mouse and touch. |
 | [`modes.ts`](shared/modes.ts) | Links to a menu mode: `?mode=<label>` in a game's address opens its menu on that mode (`?mode=daily`, `?mode=2-players`). `buildMenu()` reads it, so games with `modes` need nothing extra. |
 | [`chrome.ts`](shared/chrome.ts) | The page around the canvas: pause and fullscreen buttons, the loading indicator and the rotate hint. It also keeps the screen on during a run ([`wake-lock.ts`](shared/wake-lock.ts)), which any game with a `PauseController` gets for free. |
 | [`touch.ts`](shared/touch.ts) | `onSwipe()` gestures, plus `VirtualStick` and `VirtualButton` that appear only on touch screens. |
 | [`scenes.ts`](shared/scenes.ts) | `buildMenu()` title screens and the shared `ArcadeGameOverScene` with high-score checks and a share option ([`share.ts`](shared/share.ts)). |
-| [`ui.ts`](shared/ui.ts) | Neon text, the HUD text style, banners, score popups, particle bursts and the shared color palette. |
+| [`ui.ts`](shared/ui.ts) | Neon text, the HUD text style, banners, score popups, particle bursts and the shared color palette. `impact()` shakes the screen and rumbles the gamepads of the players it happened to; use it instead of calling the camera shake directly. |
 | [`phaser-config.ts`](shared/phaser-config.ts) | `startArcadeGame()`: fit-to-screen Phaser setup with gamepads enabled, once the pixel font has loaded. |
 | [`storage.ts`](shared/storage.ts) | `loadJSON()` and `saveJSON()`, backed by `localStorage` that never throws. If the browser blocks saved data, every page says so once (`storage-notice.ts`). |
 | [`sfx.ts`](shared/sfx.ts) | `tone()` and `noise()`: retro sound effects synthesized with Web Audio. |
 | [`achievements.ts`](shared/achievements.ts) | Trophies, stats and best scores. Each game lists its trophies in its own `trophies.ts` and gets type-checked `unlock()`, `reach()` and `addCounter()` helpers from `trophiesFor()`; `getHighScore()` returns a game's best and `getTopScores()` its five highest. Unlocks pop up as a [toast](shared/toast.ts). |
-| [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key and gamepad bindings) that every game reads on start. |
+| [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key and gamepad bindings, rumble) that every game reads on start. |
 | [`backup.ts`](shared/backup.ts) | Export, import (replace or merge) and reset of everything saved on the device, used by the hub's settings dialog. |
 | [`rng.ts`](shared/rng.ts) | `createRng(seed)`: repeatable random numbers with `between`, `pick` and `shuffle`, plus what a daily challenge needs: `dailySeed()`, `dailyRng()`, `DAILY_MODES` for the menu (or `DAILY_MODE_LABEL` to add DAILY to a menu that already has modes), per-day best scores with history and a streak, and `dailyResult()` for the game-over line. Give the game the `daily` tag in `registry.json` so the hub shows today's result. |
 | [`pwa.ts`](shared/pwa.ts) | Registers the service worker that makes every page work offline, and announces when the arcade is ready offline or has updated. |

@@ -145,3 +145,20 @@ export function fadeToScene(scene: Phaser.Scene, key: string, data?: object): vo
   scene.cameras.main.fadeOut(250, 5, 5, 13);
   scene.cameras.main.once('camerafadeoutcomplete', () => scene.scene.start(key, data));
 }
+
+/** Camera shake strength that counts as a full-strength rumble; the hardest hits in the games use it. */
+const FULL_SHAKE = 0.012;
+
+/**
+ * Marks an impact: shakes the screen and rumbles the gamepad of each player it happened to (a
+ * player's ArcadeControls, or several). Rumble strength follows the shake's intensity.
+ */
+export function impact(
+  scene: Phaser.Scene,
+  controls: { rumble(strength: number, ms: number): void } | { rumble(strength: number, ms: number): void }[],
+  ms: number,
+  intensity: number,
+): void {
+  scene.cameras.main.shake(ms, intensity);
+  for (const c of Array.isArray(controls) ? controls : [controls]) c.rumble(intensity / FULL_SHAKE, ms);
+}

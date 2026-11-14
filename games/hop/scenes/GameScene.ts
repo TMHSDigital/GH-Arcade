@@ -41,7 +41,7 @@ import { dailyResult, dailyRng, dailySeed, getDailyBest, type Rng } from '../../
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { onSwipe } from '../../../shared/touch';
-import { burstEmitter, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, showBanner } from '../../../shared/ui';
+import { burstEmitter, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, showBanner, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -272,7 +272,7 @@ export class GameScene extends Phaser.Scene {
     this.burst.setParticleTint(water ? NEON.cyan : NEON.pink);
     this.burst.explode(28, x, y);
     floatText(this, x, y - 20, reason, water ? NEON.cyan : NEON.pink, 12);
-    this.cameras.main.shake(220, 0.01);
+    impact(this, this.controls, 220, 0.01);
     noise(water ? 0.35 : 0.25, 0.1);
     tone({ freq: 360, toFreq: 60, duration: 0.5, type: 'sawtooth', volume: 0.07 });
     if (this.lives <= 0) {

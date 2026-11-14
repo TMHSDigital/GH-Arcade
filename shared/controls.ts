@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { STICK_PRESS } from './gamepad';
+import { playRumble, STICK_PRESS } from './gamepad';
 import { DEFAULT_PAD_BUTTONS, getSettings, type RebindableAction, type SharedAction, sharedKeyCodes } from './settings';
 
 /**
@@ -132,6 +132,16 @@ export class ArcadeControls<Extra extends string = never> {
 
   get usingGamepad(): boolean {
     return this.pad !== undefined;
+  }
+
+  /**
+   * Rumbles this seat's gamepad for an impact: `strength` from 0 to 1, for `ms` milliseconds. Does
+   * nothing without a gamepad that can rumble, or when the player has turned rumble off, so games
+   * can call it wherever they shake the screen.
+   */
+  rumble(strength: number, ms: number): void {
+    if (!getSettings().rumble) return;
+    playRumble(this.pad?.pad?.vibrationActuator, strength, ms);
   }
 
   /** Adds an extra source (e.g. an on-screen button) that holds a binding down. */

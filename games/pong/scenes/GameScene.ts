@@ -26,7 +26,7 @@ import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
-import { burstEmitter, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
+import { burstEmitter, hex, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -268,7 +268,13 @@ export class GameScene extends Phaser.Scene {
     this.live = false;
     scorer.score++;
     this.scoreTexts[this.paddles.indexOf(scorer)].setText(String(scorer.score));
-    this.cameras.main.shake(180, 0.008);
+    // The player who let the ball through feels the point (a CPU paddle has no gamepad).
+    impact(
+      this,
+      this.paddles.filter((p) => p !== scorer && p.controls).map((p) => p.controls!),
+      180,
+      0.008,
+    );
     this.burst.setParticleTint(scorer.color);
     this.burst.explode(30, Phaser.Math.Clamp(this.ball.x, 0, WIDTH), this.ball.y);
     noise(0.2, 0.08);

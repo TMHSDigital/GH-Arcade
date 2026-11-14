@@ -38,7 +38,7 @@ type Page = 'main' | 'settings' | 'touch' | 'none';
  * M / Back toggle mute, and the game pauses itself when the tab or window loses focus or a gamepad
  * disconnects.
  * Pausing freezes physics, tweens and timers and shows a menu: Resume, Restart, Settings, Main menu,
- * Arcade. Settings opens a second page for volume, sound, motion and colors, so players (touch
+ * Arcade. Settings opens a second page for volume, sound, motion, colors and rumble, so players (touch
  * players included) can change them without leaving the game. On touch screens it also leads to a
  * page for the on-screen controls: button size, left-handed layout and vibration.
  */
@@ -102,6 +102,7 @@ export class PauseController {
         { label: 'SOUND', onSelect: () => this.change({ muted: !getSettings().muted }) },
         { label: 'MOTION', onSelect: () => this.change({ reducedMotion: !getSettings().reducedMotion }) },
         { label: 'COLORS', onSelect: () => this.change({ palette: getSettings().palette === 'neon' ? 'colorblind' : 'neon' }) },
+        { label: 'RUMBLE', onSelect: () => this.change({ rumble: !getSettings().rumble }) },
         // Only worth offering where there is a touch screen to use them on, as in the hub's settings.
         ...(isTouchDevice() ? [{ label: 'TOUCH CONTROLS', onSelect: () => this.showPage('touch') }] : []),
         { label: 'BACK', onSelect: () => this.showPage('main') },
@@ -241,6 +242,7 @@ export class PauseController {
     this.settingsMenu.setLabel(1, `SOUND  ${s.muted ? 'OFF' : 'ON'}`);
     this.settingsMenu.setLabel(2, `MOTION  ${s.reducedMotion ? 'REDUCED' : 'FULL'}`);
     this.settingsMenu.setLabel(3, `COLORS  ${s.palette === 'colorblind' ? 'COLORBLIND' : 'NEON'}`);
+    this.settingsMenu.setLabel(4, `RUMBLE  ${s.rumble ? 'ON' : 'OFF'}`);
   }
 
   /** Applies a change to the on-screen controls. Vibration takes effect at once; size and layout on the next run. */

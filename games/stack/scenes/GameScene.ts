@@ -45,7 +45,7 @@ import { endRun } from '../../../shared/scenes';
 import { dailyResult, dailyRng, dailySeed, getDailyBest } from '../../../shared/rng';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, VirtualButton } from '../../../shared/touch';
-import { burstEmitter, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, neonText, showBanner } from '../../../shared/ui';
+import { burstEmitter, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, neonText, showBanner, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { addCounter, reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -359,7 +359,7 @@ export class GameScene extends Phaser.Scene {
       const streak = this.add.rectangle(x, top, CELL - 10, d * CELL, color, 0.25).setOrigin(0.5, 0);
       this.tweens.add({ targets: streak, alpha: 0, duration: 180, onComplete: () => streak.destroy() });
     }
-    this.cameras.main.shake(70, 0.003 + Math.min(d, 18) * 0.0002);
+    impact(this, this.controls, 70, 0.003 + Math.min(d, 18) * 0.0002);
     tone({ freq: 180, toFreq: 70, duration: 0.12, type: 'sawtooth', volume: 0.07 });
     this.lockPiece();
   }
@@ -439,7 +439,7 @@ export class GameScene extends Phaser.Scene {
       .filter(Boolean)
       .join('\n');
     showBanner(this, `${label}\n+${points}`, n === 4 ? NEON.yellow : NEON.cyan, BOARD_Y + BOARD_H / 2);
-    this.cameras.main.shake(90 + n * 40, 0.003 * n);
+    impact(this, this.controls, 90 + n * 40, 0.003 * n);
     const notes = [523, 659, 784, 1047].slice(0, n + (n === 4 ? 0 : 1));
     notes.forEach((f, i) => this.time.delayedCall(i * 60, () => tone({ freq: f, duration: 0.12, type: 'triangle', volume: 0.08 })));
 
@@ -464,7 +464,7 @@ export class GameScene extends Phaser.Scene {
   private gameOver(): void {
     if (this.state === 'over') return;
     this.state = 'over';
-    this.cameras.main.shake(300, 0.01);
+    impact(this, this.controls, 300, 0.01);
     noise(0.5, 0.1);
     tone({ freq: 400, toFreq: 40, duration: 0.9, type: 'sawtooth', volume: 0.08 });
     // Grey out the stack from the bottom up.

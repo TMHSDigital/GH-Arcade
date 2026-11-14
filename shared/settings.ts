@@ -94,6 +94,8 @@ export interface Settings {
   bindings: Partial<Record<RebindableAction, KeyBinding>>;
   /** Custom gamepad button per action, replacing that action's default button on every player's pad. */
   padBindings: Partial<Record<RebindableAction, PadBinding>>;
+  /** Gamepads rumble on impacts (where the gamepad and the browser support it). */
+  rumble: boolean;
   touch: TouchSettings;
 }
 
@@ -108,6 +110,7 @@ function sanitize(raw: unknown): Partial<Settings> {
   if (typeof raw.volume === 'number' && Number.isFinite(raw.volume)) out.volume = Math.min(1, Math.max(0, raw.volume));
   if (typeof raw.muted === 'boolean') out.muted = raw.muted;
   if (typeof raw.reducedMotion === 'boolean') out.reducedMotion = raw.reducedMotion;
+  if (typeof raw.rumble === 'boolean') out.rumble = raw.rumble;
   if (raw.palette === 'neon' || raw.palette === 'colorblind') out.palette = raw.palette;
   if (isRecord(raw.bindings)) {
     const bindings: Settings['bindings'] = {};
@@ -161,6 +164,7 @@ function defaults(): Settings {
     palette: 'neon',
     bindings: {},
     padBindings: {},
+    rumble: true,
     touch: { haptics: true, scale: 1, mirrored: false },
   };
 }

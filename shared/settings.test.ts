@@ -11,7 +11,7 @@ describe('defaults', () => {
     installMemoryStorage();
     installWindow(false);
     const { settings } = await freshModules();
-    expect(settings.getSettings()).toEqual({ volume: 0.8, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, padBindings: {}, touch: TOUCH });
+    expect(settings.getSettings()).toEqual({ volume: 0.8, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, padBindings: {}, rumble: true, touch: TOUCH });
   });
 
   it('reduced motion follows the OS preference', async () => {
@@ -40,7 +40,7 @@ describe('loading', () => {
     installMemoryStorage({ [KEY]: JSON.stringify({ volume: 7, muted: 'yes', palette: 'x', bindings: [1, 2] }) });
     installWindow();
     const { settings } = await freshModules();
-    expect(settings.getSettings()).toEqual({ volume: 1, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, padBindings: {}, touch: TOUCH });
+    expect(settings.getSettings()).toEqual({ volume: 1, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, padBindings: {}, rumble: true, touch: TOUCH });
   });
 
   it('keeps only well-formed bindings', async () => {
@@ -155,7 +155,7 @@ describe('resetSettings', () => {
     const fn = vi.fn();
     settings.onSettingsChange(fn);
     const reset = settings.resetSettings();
-    expect(reset).toEqual({ volume: 0.8, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, padBindings: {}, touch: TOUCH });
+    expect(reset).toEqual({ volume: 0.8, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, padBindings: {}, rumble: true, touch: TOUCH });
     expect(fn).toHaveBeenCalledTimes(1);
   });
 });

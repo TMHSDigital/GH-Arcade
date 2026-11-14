@@ -44,6 +44,7 @@ export function initSettingsPanel(): void {
   const volume = dialog.querySelector<HTMLInputElement>('#volume')!;
   const volumeValue = dialog.querySelector<HTMLOutputElement>('#volume-value')!;
   const muted = dialog.querySelector<HTMLInputElement>('#muted')!;
+  const padRumble = dialog.querySelector<HTMLInputElement>('#pad-rumble')!;
   const motion = dialog.querySelector<HTMLInputElement>('#reduced-motion')!;
   const colorblind = dialog.querySelector<HTMLInputElement>('#colorblind')!;
   const swatches = dialog.querySelector<HTMLDivElement>('#swatches')!;
@@ -63,6 +64,7 @@ export function initSettingsPanel(): void {
     volume.value = String(Math.round(s.volume * 100));
     volumeValue.value = `${volume.value}%`;
     muted.checked = s.muted;
+    padRumble.checked = s.rumble;
     motion.checked = s.reducedMotion;
     colorblind.checked = s.palette === 'colorblind';
     touchScale.value = String(Math.round(s.touch.scale * 100));
@@ -150,6 +152,7 @@ export function initSettingsPanel(): void {
 
   volume.addEventListener('input', () => updateSettings({ volume: Number(volume.value) / 100 }));
   muted.addEventListener('change', () => updateSettings({ muted: muted.checked }));
+  padRumble.addEventListener('change', () => updateSettings({ rumble: padRumble.checked }));
   motion.addEventListener('change', () => updateSettings({ reducedMotion: motion.checked }));
   colorblind.addEventListener('change', () => updateSettings({ palette: colorblind.checked ? 'colorblind' : 'neon' }));
   const setTouch = (patch: Partial<Settings['touch']>) => updateSettings({ touch: { ...getSettings().touch, ...patch } });

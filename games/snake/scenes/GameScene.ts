@@ -22,7 +22,7 @@ import { dailyResult, dailyRng, dailySeed, getDailyBest, type Rng } from '../../
 import { endRun, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, onSwipe } from '../../../shared/touch';
-import { burstEmitter, fadeToScene, floatText, hex, HUD_STYLE, NEON, neonText, showBanner } from '../../../shared/ui';
+import { burstEmitter, fadeToScene, floatText, hex, HUD_STYLE, impact, NEON, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -307,7 +307,7 @@ export class GameScene extends Phaser.Scene {
     const y = cellY(this.bonus.cell.y);
     this.burst.setParticleTint(NEON.yellow);
     this.burst.explode(30, x, y);
-    this.cameras.main.shake(80, 0.004);
+    impact(this, this.players[0].controls, 80, 0.004);
     floatText(this, x, y - 10, `BONUS +${points}`, NEON.yellow, 14);
     [660, 880, 1320].forEach((f, i) => this.time.delayedCall(i * 70, () => tone({ freq: f, duration: 0.1, type: 'square', volume: 0.06 })));
     this.bonus = null;
@@ -316,7 +316,13 @@ export class GameScene extends Phaser.Scene {
   }
 
   private crash(dead: Player[]): void {
-    this.cameras.main.shake(260, 0.012);
+    // Only the players who crashed feel it.
+    impact(
+      this,
+      dead.map((p) => p.controls),
+      260,
+      0.012,
+    );
     this.cameras.main.flash(200, 255, 46, 151);
     noise(0.4, 0.12);
     tone({ freq: 320, toFreq: 50, duration: 0.6, type: 'sawtooth', volume: 0.08 });
