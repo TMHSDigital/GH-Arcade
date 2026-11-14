@@ -30,7 +30,8 @@
     "description": "Rotate, slide and drop falling blocks to clear lines. Hold a piece for later and chain combos as the speed climbs.",
     "tags": [
       "puzzle",
-      "classic"
+      "classic",
+      "daily"
     ],
     "accent": "#a45bff",
     "controls": "Arrows + X/Z / drag and tap / gamepad",
@@ -54,7 +55,8 @@
     "description": "Sprint through a synthwave city. Jump, double jump and slide past barriers, drones and gaps as the pace keeps climbing.",
     "tags": [
       "endless",
-      "action"
+      "action",
+      "daily"
     ],
     "accent": "#ff2e97",
     "controls": "Tap + swipe / Space + Down / gamepad",
@@ -79,7 +81,8 @@
     "description": "Hop across four lanes of traffic and a river of drifting logs and diving turtles to fill all five docks before the timer runs out.",
     "tags": [
       "arcade",
-      "classic"
+      "classic",
+      "daily"
     ],
     "accent": "#3d7bff",
     "controls": "Arrows / swipe / d-pad",

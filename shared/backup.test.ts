@@ -205,3 +205,29 @@ describe('mergeBackup', () => {
     expect(storage.data).toEqual(before);
   });
 });
+
+describe('daily results in a backup', () => {
+  const file = (data: Record<string, unknown>) => ({ app: 'gh-arcade', version: 1, data });
+
+  it('round-trips a game\'s daily record', () => {
+    const storage = installMemoryStorage({ 'gh-arcade:hop:daily': JSON.stringify({ '2026-11-12': 500 }) });
+    const backup = JSON.parse(JSON.stringify(exportBackup()));
+    storage.clear();
+    expect(importBackup(backup)).toEqual({ ok: true, keys: 1 });
+    expect(JSON.parse(storage.data.get('gh-arcade:hop:daily')!)).toEqual({ '2026-11-12': 500 });
+  });
+
+  it('rejects a daily record that is not an object', () => {
+    installMemoryStorage();
+    expect(importBackup(file({ 'hop:daily': 500 })).ok).toBe(false);
+    expect(importBackup(file({ 'hop:daily': [500] })).ok).toBe(false);
+  });
+
+  it('merges daily records day by day, keeping the higher score', () => {
+    const storage = installMemoryStorage({ 'gh-arcade:hop:daily': JSON.stringify({ '2026-11-12': 500, '2026-11-13': 90 }) });
+    const backup = file({ 'hop:daily': { '2026-11-11': 70, '2026-11-12': 300, '2026-11-13': 120 } });
+    expect(mergeBackup(backup)).toEqual({ ok: true, keys: 1 });
+    expect(JSON.parse(storage.data.get('gh-arcade:hop:daily')!)).toEqual({ '2026-11-11': 70, '2026-11-12': 500, '2026-11-13': 120 });
+    expect(mergeBackup(backup)).toEqual({ ok: true, keys: 0 });
+  });
+});

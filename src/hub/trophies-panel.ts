@@ -1,10 +1,29 @@
 import registry from '../../games/registry.json';
 import { escapeHtml } from './html';
 import { getCounter, getStats, getTopScores, isUnlocked, resetTrophies, TROPHIES, unlockedAt } from '../../shared/achievements';
+import { DAILY_TAG, dailyStreak, getDailyHistory } from '../../shared/rng';
 
 const gameTitles: Record<string, string> = Object.fromEntries(
   (registry as { slug: string; title: string }[]).map((g) => [g.slug, g.title]),
 );
+const dailyGames = new Set((registry as { slug: string; tags: string[] }[]).filter((g) => g.tags.includes(DAILY_TAG)).map((g) => g.slug));
+
+/** How many past daily results the panel lists per game. */
+const DAILY_SHOWN = 7;
+
+/** "Nov 12" for a yyyy-mm-dd day, read as the UTC date it names. */
+const shortDay = (day: string) => new Date(`${day}T00:00:00Z`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' });
+
+/** A game's daily challenge line: the current streak and its most recent results, or nothing if it was never played. */
+function dailyLine(game: string): string {
+  if (!dailyGames.has(game)) return '';
+  const history = getDailyHistory(game);
+  const days = Object.keys(history).sort().reverse().slice(0, DAILY_SHOWN);
+  if (!days.length) return '';
+  const streak = dailyStreak(game);
+  const results = days.map((day) => `${escapeHtml(shortDay(day))} <strong>${history[day].toLocaleString()}</strong>`).join(' · ');
+  return `<p class="daily-history">Daily${streak > 1 ? `, ${streak} days in a row` : ''}: ${results}</p>`;
+}
 
 /** Wires up the Trophies dialog: every trophy grouped by game, with plays and best scores. */
 export function initTrophiesPanel(): void {
@@ -60,7 +79,7 @@ export function initTrophiesPanel(): void {
                 .map((e) => `<li><strong>${e.score.toLocaleString()}</strong>${e.at ? ` <span>${new Date(e.at).toLocaleDateString()}</span>` : ''}</li>`)
                 .join('')}</ol>`
             : '';
-        return `<section><h3>${escapeHtml(game === 'arcade' ? 'Arcade' : gameTitles[game])} <small>${statLine}</small></h3>${table}${grid}</section>`;
+        return `<section><h3>${escapeHtml(game === 'arcade' ? 'Arcade' : gameTitles[game])} <small>${statLine}</small></h3>${dailyLine(game)}${table}${grid}</section>`;
       })
       .join('');
   };

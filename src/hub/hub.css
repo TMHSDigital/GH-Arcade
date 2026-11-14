@@ -7,6 +7,7 @@
   --pink: #ff2e97;
   --cyan: #00f0ff;
   --yellow: #ffe45e;
+  --green: #3dff8a;
   --pixel: 'Press Start 2P', ui-monospace, monospace;
   --sans: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
@@ -287,6 +288,7 @@ main {
 .tag,
 .best,
 .trophies,
+.daily,
 .recent {
   font-size: 12px;
   padding: 2px 10px;
@@ -299,6 +301,8 @@ main {
 
 .trophies { color: var(--pink); border-color: color-mix(in srgb, var(--pink) 40%, transparent); }
 .recent { color: var(--cyan); border-color: color-mix(in srgb, var(--cyan) 40%, transparent); }
+.daily { color: var(--muted); }
+.daily.done { color: var(--green); border-color: color-mix(in srgb, var(--green) 40%, transparent); }
 
 .card-body .controls { margin-top: 10px; font-size: 13px; }
 
@@ -501,6 +505,13 @@ main {
 }
 .top-scores strong { color: var(--yellow); font-weight: 500; }
 .top-scores span { font-size: 11px; }
+
+.daily-history {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.daily-history strong { color: var(--green); font-weight: 500; }
 
 .trophy-grid {
   list-style: none;

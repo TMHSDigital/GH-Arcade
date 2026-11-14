@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import registry from './registry.json';
@@ -81,5 +81,16 @@ describe('trophies', () => {
 
   it('set counter and target together or not at all', () => {
     for (const t of TROPHIES) expect(t.counter === undefined, t.id).toBe(t.target === undefined);
+  });
+});
+
+describe('daily challenge tag', () => {
+  it('is on exactly the games whose menu offers a daily mode', () => {
+    const tagged = games.filter((g) => g.tags.includes('daily')).map((g) => g.slug).sort();
+    const offering = games
+      .filter((g) => readFileSync(resolve(gamesDir, g.slug, 'scenes', 'MenuScene.ts'), 'utf8').includes('DAILY_MODES'))
+      .map((g) => g.slug)
+      .sort();
+    expect(tagged).toEqual(offering);
   });
 });

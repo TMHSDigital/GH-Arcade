@@ -10,8 +10,10 @@ import { isRecord, STORAGE_PREFIX as PREFIX } from './storage';
 const APP = 'gh-arcade';
 const BACKUP_VERSION = 1;
 const HIGH_SCORE = /^[a-z0-9]+(-[a-z0-9]+)*:highscore$/;
-/** A daily challenge best, e.g. "stack:daily:2026-11-12" (shared/rng.ts). */
+/** A daily challenge best from an older save, e.g. "stack:daily:2026-11-12"; shared/rng.ts folds these into the record below. */
 const DAILY_SCORE = /^[a-z0-9]+(-[a-z0-9]+)*:daily:\d{4}-\d{2}-\d{2}$/;
+/** A game's daily challenge bests by day, e.g. "stack:daily" (shared/rng.ts). */
+const DAILY_RECORD = /^[a-z0-9]+(-[a-z0-9]+)*:daily$/;
 
 export interface Backup {
   app: typeof APP;
@@ -55,8 +57,8 @@ function problemWith(key: string, value: unknown): string | null {
   if (HIGH_SCORE.test(key) || DAILY_SCORE.test(key)) {
     return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? null : `"${key}" is not a score`;
   }
-  // Settings and trophies are checked field by field when they are loaded; here they only need the right shape.
-  if (key === 'settings' || key === 'trophies') return isRecord(value) ? null : `"${key}" is not an object`;
+  // Settings, trophies and daily results are checked field by field when they are loaded; here they only need the right shape.
+  if (key === 'settings' || key === 'trophies' || DAILY_RECORD.test(key)) return isRecord(value) ? null : `"${key}" is not an object`;
   if (key === 'hub:sort') return typeof value === 'string' ? null : `"${key}" is not text`;
   // The hub's tag filter: a tag, or null for "All".
   if (key === 'hub:tag') return typeof value === 'string' || value === null ? null : `"${key}" is not a tag`;
@@ -191,6 +193,12 @@ export function mergeBackup(raw: unknown): ImportResult {
       }
       let merged: unknown;
       if (key === 'trophies') merged = mergeTrophies(here, value);
+      else if (DAILY_RECORD.test(key)) {
+        // Daily results by day: the higher score for each day either side has played.
+        const a = numbers(here);
+        const b = numbers(value);
+        merged = Object.fromEntries(keysOf(a, b).sort().map((day) => [day, Math.max(count(a[day]), count(b[day]))]));
+      }
       else if (HIGH_SCORE.test(key) || DAILY_SCORE.test(key)) merged = Math.max(count(here), count(value));
       // Settings and hub preferences belong to the device: only fill them in where there are none.
       else if (stored === null) merged = value;

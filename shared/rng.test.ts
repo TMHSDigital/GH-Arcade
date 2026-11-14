@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createRng, DAILY_MODES, dailyResult, dailyRng, dailySeed, getDailyBest, submitDailyScore } from './rng';
+import { createRng, DAILY_KEEP, DAILY_MODES, dailyResult, dailyRng, dailySeed, dailyStreak, getDailyBest, getDailyHistory, submitDailyScore } from './rng';
 import { installMemoryStorage } from './test-utils';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -79,7 +79,9 @@ describe('daily challenge', () => {
     expect(submitDailyScore('stack', 100, '2026-11-13')).toBe(true);
     expect(getDailyBest('stack', '2026-11-12')).toBe(500);
     expect(getDailyBest('snake', '2026-11-12')).toBe(0);
-    expect(storage.data.get('gh-arcade:stack:daily:2026-11-12')).toBe('500');
+    // One record per game, not one key per day.
+    expect(JSON.parse(storage.data.get('gh-arcade:stack:daily')!)).toEqual({ '2026-11-12': 500, '2026-11-13': 100 });
+    expect(storage.data.size).toBe(1);
   });
 });
 
@@ -112,5 +114,81 @@ describe('daily challenge helpers', () => {
     expect(getDailyBest('hop', '2026-11-13')).toBe(1200);
     expect(dailyResult('hop', 900, '2026-11-13')).toBe(`DAILY 2026-11-13   TODAY'S BEST ${(1200).toLocaleString()}`);
     expect(getDailyBest('hop', '2026-11-13')).toBe(1200);
+  });
+});
+
+describe('daily history', () => {
+  it('lists the best for each day played', () => {
+    installMemoryStorage();
+    submitDailyScore('hop', 300, '2026-11-10');
+    submitDailyScore('hop', 500, '2026-11-12');
+    submitDailyScore('hop', 200, '2026-11-12');
+    expect(getDailyHistory('hop')).toEqual({ '2026-11-10': 300, '2026-11-12': 500 });
+    expect(getDailyHistory('runner')).toEqual({});
+  });
+
+  it('is empty, and scores are not records, when storage is unavailable', () => {
+    expect(getDailyHistory('hop')).toEqual({});
+    expect(getDailyBest('hop', '2026-11-12')).toBe(0);
+  });
+
+  it('folds daily bests saved one key per day into the record and removes the old keys', () => {
+    const storage = installMemoryStorage({
+      'gh-arcade:stack:daily:2026-11-11': '900',
+      'gh-arcade:stack:daily:2026-11-12': '400',
+      'gh-arcade:stack:daily': JSON.stringify({ '2026-11-12': 700, '2026-11-13': 50 }),
+      'gh-arcade:hop:daily:2026-11-12': '33',
+    });
+    expect(getDailyHistory('stack')).toEqual({ '2026-11-11': 900, '2026-11-12': 700, '2026-11-13': 50 });
+    expect([...storage.data.keys()].sort()).toEqual(['gh-arcade:hop:daily:2026-11-12', 'gh-arcade:stack:daily']);
+    expect(getDailyBest('hop', '2026-11-12')).toBe(33);
+    expect([...storage.data.keys()].sort()).toEqual(['gh-arcade:hop:daily', 'gh-arcade:stack:daily']);
+  });
+
+  it('ignores malformed saved entries', () => {
+    installMemoryStorage({ 'gh-arcade:hop:daily': JSON.stringify({ '2026-11-12': 'lots', tomorrow: 5, '2026-11-13': -2, '2026-11-14': 80 }) });
+    expect(getDailyHistory('hop')).toEqual({ '2026-11-14': 80 });
+    installMemoryStorage({ 'gh-arcade:hop:daily': '[1,2]' });
+    expect(getDailyHistory('hop')).toEqual({});
+  });
+
+  it('keeps only the newest days', () => {
+    installMemoryStorage();
+    const start = Date.parse('2026-01-01T00:00:00Z');
+    const days = Array.from({ length: DAILY_KEEP + 5 }, (_, i) => new Date(start + i * 86_400_000).toISOString().slice(0, 10));
+    for (const day of days) submitDailyScore('hop', 10, day);
+    const kept = Object.keys(getDailyHistory('hop')).sort();
+    expect(kept).toHaveLength(DAILY_KEEP);
+    expect(kept[0]).toBe(days[5]);
+    expect(kept.at(-1)).toBe(days.at(-1));
+  });
+});
+
+describe('dailyStreak', () => {
+  const play = (...days: string[]) => days.forEach((day) => submitDailyScore('hop', 10, day));
+
+  it('is 0 before the first daily run', () => {
+    installMemoryStorage();
+    expect(dailyStreak('hop', '2026-11-13')).toBe(0);
+  });
+
+  it('counts consecutive days ending today', () => {
+    installMemoryStorage();
+    play('2026-11-11', '2026-11-12', '2026-11-13');
+    expect(dailyStreak('hop', '2026-11-13')).toBe(3);
+  });
+
+  it('still stands when today has not been played yet, and ends after a missed day', () => {
+    installMemoryStorage();
+    play('2026-11-11', '2026-11-12');
+    expect(dailyStreak('hop', '2026-11-13')).toBe(2);
+    expect(dailyStreak('hop', '2026-11-14')).toBe(0);
+  });
+
+  it('stops at a gap and crosses month and year ends', () => {
+    installMemoryStorage();
+    play('2025-12-29', '2025-12-31', '2026-01-01', '2026-02-28', '2026-03-01');
+    expect(dailyStreak('hop', '2026-01-01')).toBe(2);
+    expect(dailyStreak('hop', '2026-03-01')).toBe(2);
   });
 });

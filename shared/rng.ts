@@ -1,4 +1,4 @@
-import { loadJSON, saveJSON, savedNumber } from './storage';
+import { isRecord, loadJSON, saveJSON, savedNumber, STORAGE_PREFIX } from './storage';
 
 /**
  * Seeded random numbers, for anything that should be repeatable: a daily challenge where every
@@ -58,19 +58,93 @@ export function dailySeed(date: Date = new Date()): string {
   return date.toISOString().slice(0, 10);
 }
 
-const dailyKey = (game: string, day: string) => `${game}:daily:${day}`;
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+/** How many days of daily results are kept per game; older ones are dropped. */
+export const DAILY_KEEP = 60;
+/** A game's daily bests live in one saved record, keyed by day. */
+const dailyKey = (game: string) => `${game}:daily`;
+
+/**
+ * Daily bests were first saved one key per day ("<slug>:daily:<date>"), which grew without limit.
+ * Folds any such keys for a game into `history` (keeping the higher score) and removes them.
+ * Returns true if anything was folded. Old backups restore those keys, so this runs on every read.
+ */
+function foldLegacyDays(game: string, history: Record<string, number>): boolean {
+  const prefix = `${STORAGE_PREFIX}${game}:daily:`;
+  let changed = false;
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(prefix) && DAY.test(key.slice(prefix.length))) keys.push(key);
+    }
+    for (const key of keys) {
+      const day = key.slice(prefix.length);
+      const score = savedNumber(loadJSON<unknown>(key.slice(STORAGE_PREFIX.length), 0));
+      if (score > (history[day] ?? 0)) history[day] = score;
+      localStorage.removeItem(key);
+      changed = true;
+    }
+  } catch {
+    /* storage unavailable; nothing to fold */
+  }
+  return changed;
+}
+
+/** Only the newest DAILY_KEEP days. */
+function newest(history: Record<string, number>): Record<string, number> {
+  const days = Object.keys(history).sort().slice(-DAILY_KEEP);
+  return Object.fromEntries(days.map((day) => [day, history[day]]));
+}
+
+/** This device's best score for each day a game's daily challenge was played, keyed by yyyy-mm-dd. */
+export function getDailyHistory(game: string): Record<string, number> {
+  const raw = loadJSON<unknown>(dailyKey(game), {});
+  let history: Record<string, number> = {};
+  if (isRecord(raw)) for (const [day, score] of Object.entries(raw)) if (DAY.test(day) && savedNumber(score) > 0) history[day] = savedNumber(score);
+  if (foldLegacyDays(game, history)) {
+    history = newest(history);
+    saveJSON(dailyKey(game), history);
+  }
+  return history;
+}
 
 /** The best score this device has for a game's daily challenge on the given day (today by default). */
 export function getDailyBest(game: string, day: string = dailySeed()): number {
-  return savedNumber(loadJSON<unknown>(dailyKey(game, day), 0));
+  return getDailyHistory(game)[day] ?? 0;
 }
 
 /** Records a daily challenge score. Returns true if it beat this device's best for that day. */
 export function submitDailyScore(game: string, score: number, day: string = dailySeed()): boolean {
-  if (score <= getDailyBest(game, day)) return false;
-  saveJSON(dailyKey(game, day), score);
+  const history = getDailyHistory(game);
+  if (score <= (history[day] ?? 0)) return false;
+  history[day] = score;
+  saveJSON(dailyKey(game), newest(history));
   return true;
 }
+
+/** The day before a yyyy-mm-dd day. */
+function previousDay(day: string): string {
+  return new Date(Date.parse(`${day}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
+}
+
+/**
+ * How many days in a row a game's daily challenge has been played, counting back from today. A
+ * streak that reached yesterday still stands until today is over.
+ */
+export function dailyStreak(game: string, today: string = dailySeed()): number {
+  const history = getDailyHistory(game);
+  let day = history[today] ? today : previousDay(today);
+  let streak = 0;
+  while (history[day]) {
+    streak++;
+    day = previousDay(day);
+  }
+  return streak;
+}
+
+/** The tag in games/registry.json that marks a game with a daily challenge; the hub shows today's result for those. */
+export const DAILY_TAG = 'daily';
 
 /**
  * Menu choices for a game with a daily challenge, for `modes` in buildMenu(): the game scene gets
