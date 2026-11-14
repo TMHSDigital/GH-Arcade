@@ -30,16 +30,18 @@ import {
   type Item,
   type Lane,
   moveLanes,
+  orbWait,
   submerged,
   sweptAway,
 } from '../rules';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
+import { dailyResult, dailyRng, dailySeed, getDailyBest, type Rng } from '../../../shared/rng';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { onSwipe } from '../../../shared/touch';
-import { burstEmitter, floatText, HUD_STYLE, NEON, showBanner } from '../../../shared/ui';
+import { burstEmitter, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -51,6 +53,11 @@ export class GameScene extends Phaser.Scene {
   private docks: boolean[] = [];
   private orbDock = -1;
   private orbUntil = 0;
+  /** The UTC date of the daily challenge being played, or null in a normal game. */
+  private daily: string | null = null;
+  /** Daily challenge only: the seeded orb schedule, and when (in `elapsed` ms) the next orb is due. */
+  private orbRng: Rng | null = null;
+  private nextOrbAt = 0;
 
   /** Player position: x in pixels within the grid (floats while riding), row on the grid. */
   private px = 0;
@@ -80,7 +87,11 @@ export class GameScene extends Phaser.Scene {
     super('Game');
   }
 
-  init(): void {
+  init(data: { daily?: boolean } = {}): void {
+    // Daily challenge: lanes and bonus orbs are seeded from the date, so everyone gets the same game today.
+    this.daily = data.daily ? dailySeed() : null;
+    this.orbRng = this.daily ? dailyRng(GAME_ID, this.daily, 'orbs') : null;
+    this.nextOrbAt = this.orbRng ? orbWait(this.orbRng.next) : 0;
     this.score = 0;
     this.lives = START_LIVES;
     this.level = 1;
@@ -97,6 +108,11 @@ export class GameScene extends Phaser.Scene {
     const style = HUD_STYLE;
     this.scoreText = this.add.text(WIDTH / 2, 24, '0', style).setOrigin(0.5).setDepth(10);
     this.levelText = this.add.text(WIDTH - 20, 24, '', { ...style, fontSize: '12px' }).setOrigin(1, 0.5).setDepth(10);
+    if (this.daily) {
+      const best = getDailyBest(GAME_ID, this.daily);
+      this.add.text(20, 11, 'DAILY', { ...HUD_LABEL_STYLE, color: hex(NEON.yellow) }).setDepth(10);
+      this.add.text(20, 27, best > 0 ? `BEST ${best.toLocaleString()}` : this.daily, { ...HUD_LABEL_STYLE, fontSize: '8px' }).setDepth(10);
+    }
 
     this.controls = new ArcadeControls(this);
     this.pause = new PauseController(this, this.controls, { canPause: () => !this.over });
@@ -107,7 +123,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   private startLevel(): void {
-    this.lanes = buildLanes(this.level);
+    // Each level has its own sequence, so its layout does not depend on anything that happened before it.
+    this.lanes = buildLanes(this.level, this.daily ? dailyRng(GAME_ID, this.daily, `lanes:${this.level}`).next : undefined);
     this.docks = DOCK_COLS.map(() => false);
     this.levelText.setText(`LV ${this.level}`);
     this.resetHopper();
@@ -159,7 +176,7 @@ export class GameScene extends Phaser.Scene {
 
     moveLanes(this.lanes, dt);
     if (this.orbDock >= 0 && this.elapsed > this.orbUntil) this.orbDock = -1;
-    if (this.orbDock < 0 && Math.random() < dt / 9) this.placeOrb();
+    if (this.orbDock < 0 && (this.orbRng ? this.elapsed >= this.nextOrbAt : Math.random() < dt / 9)) this.placeOrb();
 
     if (this.alive && !this.busy && !this.over) {
       if (this.hop) {
@@ -239,8 +256,9 @@ export class GameScene extends Phaser.Scene {
   private placeOrb(): void {
     const free = freeDocks(this.docks);
     if (!free.length) return;
-    this.orbDock = Phaser.Utils.Array.GetRandom(free);
+    this.orbDock = this.orbRng ? this.orbRng.pick(free) : Phaser.Utils.Array.GetRandom(free);
     this.orbUntil = this.elapsed + 6000;
+    if (this.orbRng) this.nextOrbAt = this.orbUntil + orbWait(this.orbRng.next);
   }
 
   private die(reason: string): void {
@@ -259,7 +277,8 @@ export class GameScene extends Phaser.Scene {
     tone({ freq: 360, toFreq: 60, duration: 0.5, type: 'sawtooth', volume: 0.07 });
     if (this.lives <= 0) {
       this.over = true;
-      endRun(this, { gameId: GAME_ID, score: this.score, detail: `REACHED LEVEL ${this.level}` }, 1400);
+      const detail = this.daily ? dailyResult(GAME_ID, this.score, this.daily) : `REACHED LEVEL ${this.level}`;
+      endRun(this, { gameId: GAME_ID, score: this.score, detail }, 1400);
       return;
     }
     this.time.delayedCall(1100, () => this.resetHopper());

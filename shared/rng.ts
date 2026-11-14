@@ -71,3 +71,27 @@ export function submitDailyScore(game: string, score: number, day: string = dail
   saveJSON(dailyKey(game, day), score);
   return true;
 }
+
+/**
+ * Menu choices for a game with a daily challenge, for `modes` in buildMenu(): the game scene gets
+ * `{ daily: true }` when the player picks DAILY.
+ */
+export const DAILY_MODES = [
+  { label: 'PLAY', data: {} },
+  { label: 'DAILY', data: { daily: true } },
+];
+
+/**
+ * Seeded random numbers for one part of today's challenge, e.g. dailyRng('hop', day, 'lanes:2').
+ * Giving each part its own sequence keeps them the same for every player even when one part is
+ * used at a moment that depends on how the player is doing.
+ */
+export function dailyRng(game: string, day: string, part = ''): Rng {
+  return createRng(part ? `${game}:${day}:${part}` : `${game}:${day}`);
+}
+
+/** Records a finished daily run and returns the line for the game-over screen. */
+export function dailyResult(game: string, score: number, day: string): string {
+  const record = submitDailyScore(game, score, day);
+  return `DAILY ${day}   ${record ? 'NEW BEST TODAY' : `TODAY'S BEST ${getDailyBest(game, day).toLocaleString()}`}`;
+}

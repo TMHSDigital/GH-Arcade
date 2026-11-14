@@ -23,7 +23,7 @@ import {
   TOUCH_SLIDE_MS,
   WIDTH,
 } from '../config';
-import { MAX_PATTERN_LEVEL, PATTERNS, type Piece } from '../patterns';
+import { nextPlacement, type Piece, speedAtDistance } from '../patterns';
 import {
   type Block,
   type Coin,
@@ -44,6 +44,7 @@ import {
 import { getHighScore, trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
+import { dailyResult, dailyRng, dailySeed, getDailyBest, type Rng } from '../../../shared/rng';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, floatText, hex, HUD_STYLE, NEON, neonText, sparkTexture } from '../../../shared/ui';
@@ -63,6 +64,10 @@ export class GameScene extends Phaser.Scene {
   private distance = 0;
   private speed = START_SPEED;
   private nextPatternAt = 0;
+  /** The UTC date of the daily challenge being played, or null in a normal game. */
+  private daily: string | null = null;
+  /** Daily challenge only: the seeded generator the course is laid out from. */
+  private courseRng: Rng | null = null;
   private blocks: Block[] = [];
   private drones: Drone[] = [];
   private gaps: Gap[] = [];
@@ -101,7 +106,10 @@ export class GameScene extends Phaser.Scene {
     super('Game');
   }
 
-  init(): void {
+  init(data: { daily?: boolean } = {}): void {
+    // Daily challenge: the course is seeded from the date, so everyone runs the same one today.
+    this.daily = data.daily ? dailySeed() : null;
+    this.courseRng = this.daily ? dailyRng(GAME_ID, this.daily) : null;
     this.distance = 0;
     this.speed = START_SPEED;
     this.nextPatternAt = WIDTH;
@@ -148,7 +156,7 @@ export class GameScene extends Phaser.Scene {
     this.distText = this.add.text(WIDTH / 2, 24, '0m', style).setOrigin(0.5).setDepth(100);
     this.coinText = this.add.text(WIDTH - 20, 24, '0', { ...style, fontSize: '12px', color: hex(NEON.yellow) }).setOrigin(1, 0.5).setDepth(100);
     this.add
-      .text(WIDTH / 2, 48, `BEST ${getHighScore(GAME_ID).toLocaleString()}`, { ...style, fontSize: '10px', color: '#8a8ab8' })
+      .text(WIDTH / 2, 48, this.bestLine(), { ...style, fontSize: '10px', color: this.daily ? hex(NEON.yellow) : '#8a8ab8' })
       .setOrigin(0.5)
       .setDepth(100);
     this.hint = neonText(this, WIDTH / 2, 200, 'TAP / SPACE TO JUMP   SWIPE DOWN / ↓ TO SLIDE', 12, NEON.white).setDepth(100);
@@ -292,18 +300,26 @@ export class GameScene extends Phaser.Scene {
     tone({ freq: 160, duration: 0.05, type: 'square', volume: 0.04 });
   }
 
+  /** The line under the distance: the best score, or today's date and best in a daily challenge. */
+  private bestLine(): string {
+    if (!this.daily) return `BEST ${getHighScore(GAME_ID).toLocaleString()}`;
+    const best = getDailyBest(GAME_ID, this.daily);
+    return `DAILY ${this.daily}${best > 0 ? `   BEST ${best.toLocaleString()}` : ''}`;
+  }
+
   /** Lays out the next pattern once the previous one has scrolled far enough. */
   private spawnPatterns(): void {
-    const horizon = this.distance + WIDTH + 200;
-    while (this.nextPatternAt < horizon) {
-      const level = Math.min(MAX_PATTERN_LEVEL, Math.floor((this.speed - START_SPEED) / 110));
-      const pool = PATTERNS.filter((p) => p.minLevel <= level);
-      const pattern = Phaser.Utils.Array.GetRandom(pool);
-      // Gaps between obstacles stretch with speed so reaction time stays fair.
-      const stretch = this.speed / START_SPEED;
+    const ahead = WIDTH + 200;
+    while (this.nextPatternAt < this.distance + ahead) {
       const start = this.nextPatternAt;
+      // A daily course is the same for everyone: it uses the seeded generator, and the speed the
+      // runner has when a pattern comes up is worked out from where the pattern starts instead of
+      // read from this run (which varies a little with the frame rate).
+      const { pattern, stretch, gap } = this.courseRng
+        ? nextPlacement(speedAtDistance(start - ahead), this.courseRng.next)
+        : nextPlacement(this.speed);
       for (const piece of pattern.pieces) this.place(piece, start + piece.x * stretch);
-      this.nextPatternAt = start + pattern.length * stretch + Phaser.Math.Between(160, 320) * stretch;
+      this.nextPatternAt = start + pattern.length * stretch + gap;
     }
   }
 
@@ -373,7 +389,8 @@ export class GameScene extends Phaser.Scene {
     noise(0.5, 0.12);
     tone({ freq: 400, toFreq: 50, duration: 0.7, type: 'sawtooth', volume: 0.08 });
     const metres = metresRun(this.distance);
-    endRun(this, { gameId: GAME_ID, score: this.score, detail: `${metres}m   ${this.coinsTaken} COINS` }, 1300);
+    const detail = this.daily ? dailyResult(GAME_ID, this.score, this.daily) : `${metres}m   ${this.coinsTaken} COINS`;
+    endRun(this, { gameId: GAME_ID, score: this.score, detail }, 1300);
   }
 
   // ---------------------------------------------------------------- render

@@ -8,6 +8,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 - Settings in the pause menu: volume, sound, reduced motion and colors can be changed without leaving a game, by keyboard, gamepad or touch.
 - Neon Stack has a Daily mode: everyone gets the same piece order on a given UTC date, with a best score per day.
+- Neon Hop and Neon Runner have a Daily mode too: the same traffic, river and bonus orbs in Hop, and the same course in Runner, for everyone on a given UTC date.
 - Touch options in Settings (on touch devices): on-screen button size, a left-handed layout and vibration on press. They are in the pause menu's settings too.
 - Unit tests (Vitest), ESLint and a pull request check.
 - A Content-Security-Policy on every built page: the arcade loads only its own files and Google Fonts.

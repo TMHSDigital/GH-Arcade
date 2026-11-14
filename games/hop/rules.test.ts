@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { dailyRng } from '../../shared/rng';
 import { CELL, COLS, DOCK_COLS, DOCK_WIDTH, LANES, POINTS_DOCK, POINTS_ORB, POINTS_PER_SECOND_LEFT, SPEED_PER_LEVEL, START_COL, START_ROW } from './config';
 import {
   buildLanes,
@@ -15,6 +16,8 @@ import {
   type Lane,
   LOOP,
   moveLanes,
+  ORB_WAIT_MS,
+  orbWait,
   submerged,
   sweptAway,
   WRAP_MARGIN,
@@ -185,5 +188,28 @@ describe('docks', () => {
   it('lists the docks that are still empty', () => {
     expect(freeDocks([false, true, false, true, true])).toEqual([0, 2]);
     expect(freeDocks([true, true])).toEqual([]);
+  });
+});
+
+describe('daily challenge', () => {
+  it('lays out the same lanes for the same day and level', () => {
+    const lanes = (day: string, level: number) => buildLanes(level, dailyRng('hop', day, `lanes:${level}`).next);
+    expect(lanes('2026-11-13', 1)).toEqual(lanes('2026-11-13', 1));
+    expect(lanes('2026-11-13', 3)).toEqual(lanes('2026-11-13', 3));
+    expect(lanes('2026-11-14', 1)).not.toEqual(lanes('2026-11-13', 1));
+  });
+
+  it('waits between the shortest and longest time for the next orb', () => {
+    expect(orbWait(() => 0)).toBe(ORB_WAIT_MS.min);
+    expect(orbWait(() => 0.5)).toBe((ORB_WAIT_MS.min + ORB_WAIT_MS.max) / 2);
+    expect(orbWait(() => 0.999999)).toBeLessThan(ORB_WAIT_MS.max);
+  });
+
+  it('gives every player the same orb schedule', () => {
+    const waits = () => {
+      const rng = dailyRng('hop', '2026-11-13', 'orbs');
+      return Array.from({ length: 5 }, () => orbWait(rng.next));
+    };
+    expect(waits()).toEqual(waits());
   });
 });

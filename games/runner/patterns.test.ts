@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_PATTERN_LEVEL, PATTERNS, type Piece } from './patterns';
+import { ACCELERATION, MAX_SPEED, START_SPEED } from './config';
+import { MAX_PATTERN_LEVEL, nextPlacement, PATTERNS, type Piece, speedAtDistance } from './patterns';
+import { dailyRng } from '../../shared/rng';
 
 type Solid = Exclude<Piece, { kind: 'coins' }>;
 const isSolid = (p: Piece): p is Solid => p.kind !== 'coins';
@@ -47,6 +49,60 @@ describe('runner patterns', () => {
   it('gives blocks a positive height', () => {
     for (const pattern of PATTERNS) {
       for (const piece of pattern.pieces) if (piece.kind === 'block') expect(piece.h).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('nextPlacement', () => {
+  it('only picks patterns the speed has unlocked', () => {
+    for (let r = 0; r < 1; r += 0.05) {
+      expect(nextPlacement(START_SPEED, () => r).pattern.minLevel).toBe(0);
+      expect(nextPlacement(START_SPEED + 110, () => r).pattern.minLevel).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('can pick every pattern at top speed', () => {
+    const seen = new Set(PATTERNS.map((_, i) => nextPlacement(MAX_SPEED, () => (i + 0.5) / PATTERNS.length).pattern));
+    expect(seen.size).toBe(PATTERNS.length);
+  });
+
+  it('stretches the pattern and the clear ground after it with speed', () => {
+    const slow = nextPlacement(START_SPEED, () => 0);
+    expect(slow.stretch).toBe(1);
+    expect(slow.gap).toBe(160);
+    expect(nextPlacement(START_SPEED, () => 0.999999).gap).toBe(320);
+    const fast = nextPlacement(START_SPEED * 2, () => 0);
+    expect(fast.stretch).toBe(2);
+    expect(fast.gap).toBe(320);
+  });
+
+  it('lays out the same course for the same day', () => {
+    const course = (day: string) => {
+      const rng = dailyRng('runner', day);
+      let at = 0;
+      return Array.from({ length: 40 }, () => {
+        const { pattern, stretch, gap } = nextPlacement(speedAtDistance(at), rng.next);
+        at += pattern.length * stretch + gap;
+        return [PATTERNS.indexOf(pattern), at];
+      });
+    };
+    expect(course('2026-11-13')).toEqual(course('2026-11-13'));
+    expect(course('2026-11-14')).not.toEqual(course('2026-11-13'));
+  });
+});
+
+describe('speedAtDistance', () => {
+  it('starts at the starting speed and never passes the top speed', () => {
+    expect(speedAtDistance(0)).toBe(START_SPEED);
+    expect(speedAtDistance(-50)).toBe(START_SPEED);
+    expect(speedAtDistance(1e9)).toBe(MAX_SPEED);
+  });
+
+  it('matches a run that accelerates steadily over time', () => {
+    // After t seconds: speed = START + A*t, distance = START*t + A*t*t/2.
+    for (const t of [1, 10, 30]) {
+      const distance = START_SPEED * t + (ACCELERATION * t * t) / 2;
+      expect(speedAtDistance(distance)).toBeCloseTo(START_SPEED + ACCELERATION * t, 6);
     }
   });
 });

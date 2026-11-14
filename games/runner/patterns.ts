@@ -9,6 +9,8 @@
  *   coins  - a row or arc of coins
  */
 
+import { ACCELERATION, MAX_SPEED, START_SPEED } from './config';
+
 export type Piece =
   | { kind: 'block'; x: number; w: number; h: number }
   | { kind: 'drone'; x: number; w: number }
@@ -46,3 +48,35 @@ export const PATTERNS: Pattern[] = [
   { minLevel: 3, length: 520, pieces: [{ kind: 'drone', x: 0, w: 80 }, { kind: 'drone', x: 180, w: 80 }, { kind: 'block', x: 380, w: 30, h: 50 }] },
   { minLevel: 3, length: 480, pieces: [{ kind: 'block', x: 0, w: 30, h: 50 }, { kind: 'gap', x: 150, w: 130 }, { kind: 'block', x: 340, w: 30, h: 44 }] },
 ];
+
+/** Speed gained per difficulty tier: the runner reaches tier 1 at START_SPEED + 110, and so on. */
+const SPEED_PER_LEVEL = 110;
+
+export interface Placement {
+  pattern: Pattern;
+  /** Scale for the pattern's x positions and length: gaps stretch with speed so reaction time stays fair. */
+  stretch: number;
+  /** Clear ground after the pattern, in world pixels (already stretched). */
+  gap: number;
+}
+
+/**
+ * Picks the next pattern for a runner moving at `speed`, and the clear ground that follows it.
+ * `random` returns 0..1 like Math.random; a daily challenge passes its seeded generator.
+ */
+export function nextPlacement(speed: number, random: () => number = Math.random): Placement {
+  const level = Math.max(0, Math.min(MAX_PATTERN_LEVEL, Math.floor((speed - START_SPEED) / SPEED_PER_LEVEL)));
+  const pool = PATTERNS.filter((p) => p.minLevel <= level);
+  const pattern = pool[Math.floor(random() * pool.length)];
+  const stretch = speed / START_SPEED;
+  return { pattern, stretch, gap: (160 + Math.floor(random() * 161)) * stretch };
+}
+
+/**
+ * The runner's speed after covering `distance` world pixels: the same curve the game follows over
+ * time (constant acceleration up to MAX_SPEED), worked out from the distance alone. A daily
+ * challenge uses it so the course never depends on a player's frame rate.
+ */
+export function speedAtDistance(distance: number): number {
+  return Math.min(MAX_SPEED, Math.sqrt(START_SPEED ** 2 + 2 * ACCELERATION * Math.max(0, distance)));
+}

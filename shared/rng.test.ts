@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createRng, dailySeed, getDailyBest, submitDailyScore } from './rng';
+import { createRng, DAILY_MODES, dailyResult, dailyRng, dailySeed, getDailyBest, submitDailyScore } from './rng';
 import { installMemoryStorage } from './test-utils';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -80,5 +80,37 @@ describe('daily challenge', () => {
     expect(getDailyBest('stack', '2026-11-12')).toBe(500);
     expect(getDailyBest('snake', '2026-11-12')).toBe(0);
     expect(storage.data.get('gh-arcade:stack:daily:2026-11-12')).toBe('500');
+  });
+});
+
+describe('daily challenge helpers', () => {
+  const first = (rng: { next: () => number }, n = 6) => Array.from({ length: n }, () => rng.next());
+
+  it('offers a normal game and a daily one from the menu', () => {
+    expect(DAILY_MODES.map((m) => m.label)).toEqual(['PLAY', 'DAILY']);
+    expect(DAILY_MODES[1].data).toEqual({ daily: true });
+  });
+
+  it('dailyRng repeats for the same game, day and part', () => {
+    expect(first(dailyRng('hop', '2026-11-13', 'lanes:2'))).toEqual(first(dailyRng('hop', '2026-11-13', 'lanes:2')));
+  });
+
+  it('dailyRng differs by game, by day and by part', () => {
+    const base = first(dailyRng('hop', '2026-11-13', 'orbs'));
+    expect(first(dailyRng('runner', '2026-11-13', 'orbs'))).not.toEqual(base);
+    expect(first(dailyRng('hop', '2026-11-14', 'orbs'))).not.toEqual(base);
+    expect(first(dailyRng('hop', '2026-11-13', 'lanes:1'))).not.toEqual(base);
+  });
+
+  it('dailyRng without a part is seeded with "<game>:<day>", as Neon Stack always was', () => {
+    expect(first(dailyRng('stack', '2026-11-13'))).toEqual(first(createRng('stack:2026-11-13')));
+  });
+
+  it('dailyResult records the score and words the game-over line', () => {
+    installMemoryStorage();
+    expect(dailyResult('hop', 1200, '2026-11-13')).toBe('DAILY 2026-11-13   NEW BEST TODAY');
+    expect(getDailyBest('hop', '2026-11-13')).toBe(1200);
+    expect(dailyResult('hop', 900, '2026-11-13')).toBe(`DAILY 2026-11-13   TODAY'S BEST ${(1200).toLocaleString()}`);
+    expect(getDailyBest('hop', '2026-11-13')).toBe(1200);
   });
 });
