@@ -88,7 +88,7 @@ describe('daily challenge tag', () => {
   it('is on exactly the games whose menu offers a daily mode', () => {
     const tagged = games.filter((g) => g.tags.includes('daily')).map((g) => g.slug).sort();
     const offering = games
-      .filter((g) => readFileSync(resolve(gamesDir, g.slug, 'scenes', 'MenuScene.ts'), 'utf8').includes('DAILY_MODES'))
+      .filter((g) => readFileSync(resolve(gamesDir, g.slug, 'scenes', 'MenuScene.ts'), 'utf8').match(/DAILY_MODES|DAILY_MODE_LABEL/))
       .map((g) => g.slug)
       .sort();
     expect(tagged).toEqual(offering);

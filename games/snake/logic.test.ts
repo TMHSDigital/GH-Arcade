@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { BONUS_BASE_POINTS, COLS, FOOD_POINTS, MIN_STEP_MS, ROWS, START_STEP_MS, STEP_SPEEDUP_MS, TURN_BUFFER } from './config';
+import { dailyRng } from '../../shared/rng';
+import { BONUS_BASE_POINTS, COLS, FOOD_POINTS, GAME_ID, MIN_STEP_MS, ROWS, START_STEP_MS, STEP_SPEEDUP_MS, TURN_BUFFER } from './config';
 import { advance, bonusPoints, type Cell, DIRS, foodPoints, freeCells, nextStepMs, queueTurn, resolveStep, type StepSnake } from './logic';
 
 const FAR: Cell = { x: 30, y: 20 };
@@ -192,5 +193,15 @@ describe('freeCells', () => {
     const free = freeCells(taken);
     expect(free).toHaveLength(COLS * ROWS - taken.length);
     for (const c of taken) expect(free).not.toContainEqual(c);
+  });
+
+  it('lists cells in a fixed order, so a daily challenge places the same food for everyone', () => {
+    const taken = snake(5, 5, DIRS.right).segments;
+    const place = (day: string) => {
+      const rng = dailyRng(GAME_ID, day);
+      return [rng.pick(freeCells(taken)), rng.pick(freeCells(taken)), rng.pick(freeCells(taken))];
+    };
+    expect(place('2026-11-14')).toEqual(place('2026-11-14'));
+    expect(place('2026-11-14')).not.toEqual(place('2026-11-15'));
   });
 });

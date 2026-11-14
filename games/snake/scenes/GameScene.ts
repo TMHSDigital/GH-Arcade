@@ -18,6 +18,7 @@ import { advance, bonusPoints, type Cell, type DirName, DIRS, foodPoints, freeCe
 import { getHighScore, trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
+import { dailyResult, dailyRng, dailySeed, getDailyBest, type Rng } from '../../../shared/rng';
 import { endRun, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, onSwipe } from '../../../shared/touch';
@@ -43,6 +44,8 @@ interface Player {
 export interface SnakeGameData {
   /** 2 starts a versus match on one keyboard or two gamepads. */
   players?: 1 | 2;
+  /** Solo only: play today's daily challenge, where the food and bonus stars are seeded from the date. */
+  daily?: boolean;
   /** Versus only: round wins so far and the round number. */
   wins?: [number, number];
   round?: number;
@@ -68,6 +71,10 @@ function line(x: number, y: number, dir: Cell): Cell[] {
 
 export class GameScene extends Phaser.Scene {
   private versus = false;
+  /** The UTC date of the daily challenge being played, or null in a normal game. */
+  private daily: string | null = null;
+  /** Daily challenge only: the seeded generator that places food and bonus stars. */
+  private cellRng: Rng | null = null;
   private readonly gradients = new Map<number, number[]>();
   private wins: [number, number] = [0, 0];
   private round = 1;
@@ -97,6 +104,10 @@ export class GameScene extends Phaser.Scene {
 
   init(data: SnakeGameData): void {
     this.versus = data.players === 2;
+    // Daily challenge (solo): food and bonus stars are seeded from the date, so everyone who steers
+    // the same way gets the same game today.
+    this.daily = data.daily && !this.versus ? dailySeed() : null;
+    this.cellRng = this.daily ? dailyRng(GAME_ID, this.daily) : null;
     this.wins = data.wins ?? [0, 0];
     this.round = data.round ?? 1;
     this.players = [];
@@ -133,7 +144,7 @@ export class GameScene extends Phaser.Scene {
       this,
       this.players.map((p) => p.controls),
       // Restart begins a fresh match rather than replaying the current round.
-      { canPause: () => !this.over, restartData: { players: this.versus ? 2 : 1 } },
+      { canPause: () => !this.over, restartData: { players: this.versus ? 2 : 1, daily: this.daily !== null } },
     );
     this.createHud();
 
@@ -198,8 +209,9 @@ export class GameScene extends Phaser.Scene {
     this.scoreText = this.add.text(WIDTH / 2, FIELD_TOP / 2, '0', style).setOrigin(0.5);
     this.lengthText = this.add.text(WIDTH - 20, FIELD_TOP / 2, '', { ...style, fontSize: '12px' }).setOrigin(1, 0.5);
     this.add
-      .text(WIDTH / 2 + 110, FIELD_TOP / 2, `BEST ${getHighScore(GAME_ID).toLocaleString()}`, { ...style, fontSize: '10px', color: hex(NEON.yellow) })
+      .text(WIDTH / 2 + 110, FIELD_TOP / 2, this.bestLine(), { ...style, fontSize: '10px', color: hex(NEON.yellow) })
       .setOrigin(0, 0.5);
+    if (this.daily) this.add.text(20, FIELD_TOP / 2, `DAILY ${this.daily}`, { ...style, fontSize: '10px', color: hex(NEON.yellow) }).setOrigin(0, 0.5);
     this.hint = neonText(this, WIDTH / 2, FIELD_TOP + 90, 'PRESS A DIRECTION OR SWIPE', 12, NEON.white);
     this.tweens.add({ targets: this.hint, alpha: 0.25, duration: 600, yoyo: true, repeat: -1 });
     this.updateHud();
@@ -319,7 +331,8 @@ export class GameScene extends Phaser.Scene {
       this.over = true;
       this.bonus = null;
       const p = this.players[0];
-      endRun(this, { gameId: GAME_ID, score: this.score, detail: `LENGTH ${p.segments.length}` }, dissolveMs + 700);
+      const detail = this.daily ? dailyResult(GAME_ID, this.score, this.daily) : `LENGTH ${p.segments.length}`;
+      endRun(this, { gameId: GAME_ID, score: this.score, detail, daily: this.daily ?? undefined }, dissolveMs + 700);
       return;
     }
 
@@ -444,6 +457,13 @@ export class GameScene extends Phaser.Scene {
     const taken = this.players.flatMap((p) => p.segments);
     if (this.food) taken.push(this.food);
     if (this.bonus) taken.push(this.bonus.cell);
-    return Phaser.Utils.Array.GetRandom(freeCells(taken));
+    const free = freeCells(taken);
+    return this.cellRng ? this.cellRng.pick(free) : Phaser.Utils.Array.GetRandom(free);
+  }
+
+  /** The line beside the score: the best score, or today's best in a daily challenge. */
+  private bestLine(): string {
+    const best = this.daily ? getDailyBest(GAME_ID, this.daily) : getHighScore(GAME_ID);
+    return `${this.daily ? "TODAY'S BEST" : 'BEST'} ${best.toLocaleString()}`;
   }
 }
