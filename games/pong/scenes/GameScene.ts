@@ -3,12 +3,8 @@ import {
   BALL_SIZE,
   BOTTOM,
   CPU_ERROR,
-  CPU_REACT,
-  CPU_SPEED,
   GAME_ID,
   HEIGHT,
-  MAX_ANGLE,
-  MAX_SPEED,
   PADDLE_H,
   PADDLE_SPEED,
   PADDLE_W,
@@ -16,11 +12,10 @@ import {
   POINTS_TO_WIN,
   SERVE_DELAY_MS,
   SERVE_SPEED,
-  SPEEDUP,
-  SPIN,
   TOP,
   WIDTH,
 } from '../config';
+import { bounceOffPaddle, cpuAimError, cpuMove, matchScore, touchesPaddle } from '../rules';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
@@ -180,7 +175,7 @@ export class GameScene extends Phaser.Scene {
   private movePaddle(p: Paddle, dt: number): void {
     const before = p.y;
     if (p.cpu) {
-      p.y = this.moveCpu(p, dt);
+      p.y = cpuMove(p, this.ball, this.live, dt);
     } else if (p.touchY !== null) {
       // Fingers get a faster, snappier follow than keys.
       const diff = p.touchY - p.y;
@@ -190,32 +185,6 @@ export class GameScene extends Phaser.Scene {
     }
     p.y = Phaser.Math.Clamp(p.y, TOP + PADDLE_H / 2, BOTTOM - PADDLE_H / 2);
     p.vy = (p.y - before) / Math.max(dt, 0.001);
-  }
-
-  /** The CPU tracks where the ball will arrive (bounces included), with a little error and a speed limit. */
-  private moveCpu(p: Paddle, dt: number): number {
-    const b = this.ball;
-    let target = (TOP + BOTTOM) / 2;
-    // It only starts reading the ball once it crosses into its own half, so steep fast shots can beat it.
-    const inHalf = p.side > 0 ? b.x > WIDTH * CPU_REACT : b.x < WIDTH * (1 - CPU_REACT);
-    if (this.live && Math.sign(b.vx) === p.side && inHalf) {
-      target = this.predictY(p.x) + p.aimError;
-    }
-    const diff = target - p.y;
-    if (Math.abs(diff) < 6) return p.y;
-    return p.y + Phaser.Math.Clamp(diff, -CPU_SPEED * dt, CPU_SPEED * dt);
-  }
-
-  private predictY(atX: number): number {
-    const b = this.ball;
-    if (b.vx === 0) return b.y;
-    const t = (atX - b.x) / b.vx;
-    const span = BOTTOM - TOP - BALL_SIZE;
-    // Unfold the wall bounces: reflect the straight-line position back into the playfield.
-    let y = b.y + b.vy * t - (TOP + BALL_SIZE / 2);
-    y = ((y % (2 * span)) + 2 * span) % (2 * span);
-    if (y > span) y = 2 * span - y;
-    return y + TOP + BALL_SIZE / 2;
   }
 
   private moveBall(dt: number): void {
@@ -233,13 +202,7 @@ export class GameScene extends Phaser.Scene {
       tone({ freq: 300, duration: 0.03, type: 'square', volume: 0.03 });
     }
 
-    for (const p of this.paddles) {
-      const face = p.x - (p.side * PADDLE_W) / 2;
-      const incoming = Math.sign(b.vx) === p.side;
-      const reached = p.side < 0 ? b.x - half <= face : b.x + half >= face;
-      const behind = p.side < 0 ? b.x < p.x - PADDLE_W : b.x > p.x + PADDLE_W;
-      if (incoming && reached && !behind && Math.abs(b.y - p.y) <= PADDLE_H / 2 + half) this.hit(p);
-    }
+    for (const p of this.paddles) if (touchesPaddle(b, p)) this.hit(p);
 
     if (b.x < -30) this.point(this.paddles[1]);
     else if (b.x > WIDTH + 30) this.point(this.paddles[0]);
@@ -247,18 +210,12 @@ export class GameScene extends Phaser.Scene {
 
   private hit(p: Paddle): void {
     const b = this.ball;
-    // Where it hits the paddle sets the angle; the paddle's own movement adds a little spin.
-    const offset = Phaser.Math.Clamp((b.y - p.y) / (PADDLE_H / 2), -1, 1);
-    const angle = offset * MAX_ANGLE;
-    b.speed = Math.min(b.speed * SPEEDUP, MAX_SPEED);
-    b.vx = -p.side * Math.cos(angle) * b.speed;
-    b.vy = Math.sin(angle) * b.speed + p.vy * SPIN;
-    b.x = p.x - p.side * (PADDLE_W / 2 + BALL_SIZE / 2 + 1);
+    bounceOffPaddle(b, p);
     this.rally++;
     reach('pong.rally', this.rally);
     this.rallyText.setText(this.rally >= 5 ? `RALLY ${this.rally}` : '');
     // The CPU rethinks its aim each time the ball comes back; faster balls make it less precise.
-    for (const q of this.paddles) if (q.cpu) q.aimError = Phaser.Math.FloatBetween(-1, 1) * CPU_ERROR * Math.min(b.speed / SERVE_SPEED, 1.8);
+    for (const q of this.paddles) if (q.cpu) q.aimError = cpuAimError(b.speed, Phaser.Math.FloatBetween(-1, 1));
     this.burst.setParticleTint(p.color);
     this.burst.explode(10, b.x, b.y);
     tone({ freq: 440 + Math.min(this.rally, 20) * 20, duration: 0.05, type: 'square', volume: 0.06 });
@@ -294,8 +251,7 @@ export class GameScene extends Phaser.Scene {
       const won = winner === you;
       if (won) unlock('pong.win');
       if (won && other.score === 0) unlock('pong.shutout');
-      // Points for every goal, plus a win bonus that grows with the margin.
-      const score = you.score * 100 + (won ? 500 + (POINTS_TO_WIN - other.score) * 100 : 0);
+      const score = matchScore(you.score, other.score, won);
       const detail = won ? `YOU WIN ${you.score}-${other.score}` : `CPU WINS ${other.score}-${you.score}`;
       endRun(this, { gameId: GAME_ID, score, detail }, 900);
       return;
