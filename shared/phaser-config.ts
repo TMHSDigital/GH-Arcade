@@ -66,7 +66,7 @@ export async function startArcadeGame(opts: ArcadeGameOptions): Promise<Phaser.G
   window.addEventListener('error', showBootError);
   window.addEventListener('unhandledrejection', showBootError);
   registerOffline();
-  initGameChrome();
+  initGameChrome((opts.width ?? 800) / (opts.height ?? 600));
   onUnlock((t) => showToast('Trophy unlocked', t.title));
   try {
     await Promise.race([document.fonts.load(`16px ${PIXEL_FONT}`), new Promise((r) => setTimeout(r, 1500))]);

@@ -1,13 +1,16 @@
 import { PAUSE_REQUEST_EVENT, PAUSE_STATE_EVENT } from './pause';
 import { STORAGE_PREFIX } from './storage';
+import { toolbarStrip } from './toolbar-strip';
 import { isTouchDevice } from './touch';
 
 /**
  * Page-level controls around every game canvas (plain HTML, so they stay crisp and reachable on
  * any screen): a pause button for touch players, a fullscreen toggle, the loading indicator, and a
- * hint to turn phones sideways.
+ * hint to turn phones sideways. `aspect` is the game's width divided by its height.
  */
-export function initGameChrome(): void {
+export function initGameChrome(aspect: number): void {
+  keepToolbarClear(aspect);
+
   const bar = document.createElement('div');
   bar.className = 'game-toolbar';
 
@@ -48,6 +51,17 @@ export function initGameChrome(): void {
   document.body.append(bar);
 
   if (isTouchDevice()) initRotateHint();
+}
+
+/** Moves the game down a little in windows where the page buttons would otherwise cover its corners. */
+function keepToolbarClear(aspect: number): void {
+  const game = document.getElementById('game');
+  if (!game) return;
+  const apply = (): void => {
+    game.style.top = `${toolbarStrip(window.innerWidth, window.innerHeight, aspect)}px`;
+  };
+  apply();
+  window.addEventListener('resize', apply);
 }
 
 /** Removes the static "loading" placeholder once the game has drawn its first frame. */
