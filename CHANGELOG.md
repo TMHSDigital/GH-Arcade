@@ -17,6 +17,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 - A Content-Security-Policy on every built page: the arcade loads only its own files and Google Fonts.
 - An ARCADE option on the game-over and match result screens.
 - Gamepad buttons can be remapped in Settings, for every action that already had a rebindable key. The change applies to each player's gamepad.
+- Hub: the Settings and Trophies panels can be worked with a gamepad. Up and down move between controls and scroll the panel, left and right change a slider, A presses a button or ticks a box, and B cancels a key that is waiting to be rebound.
 - A SHARE option on the game-over screen: it hands the game, the score and (for a daily run) the date to the browser's share sheet, or copies them.
 - Hub: games with a daily challenge have a `daily` filter and show today's result on their card; the Trophies panel lists recent daily results and the current streak.
 - Settings can merge a backup into what is on the device, keeping the trophies and best scores of both, as well as replace it.

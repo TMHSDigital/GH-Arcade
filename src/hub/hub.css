@@ -463,6 +463,9 @@ main {
 .text-button:focus-visible { border-color: var(--cyan); outline: none; }
 
 .rebind.listening { border-color: var(--yellow); color: var(--yellow); }
+
+/* The control a gamepad is on inside a panel (src/hub/navigation.ts). */
+.panel .nav-focus { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .text-button { margin-top: 8px; }
 
 .data-actions { display: flex; flex-wrap: wrap; gap: 8px; }
