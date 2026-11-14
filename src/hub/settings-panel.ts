@@ -14,7 +14,7 @@ import {
   updateSettings,
 } from '../../shared/settings';
 
-const ACTION_NAMES: Record<RebindableAction, string> = {
+export const ACTION_NAMES: Record<RebindableAction, string> = {
   left: 'Move left',
   right: 'Move right',
   up: 'Up / jump / thrust',

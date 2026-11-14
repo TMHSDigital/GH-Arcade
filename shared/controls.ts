@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { PAD, STICK_PRESS } from './gamepad';
-import { getSettings, type RebindableAction, type SharedAction, sharedKeyCodes } from './settings';
+import { STICK_PRESS } from './gamepad';
+import { DEFAULT_PAD_BUTTONS, getSettings, type RebindableAction, type SharedAction, sharedKeyCodes } from './settings';
 
 /**
  * Unified input for arcade games: keyboard, gamepad and on-screen touch controls behind one API.
@@ -13,8 +13,8 @@ import { getSettings, type RebindableAction, type SharedAction, sharedKeyCodes }
  *   controls.justPressed('action') went down since last frame (never misses quick taps)
  *   controls.axisX / axisY         -1..1, analog from the left stick, digital from keys and d-pad
  *
- * Solo players get the keys from their settings (rebindable on the hub). State refreshes
- * automatically at the start of every scene update.
+ * Solo players get the keys from their settings (rebindable on the hub), and every player's gamepad
+ * uses the buttons chosen there. State refreshes automatically at the start of every scene update.
  */
 
 export interface Binding {
@@ -27,14 +27,14 @@ export interface Binding {
 }
 
 const DEFAULT_BINDINGS = {
-  left: { keys: ['LEFT', 'A'], buttons: [PAD.left], stick: 'left' },
-  right: { keys: ['RIGHT', 'D'], buttons: [PAD.right], stick: 'right' },
-  up: { keys: ['UP', 'W'], buttons: [PAD.up], stick: 'up' },
-  down: { keys: ['DOWN', 'S'], buttons: [PAD.down], stick: 'down' },
-  action: { keys: ['SPACE', 'ENTER'], buttons: [PAD.a] },
-  alt: { keys: ['SHIFT', 'X'], buttons: [PAD.b] },
-  pause: { keys: ['P', 'ESC'], buttons: [PAD.start] },
-  mute: { keys: ['M'], buttons: [PAD.back] },
+  left: { keys: ['LEFT', 'A'], buttons: [DEFAULT_PAD_BUTTONS.left], stick: 'left' },
+  right: { keys: ['RIGHT', 'D'], buttons: [DEFAULT_PAD_BUTTONS.right], stick: 'right' },
+  up: { keys: ['UP', 'W'], buttons: [DEFAULT_PAD_BUTTONS.up], stick: 'up' },
+  down: { keys: ['DOWN', 'S'], buttons: [DEFAULT_PAD_BUTTONS.down], stick: 'down' },
+  action: { keys: ['SPACE', 'ENTER'], buttons: [DEFAULT_PAD_BUTTONS.action] },
+  alt: { keys: ['SHIFT', 'X'], buttons: [DEFAULT_PAD_BUTTONS.alt] },
+  pause: { keys: ['P', 'ESC'], buttons: [DEFAULT_PAD_BUTTONS.pause] },
+  mute: { keys: ['M'], buttons: [DEFAULT_PAD_BUTTONS.mute] },
 } satisfies Record<RebindableAction, Binding>;
 
 export type DefaultAction = keyof typeof DEFAULT_BINDINGS;
@@ -94,10 +94,13 @@ export class ArcadeControls<Extra extends string = never> {
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.events.off(Phaser.Scenes.Events.PRE_UPDATE, this.refresh, this));
   }
 
-  /** Default bindings for this seat: per-player key halves, or the solo keys with the player's custom bindings. */
+  /**
+   * Default bindings for this seat: per-player key halves, or the solo keys with the player's custom
+   * bindings. Custom gamepad buttons apply to every seat, since each has its own pad.
+   */
   private resolveDefaults(): Record<DefaultAction, Binding> {
     const out = {} as Record<DefaultAction, Binding>;
-    const custom = getSettings().bindings;
+    const { bindings: custom, padBindings } = getSettings();
     for (const [name, b] of Object.entries(DEFAULT_BINDINGS) as [DefaultAction, Binding][]) {
       const keys = this.options.player
         ? name === 'pause' || name === 'mute'
@@ -106,7 +109,7 @@ export class ArcadeControls<Extra extends string = never> {
         : custom[name]
           ? [custom[name]!.code]
           : b.keys;
-      out[name] = { ...b, keys };
+      out[name] = { ...b, keys, buttons: padBindings[name] ? [padBindings[name]!.button] : b.buttons };
     }
     return out;
   }

@@ -1,3 +1,4 @@
+import { PAD } from './gamepad';
 import { isRecord, loadJSON, onExternalChange, saveJSON } from './storage';
 
 /**
@@ -32,6 +33,26 @@ export const DEFAULT_KEY_CODES: Record<RebindableAction, number[]> = {
   pause: [80, 27],
   mute: [77],
 };
+
+/** The gamepad button behind each action by default (standard mapping). The left stick always moves as well. */
+export const DEFAULT_PAD_BUTTONS: Record<RebindableAction, number> = {
+  left: PAD.left,
+  right: PAD.right,
+  up: PAD.up,
+  down: PAD.down,
+  action: PAD.a,
+  alt: PAD.b,
+  pause: PAD.start,
+  mute: PAD.back,
+};
+
+export interface PadBinding {
+  /** Button index in the gamepad's `buttons` list. */
+  button: number;
+}
+
+/** Highest gamepad button index a binding may use; standard pads have 17 buttons. */
+const MAX_PAD_BUTTON = 31;
 
 export interface KeyBinding {
   /** KeyboardEvent.keyCode, which Phaser uses for its keys. */
@@ -71,6 +92,8 @@ export interface Settings {
   palette: Palette;
   /** Custom keyboard keys per action, replacing that action's default keys. */
   bindings: Partial<Record<RebindableAction, KeyBinding>>;
+  /** Custom gamepad button per action, replacing that action's default button on every player's pad. */
+  padBindings: Partial<Record<RebindableAction, PadBinding>>;
   touch: TouchSettings;
 }
 
@@ -95,6 +118,16 @@ function sanitize(raw: unknown): Partial<Settings> {
       }
     }
     out.bindings = bindings;
+  }
+  if (isRecord(raw.padBindings)) {
+    const padBindings: Settings['padBindings'] = {};
+    for (const action of REBINDABLE) {
+      const b = raw.padBindings[action];
+      if (isRecord(b) && Number.isInteger(b.button) && (b.button as number) >= 0 && (b.button as number) <= MAX_PAD_BUTTON) {
+        padBindings[action] = { button: b.button as number };
+      }
+    }
+    out.padBindings = padBindings;
   }
   if (isRecord(raw.touch)) {
     const t = raw.touch;
@@ -127,6 +160,7 @@ function defaults(): Settings {
     reducedMotion: prefersReducedMotion(),
     palette: 'neon',
     bindings: {},
+    padBindings: {},
     touch: { haptics: true, scale: 1, mirrored: false },
   };
 }
@@ -184,6 +218,18 @@ export function keyLabel(action: RebindableAction, first = false): string {
   const custom = current.bindings[action];
   const label = custom ? custom.label : DEFAULT_KEY_LABELS[action];
   return (first && !custom ? label.split(' / ')[0] : label).toUpperCase();
+}
+
+/** The gamepad button that currently triggers an action: the custom one, or the default. */
+export function padButtonFor(action: RebindableAction): number {
+  return current.padBindings[action]?.button ?? DEFAULT_PAD_BUTTONS[action];
+}
+
+const PAD_BUTTON_NAMES = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'Left stick', 'Right stick', 'D-pad up', 'D-pad down', 'D-pad left', 'D-pad right'];
+
+/** What to call a gamepad button, by its index in the standard mapping: "A", "Start", "D-pad up", or "Button 17". */
+export function padButtonLabel(button: number): string {
+  return PAD_BUTTON_NAMES[button] ?? `Button ${button}`;
 }
 
 /** Actions both players share in two-player modes, where every other key belongs to one seat. */

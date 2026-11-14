@@ -4,7 +4,17 @@ import type { ArcadeControls } from './controls';
 import { isTouchDevice } from './device';
 import { type MenuItem, OptionMenu } from './menu';
 import { restartDataFor, SCENE, setRestartData, toArcade } from './scenes';
-import { getSettings, keyLabel, nextTouchScale, type SharedAction, sharedKeyLabel, type TouchSettings, updateSettings } from './settings';
+import {
+  getSettings,
+  keyLabel,
+  nextTouchScale,
+  padButtonFor,
+  padButtonLabel,
+  type SharedAction,
+  sharedKeyLabel,
+  type TouchSettings,
+  updateSettings,
+} from './settings';
 import { isMuted, setMuted } from './sfx';
 import { NEON, neonText, PIXEL_FONT } from './ui';
 
@@ -111,7 +121,8 @@ export class PauseController {
       });
       this.touchMenu.setVisible(false);
     }
-    this.resumeHint = `${this.label('pause')} / START TO RESUME`;
+    // Names the gamepad button the player chose for Pause, like the key beside it.
+    this.resumeHint = `${this.label('pause')} / ${padButtonLabel(padButtonFor('pause')).toUpperCase()} TO RESUME`;
     this.hint = neonText(scene, width / 2, height / 2 + 170, this.resumeHint, 10, NEON.white).setAlpha(0.6);
     this.overlay = scene.add
       .container(0, 0, [dim, this.title, this.hint, ...this.menu.objects, ...this.settingsMenu.objects, ...(this.touchMenu?.objects ?? [])])

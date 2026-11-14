@@ -115,12 +115,22 @@
 
         <section>
           <h3>Keyboard controls</h3>
-          <p class="hint">Click Change, then press a new key (Esc cancels). Gamepad and game-specific keys stay the same.</p>
+          <p class="hint">Click Change, then press a new key (Esc cancels). Game-specific keys stay the same.</p>
           <table class="bindings">
             <tbody id="bindings"></tbody>
           </table>
           <p id="binding-note" class="hint" role="status" hidden></p>
           <button id="reset-bindings" class="text-button" type="button">Reset controls</button>
+        </section>
+
+        <section>
+          <h3>Gamepad controls</h3>
+          <p class="hint">Click Change, then press a button on the gamepad (Esc cancels). The left stick always moves, and game-specific buttons stay the same.</p>
+          <table class="bindings">
+            <tbody id="pad-bindings"></tbody>
+          </table>
+          <p id="pad-binding-note" class="hint" role="status" hidden></p>
+          <button id="reset-pad-bindings" class="text-button" type="button">Reset gamepad</button>
         </section>
 
         <section id="your-data">

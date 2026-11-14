@@ -171,7 +171,7 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | **Page controls** | On-screen pause and fullscreen buttons, a loading indicator, and a hint to rotate your phone for games that play best in landscape. |
 | **Couch-friendly hub** | Browse the cabinets with the arrow keys or a gamepad: <kbd>A</kbd> opens a game, <kbd>LB</kbd> <kbd>RB</kbd> switch filters, <kbd>Y</kbd> shows trophies and <kbd>Start</kbd> opens settings. |
 | **Trophies and stats** | 43 trophies across the arcade, with plays and best scores per game in the Trophies panel. Saved on your device, no sign-up. |
-| **Settings and accessibility** | Volume, reduced motion (no shake or flashes), a colorblind-friendly palette, rebindable keys, and touch options: button size, a left-handed layout and vibration. |
+| **Settings and accessibility** | Volume, reduced motion (no shake or flashes), a colorblind-friendly palette, rebindable keys and gamepad buttons, and touch options: button size, a left-handed layout and vibration. |
 | **Zero-asset audio** | Sound effects are synthesized live with the Web Audio API, so there are no audio files to download. |
 | **Fast loads** | Each game is its own page and bundle. Phaser is split into one shared file that your browser caches across games. |
 | **One command per game** | `npm run new-game` scaffolds a working game and adds it to the hub. No build config to edit. |
@@ -278,7 +278,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`storage.ts`](shared/storage.ts) | `loadJSON()` and `saveJSON()`, backed by `localStorage` that never throws. If the browser blocks saved data, every page says so once (`storage-notice.ts`). |
 | [`sfx.ts`](shared/sfx.ts) | `tone()` and `noise()`: retro sound effects synthesized with Web Audio. |
 | [`achievements.ts`](shared/achievements.ts) | Trophies, stats and best scores. Each game lists its trophies in its own `trophies.ts` and gets type-checked `unlock()`, `reach()` and `addCounter()` helpers from `trophiesFor()`; `getHighScore()` returns a game's best and `getTopScores()` its five highest. Unlocks pop up as a [toast](shared/toast.ts). |
-| [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key bindings) that every game reads on start. |
+| [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key and gamepad bindings) that every game reads on start. |
 | [`backup.ts`](shared/backup.ts) | Export, import (replace or merge) and reset of everything saved on the device, used by the hub's settings dialog. |
 | [`rng.ts`](shared/rng.ts) | `createRng(seed)`: repeatable random numbers with `between`, `pick` and `shuffle`, plus what a daily challenge needs: `dailySeed()`, `dailyRng()`, `DAILY_MODES` for the menu, per-day best scores with history and a streak, and `dailyResult()` for the game-over line. Give the game the `daily` tag in `registry.json` so the hub shows today's result. |
 | [`pwa.ts`](shared/pwa.ts) | Registers the service worker that makes every page work offline, and announces when the arcade is ready offline or has updated. |

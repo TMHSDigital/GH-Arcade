@@ -90,7 +90,8 @@ export function initHubNavigation(): void {
       const pressed = (k: string) => down.has(k) && !prev.has(k);
 
       const dialog = openDialog();
-      if (pressed('b') && dialog) dialog.close();
+      // While Settings waits for a button to bind (src/hub/pad-bindings.ts), B is an answer, not "close".
+      if (pressed('b') && dialog && !dialog.querySelector('.rebind.listening')) dialog.close();
       if (!dialog) {
         if (pressed('a')) {
           const active = document.activeElement as HTMLElement | null;

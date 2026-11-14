@@ -11,7 +11,7 @@ describe('defaults', () => {
     installMemoryStorage();
     installWindow(false);
     const { settings } = await freshModules();
-    expect(settings.getSettings()).toEqual({ volume: 0.8, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, touch: TOUCH });
+    expect(settings.getSettings()).toEqual({ volume: 0.8, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, padBindings: {}, touch: TOUCH });
   });
 
   it('reduced motion follows the OS preference', async () => {
@@ -40,7 +40,7 @@ describe('loading', () => {
     installMemoryStorage({ [KEY]: JSON.stringify({ volume: 7, muted: 'yes', palette: 'x', bindings: [1, 2] }) });
     installWindow();
     const { settings } = await freshModules();
-    expect(settings.getSettings()).toEqual({ volume: 1, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, touch: TOUCH });
+    expect(settings.getSettings()).toEqual({ volume: 1, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, padBindings: {}, touch: TOUCH });
   });
 
   it('keeps only well-formed bindings', async () => {
@@ -155,7 +155,7 @@ describe('resetSettings', () => {
     const fn = vi.fn();
     settings.onSettingsChange(fn);
     const reset = settings.resetSettings();
-    expect(reset).toEqual({ volume: 0.8, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, touch: TOUCH });
+    expect(reset).toEqual({ volume: 0.8, muted: false, reducedMotion: false, palette: 'neon', bindings: {}, padBindings: {}, touch: TOUCH });
     expect(fn).toHaveBeenCalledTimes(1);
   });
 });
@@ -199,5 +199,55 @@ describe('key helpers', () => {
     expect(settings.sharedKeyCodes('mute')).toEqual([77]);
     expect(settings.sharedKeyLabel('mute')).toBe('M');
     expect(settings.keyLabel('mute')).toBe('W');
+  });
+});
+
+describe('gamepad bindings', () => {
+  it('uses the standard buttons until the player picks others', async () => {
+    installMemoryStorage();
+    installWindow();
+    const { settings } = await freshModules();
+    expect(settings.getSettings().padBindings).toEqual({});
+    expect(settings.padButtonFor('action')).toBe(0);
+    expect(settings.padButtonFor('pause')).toBe(9);
+    expect(settings.padButtonFor('left')).toBe(14);
+  });
+
+  it('saves a custom button and keeps it across a reload', async () => {
+    installMemoryStorage();
+    installWindow();
+    let { settings } = await freshModules();
+    settings.updateSettings({ padBindings: { action: { button: 5 } } });
+    expect(settings.padButtonFor('action')).toBe(5);
+    ({ settings } = await freshModules());
+    expect(settings.padButtonFor('action')).toBe(5);
+    expect(settings.padButtonFor('alt')).toBe(1);
+  });
+
+  it('drops malformed saved buttons', async () => {
+    const padBindings = { action: { button: 5 }, alt: { button: -1 }, up: { button: 2.5 }, down: { button: 99 }, pause: 'start', fly: { button: 3 } };
+    installMemoryStorage({ [KEY]: JSON.stringify({ padBindings }) });
+    installWindow();
+    const { settings } = await freshModules();
+    expect(settings.getSettings().padBindings).toEqual({ action: { button: 5 } });
+  });
+
+  it('goes back to the defaults when settings are reset', async () => {
+    installMemoryStorage();
+    installWindow();
+    const { settings } = await freshModules();
+    settings.updateSettings({ padBindings: { pause: { button: 3 } } });
+    settings.resetSettings();
+    expect(settings.padButtonFor('pause')).toBe(9);
+  });
+
+  it('names buttons by the standard layout', async () => {
+    installMemoryStorage();
+    installWindow();
+    const { settings } = await freshModules();
+    expect(settings.padButtonLabel(0)).toBe('A');
+    expect(settings.padButtonLabel(9)).toBe('Start');
+    expect(settings.padButtonLabel(12)).toBe('D-pad up');
+    expect(settings.padButtonLabel(17)).toBe('Button 17');
   });
 });

@@ -8,6 +8,7 @@ import { initStorageNotice } from '../../shared/storage-notice';
 import { initDataPanel } from './data-panel';
 import { escapeHtml } from './html';
 import { initHubNavigation } from './navigation';
+import { initPadPanel } from './pad-bindings';
 import { initSettingsPanel } from './settings-panel';
 import { initTrophiesPanel } from './trophies-panel';
 
@@ -178,7 +179,7 @@ render();
 document.querySelector('#trophies')?.addEventListener('close', render);
 
 // Panels are wired up after the grid is on screen, and one that fails must never hide the games.
-for (const init of [initSettingsPanel, initDataPanel, initTrophiesPanel, initHubNavigation]) {
+for (const init of [initSettingsPanel, initPadPanel, initDataPanel, initTrophiesPanel, initHubNavigation]) {
   try {
     init();
   } catch (err) {
