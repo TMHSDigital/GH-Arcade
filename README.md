@@ -275,12 +275,12 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`scenes.ts`](shared/scenes.ts) | `buildMenu()` title screens and the shared `ArcadeGameOverScene` with high-score checks. |
 | [`ui.ts`](shared/ui.ts) | Neon text, the HUD text style, banners, score popups, particle bursts and the shared color palette. |
 | [`phaser-config.ts`](shared/phaser-config.ts) | `startArcadeGame()`: fit-to-screen Phaser setup with gamepads enabled, once the pixel font has loaded. |
-| [`storage.ts`](shared/storage.ts) | `loadJSON()` and `saveJSON()`, backed by `localStorage` that never throws. |
+| [`storage.ts`](shared/storage.ts) | `loadJSON()` and `saveJSON()`, backed by `localStorage` that never throws. If the browser blocks saved data, every page says so once (`storage-notice.ts`). |
 | [`sfx.ts`](shared/sfx.ts) | `tone()` and `noise()`: retro sound effects synthesized with Web Audio. |
 | [`achievements.ts`](shared/achievements.ts) | Trophies, stats and best scores. Each game lists its trophies in its own `trophies.ts` and gets type-checked `unlock()`, `reach()` and `addCounter()` helpers from `trophiesFor()`; `getHighScore()` returns a game's best. Unlocks pop up as a [toast](shared/toast.ts). |
 | [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key bindings) that every game reads on start. |
 | [`backup.ts`](shared/backup.ts) | Export, import and reset of everything saved on the device, used by the hub's settings dialog. |
-| [`rng.ts`](shared/rng.ts) | `createRng(seed)`: repeatable random numbers with `between`, `pick` and `shuffle`, plus `dailySeed()` and per-day best scores for daily challenges. |
+| [`rng.ts`](shared/rng.ts) | `createRng(seed)`: repeatable random numbers with `between`, `pick` and `shuffle`, plus what a daily challenge needs: `dailySeed()`, `dailyRng()`, `DAILY_MODES` for the menu, per-day best scores and `dailyResult()` for the game-over line. |
 | [`pwa.ts`](shared/pwa.ts) | Registers the service worker that makes every page work offline, and announces when the arcade is ready offline or has updated. |
 
 > [!NOTE]
@@ -363,7 +363,7 @@ Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `co
 
 **Up next**
 
-- [x] Daily challenge with a shared seed (Neon Stack)
+- [x] Daily challenge with a shared seed (Neon Stack, Neon Hop and Neon Runner)
 - [ ] Daily challenges for more games
 - [ ] Breakout level editor
 - [ ] More two-player modes

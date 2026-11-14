@@ -79,6 +79,19 @@ describe('touch settings', () => {
     ({ settings } = await freshModules());
     expect(settings.getSettings().touch).toEqual({ haptics: true, scale: 1.2, mirrored: true });
   });
+
+  it('steps the button size up by 10% and wraps back to the smallest', async () => {
+    installMemoryStorage();
+    installWindow();
+    const { settings } = await freshModules();
+    const seen: number[] = [];
+    let scale = 1;
+    for (let i = 0; i < 8; i++) seen.push((scale = settings.nextTouchScale(scale)));
+    expect(seen).toEqual([1.1, 1.2, 1.3, 1.4, 1.5, 0.8, 0.9, 1]);
+    // A size the hub's slider left between two steps lands on the next whole step.
+    expect(settings.nextTouchScale(1.25)).toBe(1.4);
+    expect(settings.nextTouchScale(1.5)).toBe(0.8);
+  });
 });
 
 describe('updateSettings', () => {

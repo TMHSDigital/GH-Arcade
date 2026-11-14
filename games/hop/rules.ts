@@ -147,3 +147,15 @@ export function dockPoints(timeLeft: number, hasOrb: boolean): number {
 export function freeDocks(docks: readonly boolean[]): number[] {
   return docks.map((filled, i) => (filled ? -1 : i)).filter((i) => i >= 0);
 }
+
+/** Shortest and longest wait, in ms, before the next bonus orb in a daily challenge. */
+export const ORB_WAIT_MS = { min: 3000, max: 15000 } as const;
+
+/**
+ * How long to wait for the next bonus orb in a daily challenge. A normal game rolls the dice every
+ * frame, which depends on the frame rate; drawing the wait from the day's seed gives every player
+ * the same schedule. The average (9 s) matches a normal game. `random` returns 0..1 like Math.random.
+ */
+export function orbWait(random: () => number): number {
+  return ORB_WAIT_MS.min + random() * (ORB_WAIT_MS.max - ORB_WAIT_MS.min);
+}

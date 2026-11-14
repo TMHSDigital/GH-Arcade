@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, PIECE_COLORS, WIDTH } from '../config';
 import { PIECE_TYPES, ROTATIONS } from '../logic';
+import { DAILY_MODES } from '../../../shared/rng';
 import { buildMenu } from '../../../shared/scenes';
 import { helpKeys } from '../../../shared/settings';
 import { NEON, reducedMotion } from '../../../shared/ui';
@@ -42,10 +43,7 @@ export class MenuScene extends Phaser.Scene {
       colors: [NEON.purple, NEON.yellow],
       help: `Move: ${helpKeys(['left', 'right'], '← →')} / drag    Rotate: ↑ X Z / tap    Hard drop: Space / flick up\nHold: C / Shift    Gamepad: d-pad, A B rotate, Y hold, up drops    Pause: ${helpKeys('pause', 'P')} / Start`,
       // Daily: the same piece order for everyone on a given (UTC) date, with its own best score.
-      modes: [
-        { label: 'PLAY', data: {} },
-        { label: 'DAILY', data: { daily: true } },
-      ],
+      modes: DAILY_MODES,
     });
   }
 }

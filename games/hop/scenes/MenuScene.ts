@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, WIDTH } from '../config';
+import { DAILY_MODES } from '../../../shared/rng';
 import { buildMenu } from '../../../shared/scenes';
 import { helpKeys } from '../../../shared/settings';
 import { NEON, reducedMotion } from '../../../shared/ui';
@@ -19,6 +20,8 @@ export class MenuScene extends Phaser.Scene {
       title: ['NEON', 'HOP'],
       colors: [NEON.blue, NEON.green],
       help: `Hop: ${helpKeys(['left', 'right', 'up', 'down'], 'arrows / WASD')} / d-pad / swipe (tap hops forward)\nCross the road, ride the logs and turtles, fill all five docks    Pause: ${helpKeys('pause', 'P')} / Start`,
+      // Daily: the same traffic, river and bonus orbs for everyone on a given (UTC) date, with its own best score.
+      modes: DAILY_MODES,
     });
   }
 

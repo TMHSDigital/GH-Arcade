@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_ID, GROUND_Y, HEIGHT, WIDTH } from '../config';
+import { DAILY_MODES } from '../../../shared/rng';
 import { buildMenu } from '../../../shared/scenes';
 import { helpKeys } from '../../../shared/settings';
 import { NEON, reducedMotion } from '../../../shared/ui';
@@ -18,6 +19,8 @@ export class MenuScene extends Phaser.Scene {
       title: ['NEON', 'RUNNER'],
       colors: [NEON.pink, NEON.cyan],
       help: `Jump: tap / ${helpKeys('action', 'Space')} / ${helpKeys('up', '↑')} / A (again in the air to double jump)    Slide: swipe down / ${helpKeys(['down', 'alt'], '↓')} / B\nPress down in the air to dive    Pause: ${helpKeys('pause', 'P')} / Start`,
+      // Daily: the same course for everyone on a given (UTC) date, with its own best score.
+      modes: DAILY_MODES,
     });
   }
 

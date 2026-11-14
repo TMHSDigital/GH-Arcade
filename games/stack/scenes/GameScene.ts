@@ -42,7 +42,7 @@ import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
-import { createRng, dailySeed, getDailyBest, submitDailyScore } from '../../../shared/rng';
+import { dailyResult, dailyRng, dailySeed, getDailyBest } from '../../../shared/rng';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, VirtualButton } from '../../../shared/touch';
 import { burstEmitter, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, neonText, showBanner } from '../../../shared/ui';
@@ -103,7 +103,7 @@ export class GameScene extends Phaser.Scene {
     this.board = emptyBoard();
     // Daily challenge: the piece order is seeded from the date, so everyone gets the same game today.
     this.daily = data.daily ? dailySeed() : null;
-    this.bag = new Bag(this.daily ? createRng(`${GAME_ID}:${this.daily}`).next : undefined);
+    this.bag = new Bag(this.daily ? dailyRng(GAME_ID, this.daily).next : undefined);
     this.holdType = null;
     this.canHold = true;
     this.state = 'playing';
@@ -473,12 +473,7 @@ export class GameScene extends Phaser.Scene {
         this.greyRows = i + 1;
       });
     }
-    let detail = `LEVEL ${this.level}   LINES ${this.lines}`;
-    if (this.daily) {
-      const record = submitDailyScore(GAME_ID, this.score, this.daily);
-      const best = getDailyBest(GAME_ID, this.daily).toLocaleString();
-      detail = `DAILY ${this.daily}   ${record ? 'NEW BEST TODAY' : `TODAY'S BEST ${best}`}`;
-    }
+    const detail = this.daily ? dailyResult(GAME_ID, this.score, this.daily) : `LEVEL ${this.level}   LINES ${this.lines}`;
     endRun(this, { gameId: GAME_ID, score: this.score, detail }, VISIBLE_ROWS * 45 + 900);
   }
 

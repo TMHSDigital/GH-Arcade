@@ -9,12 +9,14 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 - Installed app shortcuts open the first four featured games directly, following the game registry's order.
 - Settings in the pause menu: volume, sound, reduced motion and colors can be changed without leaving a game, by keyboard, gamepad or touch.
 - Neon Stack has a Daily mode: everyone gets the same piece order on a given UTC date, with a best score per day.
-- Touch options in Settings (on touch devices): on-screen button size, a left-handed layout and vibration on press.
+- Neon Hop and Neon Runner have a Daily mode too: the same traffic, river and bonus orbs in Hop, and the same course in Runner, for everyone on a given UTC date.
+- Touch options in Settings (on touch devices): on-screen button size, a left-handed layout and vibration on press. They are in the pause menu's settings too.
 - Unit tests (Vitest), ESLint and a pull request check.
 - A Content-Security-Policy on every built page: the arcade loads only its own files and Google Fonts.
 - An ARCADE option on the game-over and match result screens.
 - Hub: sort by recently played, most played or name; trophy progress and a last-played marker on each card; average score and lifetime totals in the Trophies panel.
 - Settings has a "Your data" section: download a backup of trophies, stats, best scores and settings, restore one, or reset best scores.
+- A notice when the browser is blocking saved data, so players know their scores and trophies will not be kept.
 - Notices when the arcade is ready to play offline and when it has updated, and install instructions on iPhone and iPad.
 
 ### Changed

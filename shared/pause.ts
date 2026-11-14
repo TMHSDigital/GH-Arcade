@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
 import { clearRecentUnlocks } from './achievements';
 import type { ArcadeControls } from './controls';
+import { isTouchDevice } from './device';
 import { type MenuItem, OptionMenu } from './menu';
 import { restartDataFor, SCENE, setRestartData, toArcade } from './scenes';
-import { getSettings, keyLabel, type SharedAction, sharedKeyLabel, updateSettings } from './settings';
+import { getSettings, keyLabel, nextTouchScale, type SharedAction, sharedKeyLabel, type TouchSettings, updateSettings } from './settings';
 import { isMuted, setMuted } from './sfx';
 import { NEON, neonText, PIXEL_FONT } from './ui';
 
@@ -19,13 +20,18 @@ export interface PauseOptions {
 export const PAUSE_REQUEST_EVENT = 'arcade:toggle-pause';
 export const PAUSE_STATE_EVENT = 'arcade:pause-state';
 
+/** The pages of the pause overlay; 'none' while the game is running. */
+type Page = 'main' | 'settings' | 'touch' | 'none';
+
 /**
  * Standard pause and mute behaviour: P / Esc / Start (or the on-screen pause button) toggle pause,
  * M / Back toggle mute, and the game pauses itself when the tab or window loses focus.
  * Pausing freezes physics, tweens and timers and shows a menu: Resume, Restart, Settings, Main menu,
  * Arcade. Settings opens a second page for volume, sound, motion and colors, so players (touch
- * players included) can change them without leaving the game.
+ * players included) can change them without leaving the game. On touch screens it also leads to a
+ * page for the on-screen controls: button size, left-handed layout and vibration.
  */
+
 export class PauseController {
   private paused = false;
   /** Set on resume and cleared after the frame, so the input that chose RESUME never reaches the game. */
@@ -34,6 +40,8 @@ export class PauseController {
   private readonly muteText: Phaser.GameObjects.Text;
   private readonly menu: OptionMenu;
   private readonly settingsMenu: OptionMenu;
+  /** Options for the on-screen controls; only built where there is a touch screen. */
+  private readonly touchMenu?: OptionMenu;
   private readonly title: Phaser.GameObjects.Text;
   private readonly hint: Phaser.GameObjects.Text;
   private readonly resumeHint: string;
@@ -83,14 +91,30 @@ export class PauseController {
         { label: 'SOUND', onSelect: () => this.change({ muted: !getSettings().muted }) },
         { label: 'MOTION', onSelect: () => this.change({ reducedMotion: !getSettings().reducedMotion }) },
         { label: 'COLORS', onSelect: () => this.change({ palette: getSettings().palette === 'neon' ? 'colorblind' : 'neon' }) },
+        // Only worth offering where there is a touch screen to use them on, as in the hub's settings.
+        ...(isTouchDevice() ? [{ label: 'TOUCH CONTROLS', onSelect: () => this.showPage('touch') }] : []),
         { label: 'BACK', onSelect: () => this.showPage('main') },
       ],
     });
     this.settingsMenu.setVisible(false);
+    if (isTouchDevice()) {
+      // Labels are filled in by refreshTouch().
+      this.touchMenu = new OptionMenu(scene, all, {
+        ...layout,
+        items: [
+          // Each choice makes the buttons 10% bigger, wrapping back to the smallest after the largest.
+          { label: 'BUTTONS', onSelect: () => this.changeTouch({ scale: nextTouchScale(getSettings().touch.scale) }) },
+          { label: 'LAYOUT', onSelect: () => this.changeTouch({ mirrored: !getSettings().touch.mirrored }) },
+          { label: 'VIBRATION', onSelect: () => this.changeTouch({ haptics: !getSettings().touch.haptics }) },
+          { label: 'BACK', onSelect: () => this.showPage('settings') },
+        ],
+      });
+      this.touchMenu.setVisible(false);
+    }
     this.resumeHint = `${this.label('pause')} / START TO RESUME`;
     this.hint = neonText(scene, width / 2, height / 2 + 170, this.resumeHint, 10, NEON.white).setAlpha(0.6);
     this.overlay = scene.add
-      .container(0, 0, [dim, this.title, this.hint, ...this.menu.objects, ...this.settingsMenu.objects])
+      .container(0, 0, [dim, this.title, this.hint, ...this.menu.objects, ...this.settingsMenu.objects, ...(this.touchMenu?.objects ?? [])])
       .setDepth(1000)
       .setVisible(false);
     this.muteText = scene.add
@@ -160,22 +184,31 @@ export class PauseController {
     this.opts.onChange?.(this.paused);
   }
 
-  /** Shows one page of the pause overlay (or neither, when resuming). */
-  private showPage(page: 'main' | 'settings' | 'none'): void {
+  /** Shows one page of the pause overlay (or none, when resuming). */
+  private showPage(page: Page): void {
     const main = page === 'main';
     const settings = page === 'settings';
+    const touch = page === 'touch';
     // Disable before enabling, so the newly shown page starts with a clean selection.
     if (!main) this.menu.setEnabled(false);
     if (!settings) this.settingsMenu.setEnabled(false);
+    if (!touch) this.touchMenu?.setEnabled(false);
     this.menu.setVisible(main);
     this.settingsMenu.setVisible(settings);
+    this.touchMenu?.setVisible(touch);
     if (main) this.menu.setEnabled(true);
     if (settings) {
       this.refreshSettings();
       this.settingsMenu.setEnabled(true);
     }
-    this.title.setText(settings ? 'SETTINGS' : 'PAUSED');
-    this.hint.setText(settings ? 'COLORS CHANGE WHEN THE GAME RELOADS' : this.resumeHint);
+    if (touch) {
+      this.refreshTouch();
+      this.touchMenu?.setEnabled(true);
+    }
+    this.title.setText(touch ? 'TOUCH CONTROLS' : settings ? 'SETTINGS' : 'PAUSED');
+    this.hint.setText(
+      touch ? 'SIZE AND LAYOUT CHANGE WHEN THE GAME RESTARTS' : settings ? 'COLORS CHANGE WHEN THE GAME RELOADS' : this.resumeHint,
+    );
   }
 
   /** Applies a settings change made from the pause menu. Volume, sound and motion take effect at once. */
@@ -191,6 +224,19 @@ export class PauseController {
     this.settingsMenu.setLabel(1, `SOUND  ${s.muted ? 'OFF' : 'ON'}`);
     this.settingsMenu.setLabel(2, `MOTION  ${s.reducedMotion ? 'REDUCED' : 'FULL'}`);
     this.settingsMenu.setLabel(3, `COLORS  ${s.palette === 'colorblind' ? 'COLORBLIND' : 'NEON'}`);
+  }
+
+  /** Applies a change to the on-screen controls. Vibration takes effect at once; size and layout on the next run. */
+  private changeTouch(patch: Partial<TouchSettings>): void {
+    updateSettings({ touch: { ...getSettings().touch, ...patch } });
+    this.refreshTouch();
+  }
+
+  private refreshTouch(): void {
+    const t = getSettings().touch;
+    this.touchMenu?.setLabel(0, `BUTTONS  ${Math.round(t.scale * 100)}%`);
+    this.touchMenu?.setLabel(1, `LAYOUT  ${t.mirrored ? 'LEFT-HANDED' : 'RIGHT-HANDED'}`);
+    this.touchMenu?.setLabel(2, `VIBRATION  ${t.haptics ? 'ON' : 'OFF'}`);
   }
 
   private updateMuteText(): void {

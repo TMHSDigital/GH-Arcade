@@ -14,11 +14,46 @@ export function loadJSON<T>(key: string, fallback: T): T {
   }
 }
 
-export function saveJSON(key: string, value: unknown): void {
+/** Saves a value. Returns false (and never throws) when the browser refuses, so a game keeps running. */
+export function saveJSON(key: string, value: unknown): boolean {
   try {
     localStorage.setItem(PREFIX + key, JSON.stringify(value));
+    return true;
   } catch {
-    /* storage unavailable; ignore */
+    reportSaveFailure();
+    return false;
+  }
+}
+
+let saveFailed = false;
+const saveFailureListeners = new Set<() => void>();
+
+function reportSaveFailure(): void {
+  if (saveFailed) return;
+  saveFailed = true;
+  saveFailureListeners.forEach((fn) => fn());
+}
+
+/**
+ * Calls `fn` once if saving does not work on this page (storage blocked, private mode, quota full):
+ * on the first save that fails, or straight away if one already has. No DOM here; the pages decide
+ * how to tell the player (see shared/storage-notice.ts).
+ */
+export function onSaveFailed(fn: () => void): void {
+  if (saveFailed) fn();
+  else saveFailureListeners.add(fn);
+}
+
+/** Tries a throwaway write, so a browser that blocks saved data is noticed before the first real save. */
+export function checkStorage(): boolean {
+  try {
+    const key = `${PREFIX}storage-check`;
+    localStorage.setItem(key, '1');
+    localStorage.removeItem(key);
+    return true;
+  } catch {
+    reportSaveFailure();
+    return false;
   }
 }
 
