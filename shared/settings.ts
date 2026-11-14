@@ -55,6 +55,12 @@ export interface TouchSettings {
 export const TOUCH_SCALE_MIN = 0.8;
 export const TOUCH_SCALE_MAX = 1.5;
 
+/** The next on-screen button size for a menu that steps through them: 10% bigger, wrapping from the largest back to the smallest. */
+export function nextTouchScale(scale: number): number {
+  const next = Math.round(scale * 10) + 1;
+  return next > Math.round(TOUCH_SCALE_MAX * 10) ? TOUCH_SCALE_MIN : next / 10;
+}
+
 export interface Settings {
   /** Master volume, 0 to 1. */
   volume: number;
