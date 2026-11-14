@@ -20,6 +20,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 - Hub: the Settings and Trophies panels can be worked with a gamepad. Up and down move between controls and scroll the panel, left and right change a slider, A presses a button or ticks a box, and B cancels a key that is waiting to be rebound.
 - Games pause themselves when a gamepad disconnects, as they do when the tab loses focus.
 - The screen stays on while a run is in progress, so playing with a gamepad no longer lets a phone or laptop dim or lock mid-game. It is free to sleep again on pause, on the menu and at game over.
+- Hub: a line says how long until the next daily challenge (it changes at midnight UTC), and an open hub moves its Daily chips on to the new day by itself.
 - A SHARE option on the game-over screen: it hands the game, the score and (for a daily run) the date to the browser's share sheet, or copies them.
 - Hub: games with a daily challenge have a `daily` filter and show today's result on their card; the Trophies panel lists recent daily results and the current streak.
 - Settings can merge a backup into what is on the device, keeping the trophies and best scores of both, as well as replace it.

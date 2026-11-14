@@ -3,7 +3,7 @@ import registry from '../../games/registry.json';
 import { registerOffline } from '../../shared/pwa';
 import { getHighScore, getStats, trophyProgress } from '../../shared/achievements';
 import { modeQuery } from '../../shared/modes';
-import { DAILY_MODE_LABEL, DAILY_TAG, getDailyBest } from '../../shared/rng';
+import { DAILY_MODE_LABEL, DAILY_TAG, getDailyBest, msUntilNextDaily, waitText } from '../../shared/rng';
 import { loadJSON, saveJSON } from '../../shared/storage';
 import { initStorageNotice } from '../../shared/storage-notice';
 import { initDataPanel } from './data-panel';
@@ -174,6 +174,27 @@ sortSelect.addEventListener('change', () => {
   saveJSON('hub:sort', sort);
   render();
 });
+
+// The daily challenge changes at midnight UTC, which is the middle of the day for many players, so
+// the hub says how long is left and moves its "Daily" chips on to the new day when it comes.
+const nextDaily = document.querySelector<HTMLParagraphElement>('#next-daily')!;
+function showNextDaily(): void {
+  nextDaily.textContent = `Next daily challenge in ${waitText(msUntilNextDaily())}`;
+}
+function scheduleDailyRollover(): void {
+  // A moment past midnight, so the new date is certain to be in force when the cards are redrawn.
+  window.setTimeout(() => {
+    render();
+    showNextDaily();
+    scheduleDailyRollover();
+  }, msUntilNextDaily() + 500);
+}
+if (games.some((g) => g.tags.includes(DAILY_TAG))) {
+  nextDaily.hidden = false;
+  showNextDaily();
+  window.setInterval(showNextDaily, 60_000);
+  scheduleDailyRollover();
+}
 
 renderFilters();
 render();

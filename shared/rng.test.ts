@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createRng, DAILY_KEEP, DAILY_MODES, dailyResult, dailyRng, dailySeed, dailyStreak, getDailyBest, getDailyHistory, submitDailyScore } from './rng';
+import { createRng, DAILY_KEEP, DAILY_MODES, dailyResult, dailyRng, dailySeed, dailyStreak, getDailyBest, getDailyHistory, msUntilNextDaily, submitDailyScore, waitText } from './rng';
 import { installMemoryStorage } from './test-utils';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -161,6 +161,38 @@ describe('daily history', () => {
     expect(kept).toHaveLength(DAILY_KEEP);
     expect(kept[0]).toBe(days[5]);
     expect(kept.at(-1)).toBe(days.at(-1));
+  });
+});
+
+describe('msUntilNextDaily', () => {
+  it('counts down to the next midnight UTC', () => {
+    expect(msUntilNextDaily(Date.parse('2026-11-14T18:48:00Z'))).toBe((5 * 60 + 12) * 60_000);
+    expect(msUntilNextDaily(Date.parse('2026-11-14T23:59:59.000Z'))).toBe(1000);
+  });
+
+  it('is a whole day at midnight itself, when the new challenge has just started', () => {
+    expect(msUntilNextDaily(Date.parse('2026-11-15T00:00:00Z'))).toBe(86_400_000);
+    expect(msUntilNextDaily(Date.parse('2026-11-15T00:00:00.001Z'))).toBe(86_400_000 - 1);
+  });
+
+  it('lands on the moment dailySeed changes', () => {
+    const now = Date.parse('2026-11-14T23:30:00Z');
+    const flip = now + msUntilNextDaily(now);
+    expect(dailySeed(new Date(flip - 1))).toBe('2026-11-14');
+    expect(dailySeed(new Date(flip))).toBe('2026-11-15');
+  });
+});
+
+describe('waitText', () => {
+  it('gives hours and minutes, or just minutes inside the last hour', () => {
+    expect(waitText((5 * 60 + 12) * 60_000)).toBe('5h 12m');
+    expect(waitText(60 * 60_000)).toBe('1h 0m');
+    expect(waitText(59 * 60_000 + 59_000)).toBe('59m');
+  });
+
+  it('says "under a minute" at the very end', () => {
+    expect(waitText(59_000)).toBe('under a minute');
+    expect(waitText(-5)).toBe('under a minute');
   });
 });
 

@@ -58,6 +58,20 @@ export function dailySeed(date: Date = new Date()): string {
   return date.toISOString().slice(0, 10);
 }
 
+/** Milliseconds from `now` until the next daily challenge starts, which is the next midnight UTC. */
+export function msUntilNextDaily(now: number = Date.now()): number {
+  const DAY_MS = 86_400_000;
+  return DAY_MS - (((now % DAY_MS) + DAY_MS) % DAY_MS);
+}
+
+/** A wait in words for the hub, to the minute: "5h 12m", "12m", or "under a minute". */
+export function waitText(ms: number): string {
+  const minutes = Math.floor(Math.max(0, ms) / 60_000);
+  if (minutes < 1) return 'under a minute';
+  const hours = Math.floor(minutes / 60);
+  return hours ? `${hours}h ${minutes % 60}m` : `${minutes}m`;
+}
+
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 /** How many days of daily results are kept per game; older ones are dropped. */
 export const DAILY_KEEP = 60;
