@@ -1,6 +1,6 @@
 import registry from '../../games/registry.json';
 import { escapeHtml } from './html';
-import { getCounter, getStats, isUnlocked, resetTrophies, TROPHIES, unlockedAt } from '../../shared/achievements';
+import { getCounter, getStats, getTopScores, isUnlocked, resetTrophies, TROPHIES, unlockedAt } from '../../shared/achievements';
 
 const gameTitles: Record<string, string> = Object.fromEntries(
   (registry as { slug: string; title: string }[]).map((g) => [g.slug, g.title]),
@@ -52,7 +52,15 @@ export function initTrophiesPanel(): void {
           .join('');
         // A game with no trophies yet (e.g. freshly scaffolded) still gets its stats line.
         const grid = trophies.length ? `<ul class="trophy-grid">${tiles}</ul>` : '';
-        return `<section><h3>${escapeHtml(game === 'arcade' ? 'Arcade' : gameTitles[game])} <small>${statLine}</small></h3>${grid}</section>`;
+        // The score table only says more than "Best" once it has a second entry.
+        const top = game === 'arcade' ? [] : getTopScores(game);
+        const table =
+          top.length > 1
+            ? `<ol class="top-scores" aria-label="Top scores">${top
+                .map((e) => `<li><strong>${e.score.toLocaleString()}</strong>${e.at ? ` <span>${new Date(e.at).toLocaleDateString()}</span>` : ''}</li>`)
+                .join('')}</ol>`
+            : '';
+        return `<section><h3>${escapeHtml(game === 'arcade' ? 'Arcade' : gameTitles[game])} <small>${statLine}</small></h3>${table}${grid}</section>`;
       })
       .join('');
   };

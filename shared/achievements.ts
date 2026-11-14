@@ -11,7 +11,8 @@ import type { Trophy, TrophyDef } from './trophy-types';
  * `addCounter('stack.lines', 4)` for running totals (trophies tied to a counter unlock automatically
  * at their target). A mistyped id or counter fails the typecheck.
  * Plays and best scores are recorded when a run ends, via `finishRun()` in shared/scenes.ts.
- * A game's best score lives here, in its stats, and nowhere else.
+ * A game's best score lives here, in its stats, and nowhere else. Beside it sits a short table of
+ * the game's highest scores (`getTopScores()`), so a good run that is not a record still counts.
  */
 
 export type { Trophy, TrophyDef };
@@ -54,10 +55,22 @@ export interface GameStats {
   lastPlayed?: number;
 }
 
+/** One line of a game's score table. */
+export interface TopScore {
+  score: number;
+  /** When the run finished (ms since epoch), or 0 for a best score from before the table existed. */
+  at: number;
+}
+
+/** How many scores each game's table keeps. */
+export const TOP_SIZE = 5;
+
 interface Save {
   unlocked: Record<string, number>;
   counters: Record<string, number>;
   games: Record<string, GameStats>;
+  /** Each game's highest scores, best first, at most TOP_SIZE of them. */
+  top: Record<string, TopScore[]>;
 }
 
 const KEY = 'trophies';
@@ -110,7 +123,20 @@ function read(): Save {
       }
     }
   }
-  const result = { unlocked: numberMap(data.unlocked), counters: numberMap(data.counters), games };
+  const top: Record<string, TopScore[]> = {};
+  if (isRecord(data.top)) {
+    for (const [slug, list] of Object.entries(data.top)) {
+      if (!Array.isArray(list)) continue;
+      const entries = list
+        .filter(isRecord)
+        .map((e) => ({ score: savedNumber(e.score), at: savedNumber(e.at) }))
+        .filter((e) => e.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, TOP_SIZE);
+      if (entries.length) top[slug] = entries;
+    }
+  }
+  const result = { unlocked: numberMap(data.unlocked), counters: numberMap(data.counters), games, top };
   if (adoptLegacyBests(games)) saveJSON(KEY, { version: SAVE_VERSION, ...result });
   return result;
 }
@@ -208,12 +234,40 @@ export function getCounter(counter: string): number {
 }
 
 /**
+ * A game's highest scores, best first. A best score saved before the table existed (or restored
+ * from an older backup) heads the table without a date.
+ */
+export function getTopScores(game: string): TopScore[] {
+  const list = save.top[game] ?? [];
+  const best = save.games[game]?.best ?? 0;
+  return best > (list[0]?.score ?? 0) ? [{ score: best, at: 0 }, ...list].slice(0, TOP_SIZE) : list;
+}
+
+/**
  * Called once per finished game with its final score (0 for matches that have no score, e.g. versus).
  * Returns true when the score beat the game's previous best.
  */
 export function recordPlay(game: string, score = 0): boolean {
+  return recordRun(game, score).isRecord;
+}
+
+/**
+ * Like recordPlay(), and also says where the score landed in the game's table: `rank` is 1 for a
+ * new best, 2 to TOP_SIZE for a score that made the table, and 0 for one that did not. A score that
+ * only ties an entry ranks below it, so the earlier run keeps its place.
+ */
+export function recordRun(game: string, score = 0): { isRecord: boolean; rank: number } {
   const stats = save.games[game] ?? { plays: 0, best: 0, totalScore: 0 };
   const isRecord = score > stats.best;
+  let rank = 0;
+  if (score > 0) {
+    const table = getTopScores(game);
+    const above = table.filter((e) => e.score >= score).length;
+    if (above < TOP_SIZE) {
+      save.top[game] = [...table.slice(0, above), { score, at: Date.now() }, ...table.slice(above)].slice(0, TOP_SIZE);
+      rank = above + 1;
+    }
+  }
   stats.plays++;
   stats.best = Math.max(stats.best, score);
   stats.totalScore += score;
@@ -225,7 +279,7 @@ export function recordPlay(game: string, score = 0): boolean {
   // A game can have stats without a play (a best score kept through a reset), so count plays, not entries.
   const everyGame: ArcadeTrophyId = 'arcade.all';
   if (GAME_SLUGS.every((slug) => (save.games[slug]?.plays ?? 0) > 0)) unlock(everyGame);
-  return isRecord;
+  return { isRecord, rank };
 }
 
 /** The best score recorded for a game, or 0. */
@@ -261,17 +315,18 @@ export function onUnlock(fn: (t: Trophy) => void): () => void {
   return () => listeners.delete(fn);
 }
 
-/** Clears trophies, counters, plays and totals. Best scores are kept. */
+/** Clears trophies, counters, plays and totals. Best scores and the score tables are kept. */
 export function resetTrophies(): void {
   const games: Record<string, GameStats> = {};
   for (const [slug, stats] of Object.entries(save.games)) if (stats.best > 0) games[slug] = { plays: 0, best: stats.best, totalScore: 0 };
-  save = { unlocked: {}, counters: {}, games };
+  save = { unlocked: {}, counters: {}, games, top: save.top };
   recent = [];
   persist();
 }
 
-/** Clears every game's best score. Trophies, plays and totals are kept. */
+/** Clears every game's best score and score table. Trophies, plays and totals are kept. */
 export function resetBestScores(): void {
   for (const stats of Object.values(save.games)) stats.best = 0;
+  save.top = {};
   persist();
 }

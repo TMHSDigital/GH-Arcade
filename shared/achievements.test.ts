@@ -287,3 +287,82 @@ describe('persistence', () => {
     expect(a.unlock('snake.bonus')).toBe(true);
   });
 });
+
+describe('top scores', () => {
+  const scores = (a: { getTopScores: (game: string) => { score: number }[] }, game = 'snake') => a.getTopScores(game).map((e) => e.score);
+
+  it('keeps the five highest scores, best first, with the time of each run', async () => {
+    const { a } = await fresh();
+    for (const score of [30, 80, 10, 50, 70, 20, 60]) a.recordPlay('snake', score);
+    expect(scores(a)).toEqual([80, 70, 60, 50, 30]);
+    for (const entry of a.getTopScores('snake')) expect(entry.at).toBeGreaterThan(0);
+    expect(a.getHighScore('snake')).toBe(80);
+  });
+
+  it('reports where a run landed in the table', async () => {
+    const { a } = await fresh();
+    expect(a.recordRun('snake', 50)).toEqual({ isRecord: true, rank: 1 });
+    expect(a.recordRun('snake', 20)).toEqual({ isRecord: false, rank: 2 });
+    expect(a.recordRun('snake', 30)).toEqual({ isRecord: false, rank: 2 });
+    expect(a.recordRun('snake', 90)).toEqual({ isRecord: true, rank: 1 });
+    // A tie ranks below the run that got there first.
+    expect(a.recordRun('snake', 90)).toEqual({ isRecord: false, rank: 2 });
+    expect(scores(a)).toEqual([90, 90, 50, 30, 20]);
+  });
+
+  it('leaves out a run that does not make the table, a tie for last place included', async () => {
+    const { a } = await fresh();
+    for (const score of [50, 40, 30, 20, 10]) a.recordPlay('snake', score);
+    expect(a.recordRun('snake', 5)).toEqual({ isRecord: false, rank: 0 });
+    expect(a.recordRun('snake', 10)).toEqual({ isRecord: false, rank: 0 });
+    expect(scores(a)).toEqual([50, 40, 30, 20, 10]);
+  });
+
+  it('never lists a play without a score', async () => {
+    const { a } = await fresh();
+    expect(a.recordRun('pong')).toEqual({ isRecord: false, rank: 0 });
+    expect(a.recordRun('pong', 0)).toEqual({ isRecord: false, rank: 0 });
+    expect(a.getTopScores('pong')).toEqual([]);
+  });
+
+  it('keeps a table per game', async () => {
+    const { a } = await fresh();
+    a.recordPlay('snake', 10);
+    a.recordPlay('runner', 99);
+    expect(scores(a, 'snake')).toEqual([10]);
+    expect(scores(a, 'runner')).toEqual([99]);
+  });
+
+  it('heads the table with a best score saved before the table existed', async () => {
+    const { a } = await fresh({ 'gh-arcade:trophies': JSON.stringify({ games: { snake: { plays: 4, best: 120, totalScore: 300 } } }) });
+    expect(a.getTopScores('snake')).toEqual([{ score: 120, at: 0 }]);
+    expect(a.recordRun('snake', 70)).toEqual({ isRecord: false, rank: 2 });
+    expect(a.recordRun('snake', 150)).toEqual({ isRecord: true, rank: 1 });
+    expect(scores(a)).toEqual([150, 120, 70]);
+  });
+
+  it('survives a reload', async () => {
+    const { a, storage } = await fresh();
+    for (const score of [30, 80, 10]) a.recordPlay('snake', score);
+    const again = await fresh(Object.fromEntries(storage.data));
+    expect(scores(again.a)).toEqual([80, 30, 10]);
+  });
+
+  it('ignores malformed entries in saved data', async () => {
+    const top = { snake: [{ score: 40, at: 5 }, { score: 'x' }, null, { score: -3 }, { score: 90 }], runner: 'nope', hop: [1, 2] };
+    const { a } = await fresh({ 'gh-arcade:trophies': JSON.stringify({ top }) });
+    expect(a.getTopScores('snake')).toEqual([{ score: 90, at: 0 }, { score: 40, at: 5 }]);
+    expect(a.getTopScores('runner')).toEqual([]);
+    expect(a.getTopScores('hop')).toEqual([]);
+  });
+
+  it('is cleared with the best scores and kept through a trophy reset', async () => {
+    const { a } = await fresh();
+    for (const score of [30, 80]) a.recordPlay('snake', score);
+    a.resetTrophies();
+    expect(scores(a)).toEqual([80, 30]);
+    a.resetBestScores();
+    expect(a.getTopScores('snake')).toEqual([]);
+    expect(a.getHighScore('snake')).toBe(0);
+  });
+});

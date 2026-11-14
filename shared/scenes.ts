@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { clearRecentUnlocks, drainRecentUnlocks, getHighScore, recordPlay, type Trophy } from './achievements';
+import { clearRecentUnlocks, drainRecentUnlocks, getHighScore, recordRun, TOP_SIZE, type Trophy } from './achievements';
 import { ArcadeControls } from './controls';
 import { OptionMenu } from './menu';
 import { tone } from './sfx';
@@ -80,13 +80,14 @@ export function buildMenu(scene: Phaser.Scene, opts: MenuOptions): void {
 }
 
 /**
- * Records a finished run: counts the play, keeps the score if it is a new best, and returns the
- * trophies earned during the run. Leave `score` out for matches that have none (two-player versus);
- * the play still counts but cannot be a record.
+ * Records a finished run: counts the play, keeps the score if it is a new best or makes the game's
+ * top scores (`rank` is its place there, or 0), and returns the trophies earned during the run.
+ * Leave `score` out for matches that have none (two-player versus); the play still counts but
+ * cannot be a record.
  */
-export function finishRun(gameId: string, score?: number): { isRecord: boolean; earned: Trophy[] } {
-  const isRecord = recordPlay(gameId, score ?? 0) && score !== undefined;
-  return { isRecord, earned: drainRecentUnlocks() };
+export function finishRun(gameId: string, score?: number): { isRecord: boolean; rank: number; earned: Trophy[] } {
+  const { isRecord, rank } = recordRun(gameId, score ?? 0);
+  return { isRecord: isRecord && score !== undefined, rank: score === undefined ? 0 : rank, earned: drainRecentUnlocks() };
 }
 
 const restartData = new WeakMap<Phaser.Scene, object>();
@@ -203,7 +204,7 @@ export class ArcadeGameOverScene extends Phaser.Scene {
 
   create(data: GameOverData): void {
     const { width } = this.scale.gameSize;
-    const { isRecord, earned } = finishRun(data.gameId, data.score);
+    const { isRecord, rank, earned } = finishRun(data.gameId, data.score);
     this.cameras.main.fadeIn(250, 5, 5, 13);
 
     neonText(this, width / 2, 130, 'GAME OVER', 48, NEON.pink);
@@ -214,7 +215,9 @@ export class ArcadeGameOverScene extends Phaser.Scene {
       const record = neonText(this, width / 2, 315, 'NEW HIGH SCORE!', 18, NEON.yellow);
       this.tweens.add({ targets: record, scale: 1.15, duration: 400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     } else {
-      neonText(this, width / 2, 315, `BEST ${getHighScore(data.gameId).toLocaleString()}`, 14, NEON.yellow);
+      // Not a record, but a run that made the game's top scores still gets a mention.
+      const placed = rank > 1 ? `NO. ${rank} IN YOUR TOP ${TOP_SIZE}   ` : '';
+      neonText(this, width / 2, 315, `${placed}BEST ${getHighScore(data.gameId).toLocaleString()}`, 14, NEON.yellow);
     }
 
     if (earned.length) neonText(this, width / 2, 365, trophyLine(earned), 11, NEON.green);

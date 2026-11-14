@@ -14,6 +14,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 - Unit tests (Vitest), ESLint and a pull request check.
 - A Content-Security-Policy on every built page: the arcade loads only its own files and Google Fonts.
 - An ARCADE option on the game-over and match result screens.
+- Each game keeps its five highest scores: the game-over screen says when a run made the list, and the Trophies panel shows it with dates.
 - Hub: the chosen tag filter is remembered between visits, like the sort order.
 - Hub: sort by recently played, most played or name; trophy progress and a last-played marker on each card; average score and lifetime totals in the Trophies panel.
 - Settings has a "Your data" section: download a backup of trophies, stats, best scores and settings, restore one, or reset best scores.
