@@ -4,6 +4,8 @@ import { ArcadeControls } from './controls';
 import { OptionMenu } from './menu';
 import { tone } from './sfx';
 import { keyLabel } from './settings';
+import { canShare, resultText, shareResult } from './share';
+import { showToast } from './toast';
 import { isTouchDevice } from './touch';
 import { blinkingPrompt, fadeToScene, NEON, neonText, onStart } from './ui';
 
@@ -189,13 +191,16 @@ export interface GameOverData {
   score: number;
   /** Optional extra line, e.g. "REACHED LEVEL 4". */
   detail?: string;
+  /** The UTC date of the daily challenge this run was, if it was one; the shared result names it. */
+  daily?: string;
   restartScene?: string;
   restartData?: object;
 }
 
 /**
  * Shared game-over screen: final score, high-score check, any trophies earned this run, and
- * Play again / Menu / Arcade options. Its key is SCENE.gameOver.
+ * Play again / Menu / Arcade options, plus Share where the browser can share or copy text.
+ * Its key is SCENE.gameOver.
  */
 export class ArcadeGameOverScene extends Phaser.Scene {
   constructor() {
@@ -230,14 +235,26 @@ export class ArcadeGameOverScene extends Phaser.Scene {
         chosen = true;
         fadeToScene(this, key, payload);
       };
+      // Sharing stays on this screen, so the player can still pick where to go next.
+      const share = async () => {
+        if (chosen) return;
+        // The page is titled "<game> · GH Arcade" (build/game-pages.ts).
+        const text = resultText({ title: document.title.split(' · ')[0], score: data.score, daily: data.daily });
+        const outcome = await shareResult(text, window.location.origin + window.location.pathname);
+        if (outcome === 'copied') showToast('Copied', 'Paste your result anywhere');
+        else if (outcome === 'failed') showToast("Couldn't share", 'Pick SHARE with a key, click or tap');
+      };
+      const shareable = canShare();
       new OptionMenu(this, new ArcadeControls(this), {
         x: width / 2,
         y: 450,
-        spacing: 240,
+        // Four options need to sit closer together to fit the screen.
+        spacing: shareable ? 180 : 240,
         size: 16,
         items: [
           { label: 'PLAY AGAIN', onSelect: () => go(data.restartScene ?? SCENE.game, data.restartData ?? {}) },
           { label: 'MENU', onSelect: () => go(SCENE.menu) },
+          ...(shareable ? [{ label: 'SHARE', onSelect: () => void share() }] : []),
           // The natural exit point: back to the hub without starting another run first.
           { label: 'ARCADE', onSelect: toArcade },
         ],

@@ -272,7 +272,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`menu.ts`](shared/menu.ts) | `OptionMenu`: a row or column of choices that works with keys, gamepad, mouse and touch. |
 | [`chrome.ts`](shared/chrome.ts) | The page around the canvas: pause and fullscreen buttons, the loading indicator and the rotate hint. |
 | [`touch.ts`](shared/touch.ts) | `onSwipe()` gestures, plus `VirtualStick` and `VirtualButton` that appear only on touch screens. |
-| [`scenes.ts`](shared/scenes.ts) | `buildMenu()` title screens and the shared `ArcadeGameOverScene` with high-score checks. |
+| [`scenes.ts`](shared/scenes.ts) | `buildMenu()` title screens and the shared `ArcadeGameOverScene` with high-score checks and a share option ([`share.ts`](shared/share.ts)). |
 | [`ui.ts`](shared/ui.ts) | Neon text, the HUD text style, banners, score popups, particle bursts and the shared color palette. |
 | [`phaser-config.ts`](shared/phaser-config.ts) | `startArcadeGame()`: fit-to-screen Phaser setup with gamepads enabled, once the pixel font has loaded. |
 | [`storage.ts`](shared/storage.ts) | `loadJSON()` and `saveJSON()`, backed by `localStorage` that never throws. If the browser blocks saved data, every page says so once (`storage-notice.ts`). |

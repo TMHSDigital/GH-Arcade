@@ -14,6 +14,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 - Unit tests (Vitest), ESLint and a pull request check.
 - A Content-Security-Policy on every built page: the arcade loads only its own files and Google Fonts.
 - An ARCADE option on the game-over and match result screens.
+- A SHARE option on the game-over screen: it hands the game, the score and (for a daily run) the date to the browser's share sheet, or copies them.
 - Hub: games with a daily challenge have a `daily` filter and show today's result on their card; the Trophies panel lists recent daily results and the current streak.
 - Settings can merge a backup into what is on the device, keeping the trophies and best scores of both, as well as replace it.
 - Each game keeps its five highest scores: the game-over screen says when a run made the list, and the Trophies panel shows it with dates.

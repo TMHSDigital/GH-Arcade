@@ -474,7 +474,7 @@ export class GameScene extends Phaser.Scene {
       });
     }
     const detail = this.daily ? dailyResult(GAME_ID, this.score, this.daily) : `LEVEL ${this.level}   LINES ${this.lines}`;
-    endRun(this, { gameId: GAME_ID, score: this.score, detail }, VISIBLE_ROWS * 45 + 900);
+    endRun(this, { gameId: GAME_ID, score: this.score, detail, daily: this.daily ?? undefined }, VISIBLE_ROWS * 45 + 900);
   }
 
   // ---------------------------------------------------------------- render

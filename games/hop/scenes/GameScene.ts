@@ -278,7 +278,7 @@ export class GameScene extends Phaser.Scene {
     if (this.lives <= 0) {
       this.over = true;
       const detail = this.daily ? dailyResult(GAME_ID, this.score, this.daily) : `REACHED LEVEL ${this.level}`;
-      endRun(this, { gameId: GAME_ID, score: this.score, detail }, 1400);
+      endRun(this, { gameId: GAME_ID, score: this.score, detail, daily: this.daily ?? undefined }, 1400);
       return;
     }
     this.time.delayedCall(1100, () => this.resetHopper());

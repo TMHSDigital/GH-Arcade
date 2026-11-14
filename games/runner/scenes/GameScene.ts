@@ -390,7 +390,7 @@ export class GameScene extends Phaser.Scene {
     tone({ freq: 400, toFreq: 50, duration: 0.7, type: 'sawtooth', volume: 0.08 });
     const metres = metresRun(this.distance);
     const detail = this.daily ? dailyResult(GAME_ID, this.score, this.daily) : `${metres}m   ${this.coinsTaken} COINS`;
-    endRun(this, { gameId: GAME_ID, score: this.score, detail }, 1300);
+    endRun(this, { gameId: GAME_ID, score: this.score, detail, daily: this.daily ?? undefined }, 1300);
   }
 
   // ---------------------------------------------------------------- render
