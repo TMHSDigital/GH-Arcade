@@ -126,5 +126,93 @@
     "accent": "#ff2e97",
     "controls": "Left / right / hold sides / gamepad",
     "thumbnail": "thumbs/pinball.jpg"
+  },
+  {
+    "slug": "lander",
+    "title": "Neon Lander",
+    "description": "Ease a thrusting lander down onto a glowing pad over rough alien terrain. Land slow and upright to score, then face stronger gravity, narrower pads and wind.",
+    "tags": [
+      "arcade",
+      "classic",
+      "daily"
+    ],
+    "accent": "#ff4d4d",
+    "controls": "Arrows + Space / touch stick / gamepad",
+    "thumbnail": "thumbs/lander.jpg"
+  },
+  {
+    "slug": "mines",
+    "title": "Neon Mines",
+    "description": "Clear a glowing minefield using the number clues, flagging every mine you find. Pick easy, medium or hard, chase your best time, or take on the daily board everyone shares.",
+    "tags": [
+      "puzzle",
+      "classic",
+      "daily"
+    ],
+    "accent": "#c6ff3d",
+    "controls": "Click + right-click / tap + hold / arrows + Space / gamepad",
+    "thumbnail": "thumbs/mines.jpg"
+  },
+  {
+    "slug": "golf",
+    "title": "Neon Golf",
+    "description": "Nine neon mini golf holes with sand traps, water, boost pads and sliding blockers. Drag back, let fly, and sink it in as few strokes as you can.",
+    "tags": [
+      "arcade",
+      "classic"
+    ],
+    "accent": "#7fd4ff",
+    "controls": "Drag / arrows + Space / gamepad",
+    "thumbnail": "thumbs/golf.jpg"
+  },
+  {
+    "slug": "crates",
+    "title": "Neon Crates",
+    "description": "Push glowing crates onto their targets across 15 hand-built warehouse puzzles. Push one at a time, never pull, and chase par on every level.",
+    "tags": [
+      "puzzle"
+    ],
+    "accent": "#8a9bff",
+    "controls": "Arrows + Z/R / swipe / d-pad",
+    "thumbnail": "thumbs/crates.jpg"
+  },
+  {
+    "slug": "match",
+    "title": "Neon Match",
+    "description": "Swap glowing gems to line up three or more. Chain cascades, build line blasts and bombs, and race the clock or make every move count.",
+    "tags": [
+      "puzzle",
+      "arcade"
+    ],
+    "accent": "#e05eff",
+    "controls": "Drag or tap / arrows + Space / gamepad",
+    "thumbnail": "thumbs/match.jpg"
+  },
+  {
+    "slug": "bubbles",
+    "title": "Neon Bubbles",
+    "description": "Bank neon bubbles off the walls, pop groups of three and cut whole clusters loose for big bonuses before the ceiling creeps down.",
+    "tags": [
+      "arcade",
+      "puzzle",
+      "endless",
+      "daily"
+    ],
+    "accent": "#ff9ef0",
+    "controls": "Mouse / drag / ← → + Space / gamepad",
+    "thumbnail": "thumbs/bubbles.jpg"
+  },
+  {
+    "slug": "tanks",
+    "title": "Neon Tanks",
+    "description": "Lob shells over glowing hills, carve craters and bury your rival before they bury you. Read the wind, then take on the CPU or a friend, best of 3.",
+    "tags": [
+      "shooter",
+      "classic",
+      "2-player"
+    ],
+    "accent": "#ffb000",
+    "controls": "Arrows + Space / drag / gamepad",
+    "thumbnail": "thumbs/tanks.jpg"
   }
 ]

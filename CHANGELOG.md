@@ -6,6 +6,16 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 ### Added
 
+- Seven new games:
+  - **Neon Lander:** land a thrusting lander on a pad over rough terrain, with gravity, pad width and wind getting tougher each stage. Has a Daily mode.
+  - **Neon Mines:** clear a minefield from number clues on easy, medium or hard boards, with a best time for each and a daily board.
+  - **Neon Golf:** nine mini golf holes with sand, water, boost pads and sliding blockers.
+  - **Neon Crates:** 15 box-pushing puzzles with undo, a par for each level and a level select.
+  - **Neon Match:** a match-3 with line and bomb gems, in Timed and Moves modes.
+  - **Neon Bubbles:** a bubble shooter with bank shots, dropping clusters, a creeping ceiling and a Daily mode.
+  - **Neon Tanks:** an artillery duel on destructible terrain, against the CPU at three difficulties or two players on one device.
+- "Reset best scores" in Settings also clears the per-mode bests in Neon Match and the best times in Neon Mines.
+
 - Astro Blaster and Star Siege have a Daily mode: the same rocks and saucer in Astro, and the same alien fire and mothership in Siege (solo), for everyone on a given UTC date.
 - A shared daily result links to its day, so a friend who opens it after midnight UTC still plays the same board. An earlier day plays as a challenge that does not count toward today's result or your streak.
 - Neon Pong: EASY CPU and HARD CPU modes beside VS CPU. The Table Champion and Clean Sheet trophies need the normal or the hard CPU.

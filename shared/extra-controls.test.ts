@@ -41,7 +41,13 @@ describe('extra control uses', () => {
 
 describe('the extras of the games', () => {
   it('are collected from every game that has a controls.ts, under the title of the game', () => {
-    expect(GAME_EXTRAS.map((g) => g.game)).toEqual(['Astro Blaster', 'Neon Pinball', 'Neon Stack']);
+    expect(GAME_EXTRAS.map((g) => g.game)).toEqual([
+      'Astro Blaster',
+      'Neon Crates',
+      'Neon Mines',
+      'Neon Pinball',
+      'Neon Stack',
+    ]);
   });
 
   it('only name keys the hub can match against a pressed key', () => {
@@ -54,9 +60,13 @@ describe('the extras of the games', () => {
   });
 
   it('flag the cases from the report: Pause on LB or Y, Mute on C', () => {
-    // LB (4) flips in Pinball and holds in Stack; Y (3) and C hold in Stack.
+    // LB (4) flips in Pinball and holds in Stack; Y (3) restarts in Crates, flags in Mines and holds in Stack; C holds in Stack.
     expect(extraButtonUses(4).map((u) => u.game)).toEqual(['Neon Pinball', 'Neon Stack']);
-    expect(extraButtonUses(3)).toEqual([{ game: 'Neon Stack', control: 'Hold' }]);
+    expect(extraButtonUses(3)).toEqual([
+      { game: 'Neon Crates', control: 'Restart level' },
+      { game: 'Neon Mines', control: 'Flag' },
+      { game: 'Neon Stack', control: 'Hold' },
+    ]);
     expect(extraKeyUses(67)).toEqual([{ game: 'Neon Stack', control: 'Hold' }]);
     // Start and M are nobody's extra.
     expect(extraButtonUses(9)).toEqual([]);
