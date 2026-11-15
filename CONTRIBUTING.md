@@ -4,7 +4,7 @@ New games, level designs and bug fixes are welcome. For a security problem, see 
 
 ## Getting set up
 
-You need Node 22.12 or newer.
+You need Node 22.13 or newer.
 
 ```bash
 git clone https://github.com/TMHSDigital/GH-Arcade.git
