@@ -1,4 +1,5 @@
 import registry from '../../games/registry.json';
+import { askToConfirm } from './confirm';
 import { escapeHtml } from './html';
 import { getCounter, getStats, getTopScores, isUnlocked, resetTrophies, TROPHIES, unlockedAt } from '../../shared/achievements';
 import { DAILY_TAG, dailyStreak, getDailyHistory } from '../../shared/rng';
@@ -92,8 +93,8 @@ export function initTrophiesPanel(): void {
   dialog.addEventListener('click', (e) => {
     if (e.target === dialog) dialog.close();
   });
-  dialog.querySelector('#reset-trophies')!.addEventListener('click', () => {
-    if (window.confirm('Reset all trophies and stats on this device? High scores are kept.')) {
+  dialog.querySelector('#reset-trophies')!.addEventListener('click', async () => {
+    if (await askToConfirm('Reset all trophies and stats on this device? High scores are kept.', 'Reset')) {
       resetTrophies();
       render();
     }

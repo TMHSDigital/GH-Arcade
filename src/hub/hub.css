@@ -485,6 +485,12 @@ main {
 }
 
 .panel-foot .hint { margin: 0; }
+
+/* The confirmation step for resets and restores (src/hub/confirm.ts). */
+.confirm-question { margin: 4px 0 16px; line-height: 1.5; }
+.confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.confirm-actions .text-button { margin: 0; }
+.text-button.danger { border-color: var(--pink); color: var(--pink); }
 .panel-foot .text-button { margin: 0; }
 
 /* ---------------------------------------------------------------- trophies */

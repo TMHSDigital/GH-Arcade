@@ -1,6 +1,7 @@
 import { resetBestScores } from '../../shared/achievements';
 import { exportBackup, importBackup, mergeBackup } from '../../shared/backup';
 import { persistenceState } from '../../shared/storage';
+import { askToConfirm } from './confirm';
 
 /**
  * Wires up the "Your data" section of the settings dialog: download a backup of everything saved
@@ -61,7 +62,7 @@ export function initDataPanel(): void {
     const question = merging
       ? 'Add the trophies, stats and best scores in this backup to the ones on this device? Nothing here is removed, and your settings stay as they are.'
       : 'Replace the trophies, stats, best scores and settings on this device with the ones in this backup?';
-    if (!window.confirm(question)) return;
+    if (!(await askToConfirm(question, merging ? 'Merge' : 'Replace'))) return;
     const result = merging ? mergeBackup(parsed) : importBackup(parsed);
     if (!result.ok) {
       say(result.changed ? result.reason : `${result.reason} Nothing was changed.`);
@@ -71,8 +72,8 @@ export function initDataPanel(): void {
     window.location.reload();
   });
 
-  section.querySelector('#reset-scores')!.addEventListener('click', () => {
-    if (!window.confirm('Reset the best score for every game on this device? Trophies and stats are kept.')) return;
+  section.querySelector('#reset-scores')!.addEventListener('click', async () => {
+    if (!(await askToConfirm('Reset the best score for every game on this device? Trophies and stats are kept.', 'Reset'))) return;
     resetBestScores();
     window.location.reload();
   });

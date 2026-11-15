@@ -22,7 +22,8 @@ function columns(grid: HTMLElement): number {
 }
 
 function openDialog(): HTMLDialogElement | null {
-  return document.querySelector<HTMLDialogElement>('dialog[open]');
+  // The last one open is on top: the confirmation step opens over a panel (src/hub/confirm.ts).
+  return [...document.querySelectorAll<HTMLDialogElement>('dialog[open]')].at(-1) ?? null;
 }
 
 /** Moves focus between cards like a grid; returns false if there was nothing to move. */

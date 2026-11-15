@@ -159,6 +159,18 @@
       </div>
     </dialog>
 
+    <!-- The "are you sure?" step for resets and restores (src/hub/confirm.ts). It comes after the
+         panels so it is the top dialog while it is open. -->
+    <dialog id="confirm" class="panel" aria-labelledby="confirm-question">
+      <div class="panel-inner">
+        <p id="confirm-question" class="confirm-question"></p>
+        <div class="confirm-actions">
+          <button id="confirm-cancel" class="text-button" type="button">Cancel</button>
+          <button id="confirm-ok" class="text-button danger" type="button">Confirm</button>
+        </div>
+      </div>
+    </dialog>
+
     <script type="module" src="/src/hub/main.ts"></script>
   </body>
 </html>

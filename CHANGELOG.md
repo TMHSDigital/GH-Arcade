@@ -12,6 +12,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 ### Changed
 
+- Hub: resetting trophies or best scores and restoring or merging a backup ask for confirmation in the page, so a gamepad can answer. Cancel is selected first.
 - The daily challenge label looks the same in Neon Hop, Neon Runner, Neon Snake and Neon Stack: the date, and your best for the day under it.
 - Node 22.13 or newer is required (it was 22.12), and pull requests are checked on Node 22.13 as well as Node 24.
 
