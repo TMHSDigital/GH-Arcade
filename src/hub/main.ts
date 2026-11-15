@@ -2,12 +2,14 @@ import './hub.css';
 import registry from '../../games/registry.json';
 import { registerOffline } from '../../shared/pwa';
 import { getHighScore, getStats, trophyProgress } from '../../shared/achievements';
-import { modeQuery } from '../../shared/modes';
-import { DAILY_MODE_LABEL, DAILY_TAG, getDailyBest, msUntilNextDaily, playedDaily, waitText } from '../../shared/rng';
+import { DAILY_TAG, getDailyBest, playedDaily } from '../../shared/rng';
 import { loadJSON, saveJSON } from '../../shared/storage';
 import { initStorageNotice } from '../../shared/storage-notice';
+import { cardHref, type GameEntry, lastPlayedSlug, type Sort, sorted, validSort, validTag } from './cards';
+import { initDailyBanner } from './daily-banner';
 import { initDataPanel } from './data-panel';
 import { escapeHtml } from './html';
+import { initInstallPrompt } from './install';
 import { initHubNavigation } from './navigation';
 import { initPadPanel } from './pad-bindings';
 import { initSettingsPanel } from './settings-panel';
@@ -16,94 +18,16 @@ import { initTrophiesPanel } from './trophies-panel';
 registerOffline('hub');
 initStorageNotice();
 
-// Chromium browsers fire this when the arcade can be installed as an app; show our own button for it.
-interface InstallPromptEvent extends Event {
-  prompt(): Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
-const installButton = document.querySelector<HTMLButtonElement>('#install')!;
-let installPrompt: InstallPromptEvent | null = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  installPrompt = e as InstallPromptEvent;
-  installButton.hidden = false;
-});
-installButton.addEventListener('click', async () => {
-  if (!installPrompt) return;
-  await installPrompt.prompt();
-  await installPrompt.userChoice;
-  installPrompt = null;
-  installButton.hidden = true;
-});
-window.addEventListener('appinstalled', () => (installButton.hidden = true));
-
-// iOS Safari never fires beforeinstallprompt, so explain the manual route there, once.
-const iosHint = document.querySelector<HTMLParagraphElement>('#ios-install')!;
-const IOS_HINT_KEY = 'hub:ios-install-hint';
-function isIosBrowserTab(): boolean {
-  const ua = navigator.userAgent;
-  // iPadOS reports itself as a Mac; the touch points give it away.
-  const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-  const standalone =
-    (navigator as Navigator & { standalone?: boolean }).standalone === true || window.matchMedia('(display-mode: standalone)').matches;
-  return ios && !standalone;
-}
-if (isIosBrowserTab() && !loadJSON<boolean>(IOS_HINT_KEY, false)) {
-  iosHint.hidden = false;
-  iosHint.querySelector('button')!.addEventListener('click', () => {
-    iosHint.hidden = true;
-    saveJSON(IOS_HINT_KEY, true);
-  });
-}
-
-interface GameEntry {
-  slug: string;
-  title: string;
-  description: string;
-  tags: string[];
-  accent: string;
-  controls?: string;
-  /** Optional 16:9 screenshot in public/, e.g. thumbs/snake.jpg. Without one the card shows the title's first letter. */
-  thumbnail?: string;
-}
-
 const games = registry as GameEntry[];
 const grid = document.querySelector<HTMLUListElement>('#game-grid')!;
 const filters = document.querySelector<HTMLDivElement>('#filters')!;
 const count = document.querySelector<HTMLSpanElement>('#game-count')!;
 const sortSelect = document.querySelector<HTMLSelectElement>('#sort')!;
 
-const SORTS = ['featured', 'recent', 'plays', 'title'] as const;
-type Sort = (typeof SORTS)[number];
-
-// The chosen tag is remembered too, so the filter is still on after a game. A tag that no game has
-// any more (or anything unexpected in storage) falls back to "All".
-const savedTag = loadJSON<unknown>('hub:tag', null);
-let activeTag: string | null = typeof savedTag === 'string' && games.some((g) => g.tags.includes(savedTag)) ? savedTag : null;
-// The chosen order is remembered; anything unexpected in storage falls back to registry order.
-const savedSort = loadJSON<unknown>('hub:sort', 'featured');
-let sort: Sort = SORTS.find((s) => s === savedSort) ?? 'featured';
-
-/** Orders the cards. Ties (and games never played) keep their registry order, so the grid stays stable. */
-function sorted(list: GameEntry[]): GameEntry[] {
-  if (sort === 'featured') return list;
-  const key: Record<Exclude<Sort, 'featured'>, (a: GameEntry, b: GameEntry) => number> = {
-    recent: (a, b) => (getStats(b.slug).lastPlayed ?? 0) - (getStats(a.slug).lastPlayed ?? 0),
-    plays: (a, b) => getStats(b.slug).plays - getStats(a.slug).plays,
-    title: (a, b) => a.title.localeCompare(b.title),
-  };
-  return [...list].sort(key[sort]);
-}
-
-/** The game with the most recent finished run, if any, so its card can say so. */
-function lastPlayedSlug(): string | null {
-  let best: GameEntry | null = null;
-  for (const g of games) {
-    const at = getStats(g.slug).lastPlayed ?? 0;
-    if (at > 0 && (!best || at > (getStats(best.slug).lastPlayed ?? 0))) best = g;
-  }
-  return best?.slug ?? null;
-}
+// The chosen tag and order are remembered, so they are still on after a game (src/hub/cards.ts
+// decides what to do with anything unexpected in storage).
+let activeTag = validTag(loadJSON<unknown>('hub:tag', null), games);
+let sort: Sort = validSort(loadJSON<unknown>('hub:sort', 'featured'));
 
 function card(game: GameEntry, isLastPlayed: boolean): HTMLLIElement {
   const li = document.createElement('li');
@@ -117,10 +41,8 @@ function card(game: GameEntry, isLastPlayed: boolean): HTMLLIElement {
   const hasDaily = game.tags.includes(DAILY_TAG);
   const dailyDone = hasDaily && playedDaily(game.slug);
   const dailyWaiting = hasDaily && !dailyDone;
-  // Relative link so it works under any base path (dev server and GitHub Pages). While today's daily
-  // challenge is waiting, the card opens the game's menu on DAILY.
   li.innerHTML = `
-    <a class="card-link" href="games/${encodeURIComponent(game.slug)}/${dailyWaiting ? modeQuery(DAILY_MODE_LABEL) : ''}">
+    <a class="card-link" href="${cardHref(game.slug, dailyWaiting)}">
       <div class="card-art" aria-hidden="true">${
         game.thumbnail
           ? `<img src="${escapeHtml(game.thumbnail)}" alt="" loading="lazy" decoding="async" />`
@@ -145,8 +67,8 @@ function card(game: GameEntry, isLastPlayed: boolean): HTMLLIElement {
 }
 
 function render(): void {
-  const visible = sorted(activeTag ? games.filter((g) => g.tags.includes(activeTag!)) : games);
-  const last = lastPlayedSlug();
+  const visible = sorted(activeTag ? games.filter((g) => g.tags.includes(activeTag!)) : games, sort, getStats);
+  const last = lastPlayedSlug(games, getStats);
   grid.replaceChildren(...visible.map((g) => card(g, g.slug === last)));
   count.textContent = `(${visible.length})`;
 }
@@ -173,43 +95,26 @@ function renderFilters(): void {
 
 sortSelect.value = sort;
 sortSelect.addEventListener('change', () => {
-  sort = SORTS.find((s) => s === sortSelect.value) ?? 'featured';
+  sort = validSort(sortSelect.value);
   saveJSON('hub:sort', sort);
   render();
 });
-
-// The daily challenge changes at midnight UTC, which is the middle of the day for many players, so
-// the hub says how long is left and moves its "Daily" chips on to the new day when it comes.
-const nextDaily = document.querySelector<HTMLParagraphElement>('#next-daily')!;
-function showNextDaily(): void {
-  nextDaily.textContent = `Next daily challenge in ${waitText(msUntilNextDaily())}`;
-}
-function scheduleDailyRollover(): void {
-  // A moment past midnight, so the new date is certain to be in force when the cards are redrawn.
-  window.setTimeout(() => {
-    render();
-    showNextDaily();
-    scheduleDailyRollover();
-  }, msUntilNextDaily() + 500);
-}
-if (games.some((g) => g.tags.includes(DAILY_TAG))) {
-  nextDaily.hidden = false;
-  showNextDaily();
-  window.setInterval(showNextDaily, 60_000);
-  scheduleDailyRollover();
-}
 
 renderFilters();
 render();
 // Trophies can be reset in their dialog, which changes the chips on the cards.
 document.querySelector('#trophies')?.addEventListener('close', render);
 
-// Panels are wired up after the grid is on screen, and one that fails must never hide the games.
-for (const init of [initSettingsPanel, initPadPanel, initDataPanel, initTrophiesPanel, initHubNavigation]) {
+// The daily countdown is only worth showing when some game has a daily challenge.
+const initDaily = () => {
+  if (games.some((g) => g.tags.includes(DAILY_TAG))) initDailyBanner(render);
+};
+// Everything else is wired up after the grid is on screen, and a part that fails must never hide the games.
+for (const init of [initInstallPrompt, initDaily, initSettingsPanel, initPadPanel, initDataPanel, initTrophiesPanel, initHubNavigation]) {
   try {
     init();
   } catch (err) {
-    console.error('Hub panel failed to start', err);
+    console.error('A part of the hub failed to start', err);
   }
 }
 // A hub restored from the back/forward cache still shows the bests from before the last game.

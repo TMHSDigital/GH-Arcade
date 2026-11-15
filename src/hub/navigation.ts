@@ -26,19 +26,24 @@ function openDialog(): HTMLDialogElement | null {
   return [...document.querySelectorAll<HTMLDialogElement>('dialog[open]')].at(-1) ?? null;
 }
 
+/**
+ * The card to focus after a move of (dx, dy) in a grid of `count` cards laid out in `columns`:
+ * the first card when none is focused yet (`current` below 0), otherwise the card that many
+ * columns and rows away, stopping at the first and last card. -1 if there are no cards.
+ */
+export function gridStep(count: number, current: number, dx: number, dy: number, columns: number): number {
+  if (count <= 0) return -1;
+  if (current < 0) return 0;
+  return Math.max(0, Math.min(count - 1, current + dx + dy * columns));
+}
+
 /** Moves focus between cards like a grid; returns false if there was nothing to move. */
 function moveFocus(dx: number, dy: number): boolean {
   const list = cards();
   if (!list.length) return false;
   const grid = document.querySelector<HTMLElement>('#game-grid')!;
   const current = list.indexOf(document.activeElement as HTMLAnchorElement);
-  let next: number;
-  if (current < 0) next = 0;
-  else {
-    next = current + dx + dy * columns(grid);
-    next = Math.max(0, Math.min(list.length - 1, next));
-  }
-  focusCard(list[next]);
+  focusCard(list[gridStep(list.length, current, dx, dy, columns(grid))]);
   return true;
 }
 
