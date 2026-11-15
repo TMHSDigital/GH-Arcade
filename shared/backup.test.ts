@@ -14,6 +14,9 @@ const saved = {
   'unrelated:key': '"left alone"',
 };
 
+/** A backup file holding `data`. */
+const file = (data: Record<string, unknown>) => ({ app: 'gh-arcade', version: 1, data });
+
 describe('exportBackup', () => {
   it('collects every arcade key without the prefix and nothing else', () => {
     installMemoryStorage(saved);
@@ -75,6 +78,41 @@ describe('importBackup', () => {
     expect(result.ok).toBe(false);
     expect(storage.data).toEqual(before);
   });
+
+  it('puts the saved data back when a write fails part way', () => {
+    const storage = installMemoryStorage(saved);
+    const before = new Map(storage.data);
+    const write = storage.setItem;
+    // The browser runs out of room on the second value of the backup.
+    let writes = 0;
+    storage.setItem = (key, value) => {
+      if (++writes === 2) throw new Error('QuotaExceededError');
+      write(key, value);
+    };
+    const result = importBackup(file({ 'snake:highscore': 5, 'pong:highscore': 9, 'hub:sort': 'name' }));
+    expect(result).toMatchObject({ ok: false });
+    expect(result).not.toHaveProperty('changed');
+    expect(storage.data).toEqual(before);
+  });
+
+  it('says so when the saved data cannot be put back either', () => {
+    const storage = installMemoryStorage(saved);
+    const write = storage.setItem;
+    let writes = 0;
+    storage.setItem = (key, value) => {
+      if (++writes >= 2) throw new Error('QuotaExceededError');
+      write(key, value);
+    };
+    const result = importBackup(file({ 'snake:highscore': 5, 'pong:highscore': 9 }));
+    expect(result).toMatchObject({ ok: false, changed: true });
+    expect(storage.data.get('unrelated:key')).toBe('"left alone"');
+  });
+
+  it('changes nothing when storage is unavailable', () => {
+    const result = importBackup(file({ 'snake:highscore': 5 }));
+    expect(result).toMatchObject({ ok: false });
+    expect(result).not.toHaveProperty('changed');
+  });
 });
 
 describe('the hub tag filter in a backup', () => {
@@ -96,7 +134,6 @@ describe('the hub tag filter in a backup', () => {
 });
 
 describe('mergeBackup', () => {
-  const file = (data: Record<string, unknown>) => ({ app: 'gh-arcade', version: 1, data });
   const trophies = (storage: { data: Map<string, string> }) => JSON.parse(storage.data.get('gh-arcade:trophies')!);
 
   const here = {
@@ -204,10 +241,24 @@ describe('mergeBackup', () => {
     expect(mergeBackup(file({ trophies: there, surprise: true })).ok).toBe(false);
     expect(storage.data).toEqual(before);
   });
+
+  it('puts the saved data back when a write fails part way', () => {
+    const storage = installMemoryStorage(saved);
+    const before = new Map(storage.data);
+    const write = storage.setItem;
+    let writes = 0;
+    storage.setItem = (key, value) => {
+      if (++writes === 2) throw new Error('QuotaExceededError');
+      write(key, value);
+    };
+    const result = mergeBackup(file({ 'snake:highscore': 500, 'pong:highscore': 9 }));
+    expect(result).toMatchObject({ ok: false });
+    expect(result).not.toHaveProperty('changed');
+    expect(storage.data).toEqual(before);
+  });
 });
 
 describe('daily results in a backup', () => {
-  const file = (data: Record<string, unknown>) => ({ app: 'gh-arcade', version: 1, data });
 
   it('round-trips a game\'s daily record', () => {
     const storage = installMemoryStorage({ 'gh-arcade:hop:daily': JSON.stringify({ '2026-11-12': 500 }) });

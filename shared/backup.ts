@@ -66,7 +66,34 @@ function problemWith(key: string, value: unknown): string | null {
   return `"${key}" is not something the arcade saves`;
 }
 
-export type ImportResult = { ok: true; keys: number } | { ok: false; reason: string };
+/** A failed import leaves saved data as it was, unless `changed` says the writes could not be undone. */
+export type ImportResult = { ok: true; keys: number } | { ok: false; reason: string; changed?: true };
+
+/** Every saved value as stored, so writes that fail part way can be undone. */
+function snapshot(): [string, string][] {
+  return savedKeys().map((key) => [key, localStorage.getItem(PREFIX + key) ?? 'null']);
+}
+
+/** Puts a snapshot back. Returns false if that fails too. */
+function rollBack(before: [string, string][]): boolean {
+  try {
+    for (const key of savedKeys()) localStorage.removeItem(PREFIX + key);
+    for (const [key, text] of before) localStorage.setItem(PREFIX + key, text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** The result of a write that failed after `before` was taken: rolled back if possible, and honest if not. */
+function failed(before: [string, string][] | null, verb: string): ImportResult {
+  if (!before || rollBack(before)) return { ok: false, reason: `This browser is blocking saved data, or is out of room for it, so the backup could not be ${verb}.` };
+  return {
+    ok: false,
+    changed: true,
+    reason: `The backup could not be ${verb}, and what was saved on this device could not all be put back. Some trophies, scores or settings may be missing.`,
+  };
+}
 
 /** Checks a whole backup file before anything is written. Returns its entries, or why it cannot be used. */
 function check(raw: unknown): { ok: true; entries: [string, unknown][] } | { ok: false; reason: string } {
@@ -84,18 +111,21 @@ function check(raw: unknown): { ok: true; entries: [string, unknown][] } | { ok:
 
 /**
  * Replaces everything saved on this device with the contents of a backup. The whole backup is
- * checked first, so a file that is rejected changes nothing. Reload the page after a successful
- * import so the modules that keep a copy in memory read the new values.
+ * checked first, so a file that is rejected changes nothing, and a write that fails part way (a
+ * full or blocked storage) is undone. Reload the page after a successful import so the modules that
+ * keep a copy in memory read the new values.
  */
 export function importBackup(raw: unknown): ImportResult {
   const checked = check(raw);
   if (!checked.ok) return checked;
   const { entries } = checked;
+  let before: [string, string][] | null = null;
   try {
-    for (const key of savedKeys()) localStorage.removeItem(PREFIX + key);
+    before = snapshot();
+    for (const [key] of before) localStorage.removeItem(PREFIX + key);
     for (const [key, value] of entries) localStorage.setItem(PREFIX + key, JSON.stringify(value));
   } catch {
-    return { ok: false, reason: 'This browser is blocking saved data, so the backup could not be restored.' };
+    return failed(before, 'restored');
   }
   return { ok: true, keys: entries.length };
 }
@@ -182,7 +212,9 @@ export function mergeBackup(raw: unknown): ImportResult {
   const checked = check(raw);
   if (!checked.ok) return checked;
   let written = 0;
+  let before: [string, string][] | null = null;
   try {
+    before = snapshot();
     for (const [key, value] of checked.entries) {
       const stored = localStorage.getItem(PREFIX + key);
       let here: unknown = null;
@@ -209,7 +241,7 @@ export function mergeBackup(raw: unknown): ImportResult {
       written++;
     }
   } catch {
-    return { ok: false, reason: 'This browser is blocking saved data, so the backup could not be merged.' };
+    return failed(before, 'merged');
   }
   return { ok: true, keys: written };
 }

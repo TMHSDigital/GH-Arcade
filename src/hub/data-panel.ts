@@ -52,7 +52,7 @@ export function initDataPanel(): void {
     if (!window.confirm(question)) return;
     const result = merging ? mergeBackup(parsed) : importBackup(parsed);
     if (!result.ok) {
-      say(`${result.reason} Nothing was changed.`);
+      say(result.changed ? result.reason : `${result.reason} Nothing was changed.`);
       return;
     }
     // Settings and trophies keep a copy in memory, so start again from the restored values.
