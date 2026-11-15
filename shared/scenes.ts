@@ -3,7 +3,7 @@ import { clearRecentUnlocks, drainRecentUnlocks, getHighScore, recordRun, TOP_SI
 import { ArcadeControls } from './controls';
 import { OptionMenu } from './menu';
 import { modeIndex, modeQuery } from './modes';
-import { DAILY_MODE_LABEL } from './rng';
+import { DAILY_MODE_LABEL, dailyResult } from './rng';
 import { tone } from './sfx';
 import { keyLabel } from './settings';
 import { requestPersistence } from './storage';
@@ -101,6 +101,16 @@ export function finishRun(gameId: string, score?: number): { isRecord: boolean; 
   // There is now progress worth keeping: ask the browser not to clear it (once per device).
   requestPersistence();
   return { isRecord: isRecord && score !== undefined, rank: score === undefined ? 0 : rank, earned: drainRecentUnlocks() };
+}
+
+/**
+ * Records the run the game-over screen is about to show, and returns what to say about it. A daily
+ * run (one that carries its day) is recorded as today's result here as well, for every game, and
+ * its daily line takes the place of the game's own detail line.
+ */
+export function recordGameOver(data: GameOverData): { isRecord: boolean; rank: number; earned: Trophy[]; detail?: string } {
+  const result = finishRun(data.gameId, data.score);
+  return { ...result, detail: data.daily ? dailyResult(data.gameId, data.score, data.daily) : data.detail };
 }
 
 const restartData = new WeakMap<Phaser.Scene, object>();
@@ -203,7 +213,10 @@ export interface GameOverData {
   score: number;
   /** Optional extra line, e.g. "REACHED LEVEL 4". */
   detail?: string;
-  /** The UTC date of the daily challenge this run was, if it was one; the shared result names it. */
+  /**
+   * The UTC date of the daily challenge this run was, if it was one. The game-over screen records
+   * the score as that day's result and names the day in the shared result.
+   */
   daily?: string;
   restartScene?: string;
   restartData?: object;
@@ -221,12 +234,12 @@ export class ArcadeGameOverScene extends Phaser.Scene {
 
   create(data: GameOverData): void {
     const { width } = this.scale.gameSize;
-    const { isRecord, rank, earned } = finishRun(data.gameId, data.score);
+    const { isRecord, rank, earned, detail } = recordGameOver(data);
     this.cameras.main.fadeIn(250, 5, 5, 13);
 
     neonText(this, width / 2, 130, 'GAME OVER', 48, NEON.pink);
     neonText(this, width / 2, 220, data.score.toLocaleString(), 40, NEON.cyan);
-    if (data.detail) neonText(this, width / 2, 270, data.detail, 14, NEON.white);
+    if (detail) neonText(this, width / 2, 270, detail, 14, NEON.white);
 
     if (isRecord) {
       const record = neonText(this, width / 2, 315, 'NEW HIGH SCORE!', 18, NEON.yellow);

@@ -181,7 +181,28 @@ export function dailyRng(game: string, day: string, part = ''): Rng {
   return createRng(part ? `${game}:${day}:${part}` : `${game}:${day}`);
 }
 
-/** Records a finished daily run and returns the line for the game-over screen. */
+/** A daily challenge being played: its day, and the seeded generators for its parts. */
+export interface DailyRun {
+  /** The UTC date of the challenge, yyyy-mm-dd. */
+  day: string;
+  /** Seeded random numbers for one part of this challenge (see dailyRng). */
+  rng: (part?: string) => Rng;
+}
+
+/**
+ * The daily challenge a game scene was started for, or null for a normal game. Call it from the
+ * scene's init() with the data the menu passed (`{ daily: true }` from DAILY_MODES).
+ */
+export function dailyRunFrom(data: { daily?: boolean } | undefined, game: string): DailyRun | null {
+  if (!data?.daily) return null;
+  const day = dailySeed();
+  return { day, rng: (part) => dailyRng(game, day, part) };
+}
+
+/**
+ * Records a finished daily run and returns the line for the game-over screen. The shared game-over
+ * scene calls this for every run that carries a day, so games do not record daily scores themselves.
+ */
 export function dailyResult(game: string, score: number, day: string): string {
   const record = submitDailyScore(game, score, day);
   return `DAILY ${day}   ${record ? 'NEW BEST TODAY' : `TODAY'S BEST ${getDailyBest(game, day).toLocaleString()}`}`;

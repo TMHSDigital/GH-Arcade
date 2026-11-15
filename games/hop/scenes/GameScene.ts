@@ -37,11 +37,11 @@ import {
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
-import { dailyResult, dailyRng, dailySeed, getDailyBest, type Rng } from '../../../shared/rng';
+import { type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { onSwipe } from '../../../shared/touch';
-import { burstEmitter, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, showBanner, impact } from '../../../shared/ui';
+import { burstEmitter, dailyHudLabel, floatText, HUD_STYLE, NEON, showBanner, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -53,8 +53,8 @@ export class GameScene extends Phaser.Scene {
   private docks: boolean[] = [];
   private orbDock = -1;
   private orbUntil = 0;
-  /** The UTC date of the daily challenge being played, or null in a normal game. */
-  private daily: string | null = null;
+  /** The daily challenge being played, or null in a normal game. */
+  private daily: DailyRun | null = null;
   /** Daily challenge only: the seeded orb schedule, and when (in `elapsed` ms) the next orb is due. */
   private orbRng: Rng | null = null;
   private nextOrbAt = 0;
@@ -89,8 +89,8 @@ export class GameScene extends Phaser.Scene {
 
   init(data: { daily?: boolean } = {}): void {
     // Daily challenge: lanes and bonus orbs are seeded from the date, so everyone gets the same game today.
-    this.daily = data.daily ? dailySeed() : null;
-    this.orbRng = this.daily ? dailyRng(GAME_ID, this.daily, 'orbs') : null;
+    this.daily = dailyRunFrom(data, GAME_ID);
+    this.orbRng = this.daily?.rng('orbs') ?? null;
     this.nextOrbAt = this.orbRng ? orbWait(this.orbRng.next) : 0;
     this.score = 0;
     this.lives = START_LIVES;
@@ -108,11 +108,7 @@ export class GameScene extends Phaser.Scene {
     const style = HUD_STYLE;
     this.scoreText = this.add.text(WIDTH / 2, 24, '0', style).setOrigin(0.5).setDepth(10);
     this.levelText = this.add.text(WIDTH - 20, 24, '', { ...style, fontSize: '12px' }).setOrigin(1, 0.5).setDepth(10);
-    if (this.daily) {
-      const best = getDailyBest(GAME_ID, this.daily);
-      this.add.text(20, 11, 'DAILY', { ...HUD_LABEL_STYLE, color: hex(NEON.yellow) }).setDepth(10);
-      this.add.text(20, 27, best > 0 ? `BEST ${best.toLocaleString()}` : this.daily, { ...HUD_LABEL_STYLE, fontSize: '8px' }).setDepth(10);
-    }
+    if (this.daily) dailyHudLabel(this, 20, 10, GAME_ID, this.daily.day, { depth: 10 });
 
     this.controls = new ArcadeControls(this);
     this.pause = new PauseController(this, this.controls, { canPause: () => !this.over });
@@ -124,7 +120,7 @@ export class GameScene extends Phaser.Scene {
 
   private startLevel(): void {
     // Each level has its own sequence, so its layout does not depend on anything that happened before it.
-    this.lanes = buildLanes(this.level, this.daily ? dailyRng(GAME_ID, this.daily, `lanes:${this.level}`).next : undefined);
+    this.lanes = buildLanes(this.level, this.daily?.rng(`lanes:${this.level}`).next);
     this.docks = DOCK_COLS.map(() => false);
     this.levelText.setText(`LV ${this.level}`);
     this.resetHopper();
@@ -277,8 +273,7 @@ export class GameScene extends Phaser.Scene {
     tone({ freq: 360, toFreq: 60, duration: 0.5, type: 'sawtooth', volume: 0.07 });
     if (this.lives <= 0) {
       this.over = true;
-      const detail = this.daily ? dailyResult(GAME_ID, this.score, this.daily) : `REACHED LEVEL ${this.level}`;
-      endRun(this, { gameId: GAME_ID, score: this.score, detail, daily: this.daily ?? undefined }, 1400);
+      endRun(this, { gameId: GAME_ID, score: this.score, detail: `REACHED LEVEL ${this.level}`, daily: this.daily?.day }, 1400);
       return;
     }
     this.time.delayedCall(1100, () => this.resetHopper());
@@ -356,7 +351,9 @@ export class GameScene extends Phaser.Scene {
     g.fillStyle(0x1a1a33, 1).fillRect(gx, barY, GRID_W, 8);
     g.fillStyle(frac > 0.3 ? NEON.green : NEON.pink, 1).fillRect(gx, barY, GRID_W * frac, 8);
     // Lives, capped so the icons never run into the score.
-    for (let i = 0; i < Math.min(this.lives, 5); i++) this.drawHopper(g, 150 + i * 30, 24, 'up', NEON.cyan, 0.55);
+    // The daily label takes the left of the HUD, so the lives sit further right beside it.
+    const livesX = this.daily ? 205 : 150;
+    for (let i = 0; i < Math.min(this.lives, 5); i++) this.drawHopper(g, livesX + i * 30, 24, 'up', NEON.cyan, 0.55);
   }
 
   private drawItem(g: Phaser.GameObjects.Graphics, lane: Lane, it: Item, x: number, y: number): void {

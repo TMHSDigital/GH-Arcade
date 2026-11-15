@@ -68,6 +68,28 @@ describe('finishRun', () => {
   });
 });
 
+describe('recordGameOver', () => {
+  it('records a daily run as the result of its day and words its line', async () => {
+    const { recordGameOver } = await fresh();
+    const { getDailyBest } = await import('./rng');
+    const first = recordGameOver({ gameId: 'hop', score: 1200, detail: 'REACHED LEVEL 3', daily: '2026-11-13' });
+    expect(getDailyBest('hop', '2026-11-13')).toBe(1200);
+    expect(first.detail).toBe('DAILY 2026-11-13   NEW BEST TODAY');
+    expect(first).toMatchObject({ isRecord: true, rank: 1 });
+
+    const second = recordGameOver({ gameId: 'hop', score: 900, daily: '2026-11-13' });
+    expect(getDailyBest('hop', '2026-11-13')).toBe(1200);
+    expect(second.detail).toBe(`DAILY 2026-11-13   TODAY'S BEST ${(1200).toLocaleString()}`);
+  });
+
+  it('leaves the daily results alone for a normal run and keeps its detail line', async () => {
+    const { recordGameOver } = await fresh();
+    const { getDailyHistory } = await import('./rng');
+    expect(recordGameOver({ gameId: 'hop', score: 500, detail: 'REACHED LEVEL 2' }).detail).toBe('REACHED LEVEL 2');
+    expect(getDailyHistory('hop')).toEqual({});
+  });
+});
+
 describe('restartDataFor', () => {
   it('prefers the recorded data, then what the scene was started with, then nothing', async () => {
     const { restartDataFor, setRestartData } = await fresh();

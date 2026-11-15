@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createRng, DAILY_KEEP, DAILY_MODES, dailyResult, dailyRng, dailySeed, dailyStreak, getDailyBest, getDailyHistory, msUntilNextDaily, submitDailyScore, waitText } from './rng';
+import { createRng, DAILY_KEEP, DAILY_MODES, dailyResult, dailyRng, dailyRunFrom, dailySeed, dailyStreak, getDailyBest, getDailyHistory, msUntilNextDaily, submitDailyScore, waitText } from './rng';
 import { installMemoryStorage } from './test-utils';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -106,6 +106,16 @@ describe('daily challenge helpers', () => {
 
   it('dailyRng without a part is seeded with "<game>:<day>", as Neon Stack always was', () => {
     expect(first(dailyRng('stack', '2026-11-13'))).toEqual(first(createRng('stack:2026-11-13')));
+  });
+
+  it('dailyRunFrom gives the day and its seeded parts, or null for a normal game', () => {
+    expect(dailyRunFrom(undefined, 'hop')).toBeNull();
+    expect(dailyRunFrom({}, 'hop')).toBeNull();
+    const run = dailyRunFrom({ daily: true }, 'hop')!;
+    expect(run.day).toBe(dailySeed());
+    expect(run.rng().next()).toBe(dailyRng('hop', run.day).next());
+    expect(run.rng('orbs').next()).toBe(dailyRng('hop', run.day, 'orbs').next());
+    expect(run.rng('orbs').next()).not.toBe(run.rng('lanes:1').next());
   });
 
   it('dailyResult records the score and words the game-over line', () => {

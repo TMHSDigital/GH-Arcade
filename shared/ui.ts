@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { type AccentName, cssColor, PALETTES } from './palette';
+import { getDailyBest } from './rng';
 import { getSettings, keyCodesFor } from './settings';
 
 export const PIXEL_FONT = '"Press Start 2P", monospace';
@@ -20,6 +21,30 @@ export const HUD_LABEL_STYLE = { fontFamily: PIXEL_FONT, fontSize: '10px', color
 /** Adds HUD text in the shared style, optionally at another size. */
 export function hudText(scene: Phaser.Scene, x: number, y: number, text: string, size = 16): Phaser.GameObjects.Text {
   return scene.add.text(x, y, text, { ...HUD_STYLE, fontSize: `${size}px` });
+}
+
+/**
+ * The HUD label of a daily challenge, the same in every game: "DAILY <day>", and this device's best
+ * for that day under it once there is one. `y` is the top of the first line. `narrow` puts the day
+ * on a line of its own, for side panels too slim for one line.
+ */
+export function dailyHudLabel(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  game: string,
+  day: string,
+  opts: { align?: 'left' | 'center'; narrow?: boolean; depth?: number } = {},
+): void {
+  const best = getDailyBest(game, day);
+  const lines = opts.narrow ? ['DAILY', day] : [`DAILY ${day}`];
+  if (best > 0) lines.push(`BEST ${best.toLocaleString()}`);
+  lines.forEach((line, i) => {
+    scene.add
+      .text(x, y + i * 16, line, { ...HUD_LABEL_STYLE, color: i === 0 ? hex(NEON.yellow) : HUD_LABEL_STYLE.color })
+      .setOrigin(opts.align === 'center' ? 0.5 : 0, 0)
+      .setDepth(opts.depth ?? 0);
+  });
 }
 
 /** True when the player asked for reduced motion: skip decorative animation. */

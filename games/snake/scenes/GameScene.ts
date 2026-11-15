@@ -18,11 +18,11 @@ import { advance, bonusPoints, type Cell, type DirName, DIRS, foodPoints, freeCe
 import { getHighScore, trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
-import { dailyResult, dailyRng, dailySeed, getDailyBest, type Rng } from '../../../shared/rng';
+import { type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
 import { endRun, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, onSwipe } from '../../../shared/touch';
-import { burstEmitter, fadeToScene, floatText, hex, HUD_STYLE, impact, NEON, neonText, showBanner } from '../../../shared/ui';
+import { burstEmitter, dailyHudLabel, fadeToScene, floatText, hex, HUD_STYLE, impact, NEON, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -71,8 +71,8 @@ function line(x: number, y: number, dir: Cell): Cell[] {
 
 export class GameScene extends Phaser.Scene {
   private versus = false;
-  /** The UTC date of the daily challenge being played, or null in a normal game. */
-  private daily: string | null = null;
+  /** The daily challenge being played, or null in a normal game. */
+  private daily: DailyRun | null = null;
   /** Daily challenge only: the seeded generator that places food and bonus stars. */
   private cellRng: Rng | null = null;
   private readonly gradients = new Map<number, number[]>();
@@ -106,8 +106,8 @@ export class GameScene extends Phaser.Scene {
     this.versus = data.players === 2;
     // Daily challenge (solo): food and bonus stars are seeded from the date, so everyone who steers
     // the same way gets the same game today.
-    this.daily = data.daily && !this.versus ? dailySeed() : null;
-    this.cellRng = this.daily ? dailyRng(GAME_ID, this.daily) : null;
+    this.daily = this.versus ? null : dailyRunFrom(data, GAME_ID);
+    this.cellRng = this.daily?.rng() ?? null;
     this.wins = data.wins ?? [0, 0];
     this.round = data.round ?? 1;
     this.players = [];
@@ -208,10 +208,13 @@ export class GameScene extends Phaser.Scene {
     }
     this.scoreText = this.add.text(WIDTH / 2, FIELD_TOP / 2, '0', style).setOrigin(0.5);
     this.lengthText = this.add.text(WIDTH - 20, FIELD_TOP / 2, '', { ...style, fontSize: '12px' }).setOrigin(1, 0.5);
-    this.add
-      .text(WIDTH / 2 + 110, FIELD_TOP / 2, this.bestLine(), { ...style, fontSize: '10px', color: hex(NEON.yellow) })
-      .setOrigin(0, 0.5);
-    if (this.daily) this.add.text(20, FIELD_TOP / 2, `DAILY ${this.daily}`, { ...style, fontSize: '10px', color: hex(NEON.yellow) }).setOrigin(0, 0.5);
+    // Left of the score: the daily challenge's label. Otherwise the best score sits beside the score.
+    if (this.daily) dailyHudLabel(this, 20, FIELD_TOP / 2 - 13, GAME_ID, this.daily.day);
+    else {
+      this.add
+        .text(WIDTH / 2 + 110, FIELD_TOP / 2, `BEST ${getHighScore(GAME_ID).toLocaleString()}`, { ...style, fontSize: '10px', color: hex(NEON.yellow) })
+        .setOrigin(0, 0.5);
+    }
     this.hint = neonText(this, WIDTH / 2, FIELD_TOP + 90, 'PRESS A DIRECTION OR SWIPE', 12, NEON.white);
     this.tweens.add({ targets: this.hint, alpha: 0.25, duration: 600, yoyo: true, repeat: -1 });
     this.updateHud();
@@ -337,8 +340,7 @@ export class GameScene extends Phaser.Scene {
       this.over = true;
       this.bonus = null;
       const p = this.players[0];
-      const detail = this.daily ? dailyResult(GAME_ID, this.score, this.daily) : `LENGTH ${p.segments.length}`;
-      endRun(this, { gameId: GAME_ID, score: this.score, detail, daily: this.daily ?? undefined }, dissolveMs + 700);
+      endRun(this, { gameId: GAME_ID, score: this.score, detail: `LENGTH ${p.segments.length}`, daily: this.daily?.day }, dissolveMs + 700);
       return;
     }
 
@@ -471,9 +473,4 @@ export class GameScene extends Phaser.Scene {
     return this.cellRng ? this.cellRng.pick(free) : Phaser.Utils.Array.GetRandom(free);
   }
 
-  /** The line beside the score: the best score, or today's best in a daily challenge. */
-  private bestLine(): string {
-    const best = this.daily ? getDailyBest(GAME_ID, this.daily) : getHighScore(GAME_ID);
-    return `${this.daily ? "TODAY'S BEST" : 'BEST'} ${best.toLocaleString()}`;
-  }
 }

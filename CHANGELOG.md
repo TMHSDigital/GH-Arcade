@@ -11,6 +11,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 ### Changed
 
+- The daily challenge label looks the same in Neon Hop, Neon Runner, Neon Snake and Neon Stack: the date, and your best for the day under it.
 - Node 22.13 or newer is required (it was 22.12), and pull requests are checked on Node 22.13 as well as Node 24.
 
 ### Fixed
