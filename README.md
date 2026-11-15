@@ -125,7 +125,7 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | **Neon Hop** | Arrows or <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> hop | D-pad or stick hop, <kbd>A</kbd> hops forward | Swipe to hop, tap to hop forward |
 | **Neon Pong** | <kbd>↑</kbd> <kbd>↓</kbd> or <kbd>W</kbd> <kbd>S</kbd> move. Versus: P1 <kbd>W</kbd> <kbd>S</kbd>, P2 <kbd>↑</kbd> <kbd>↓</kbd> | Stick or d-pad move (pad 1 and pad 2 in versus) | Drag to move (each player on their own half in versus) |
 | **Neon Maze** | Arrows or <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> steer (turns pressed early are taken at the next corner) | D-pad or stick steer | Swipe or drag to steer |
-| **Neon Pinball** | <kbd>←</kbd> <kbd>→</kbd>, <kbd>A</kbd> <kbd>D</kbd> or <kbd>Z</kbd> <kbd>/</kbd> flip, hold <kbd>Space</kbd> / <kbd>↓</kbd> and release to launch | D-pad, <kbd>LB</kbd> <kbd>RB</kbd> or triggers flip, hold <kbd>A</kbd> to launch | Hold the left or right half to flip, hold the right half to launch |
+| **Neon Pinball** | <kbd>←</kbd> <kbd>→</kbd>, <kbd>A</kbd> <kbd>D</kbd> or <kbd>Z</kbd> <kbd>/</kbd> flip, hold <kbd>Space</kbd> / <kbd>↓</kbd> and release to launch | D-pad, <kbd>LB</kbd> <kbd>RB</kbd> or triggers flip, hold <kbd>A</kbd> to launch | Hold the left or right half to flip, hold the right half (left with the left-handed layout) to launch |
 
 </details>
 
@@ -273,7 +273,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`menu.ts`](shared/menu.ts) | `OptionMenu`: a row or column of choices that works with keys, gamepad, mouse and touch. |
 | [`modes.ts`](shared/modes.ts) | Links to a menu mode: `?mode=<label>` in a game's address opens its menu on that mode (`?mode=daily`, `?mode=2-players`). `buildMenu()` reads it, so games with `modes` need nothing extra. |
 | [`chrome.ts`](shared/chrome.ts) | The page around the canvas: pause and fullscreen buttons, the loading indicator and the rotate hint. It also keeps the screen on during a run ([`wake-lock.ts`](shared/wake-lock.ts)), which any game with a `PauseController` gets for free. |
-| [`touch.ts`](shared/touch.ts) | `onSwipe()` gestures, plus `VirtualStick` and `VirtualButton` that appear only on touch screens. |
+| [`touch.ts`](shared/touch.ts) | `onSwipe()` gestures, plus `VirtualStick` and `VirtualButton`. Games check `isTouchDevice()` before creating the on-screen controls. |
 | [`scenes.ts`](shared/scenes.ts) | `buildMenu()` title screens and the shared `ArcadeGameOverScene` with high-score checks and a share option ([`share.ts`](shared/share.ts)). |
 | [`ui.ts`](shared/ui.ts) | Neon text, the HUD text style, banners, score popups, particle bursts and the shared color palette. `impact()` shakes the screen and rumbles the gamepads of the players it happened to; use it instead of calling the camera shake directly. |
 | [`phaser-config.ts`](shared/phaser-config.ts) | `startArcadeGame()`: fit-to-screen Phaser setup with gamepads enabled, once the pixel font has loaded. |
@@ -295,7 +295,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 Every push to `main` publishes the site automatically:
 
 1. **Push** to `main` triggers the [deploy workflow](.github/workflows/deploy.yml).
-2. **GitHub Actions** installs dependencies with `npm ci`, then runs `npm run build`.
+2. **GitHub Actions** installs dependencies with `npm ci`, then runs `npm run lint`, `npm test` and `npm run build`.
 3. **The build** type-checks the code, bundles the hub plus every `games/*/index.html` with Vite, and generates a service worker that precaches all of it.
 4. **GitHub Pages** serves `dist/` at [tmhsdigital.github.io/GH-Arcade](https://tmhsdigital.github.io/GH-Arcade/). After the first visit, the service worker serves every page and game offline and picks up updates automatically.
 
@@ -314,16 +314,17 @@ GH-Arcade/
 │   ├── stack/              # Neon Stack (rules live in logic.ts, separate from rendering)
 │   ├── astro/              # Astro Blaster
 │   ├── runner/             # Neon Runner (obstacle patterns in patterns.ts)
-│   ├── siege/              # Star Siege (pixel art in sprites.ts)
+│   ├── siege/              # Star Siege (pixel art in art.ts)
 │   ├── hop/                # Neon Hop (lane layout in config.ts)
 │   ├── pong/               # Neon Pong
 │   ├── maze/               # Neon Maze (the maze layouts in maze.ts)
 │   └── pinball/            # Neon Pinball (table geometry in table.ts)
 ├── shared/                 # Toolkit shared by all games (controls, pause, touch, scenes, ui, ...)
 ├── public/                 # Favicon, app icons and hub thumbnails, copied as-is
+├── build/                  # Shared game-page HTML and toolbar generation
 ├── scripts/new-game.mjs    # Game scaffolder
 ├── vite.config.ts          # Multi-page build, game auto-discovery and the PWA service worker
-└── .github/workflows/      # Build and deploy to GitHub Pages
+└── .github/workflows/      # Pull-request checks, build and deploy to GitHub Pages
 ```
 
 Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `config.ts` (tuning constants), `trophies.ts` and `scenes/` (menu and game). The `index.html` files hold only the canvas container and the script tag; [`build/game-pages.ts`](build/game-pages.ts) adds the shared head tags, the title from the registry, the back link and the loader to every game page.
