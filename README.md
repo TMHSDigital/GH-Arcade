@@ -101,36 +101,43 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
       <p>A glowing table with pop bumpers, slingshots, a drop-target bank and rollover lanes. Light the lanes to raise the multiplier to x5 across three balls.</p>
     </td>
     <td width="50%" valign="top">
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/lander/"><img src="public/thumbs/lander.jpg" alt="Neon Lander gameplay: a lander descending toward a glowing pad over jagged terrain" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/lander/">Neon Lander</a></h3>
       <p>Ease a thrusting lander down onto a glowing pad over rough alien terrain. Land slow and upright to score, then face stronger gravity, narrower pads and wind.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/mines/"><img src="public/thumbs/mines.jpg" alt="Neon Mines gameplay: a grid of revealed number clues and hidden cells" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/mines/">Neon Mines</a></h3>
       <p>Clear a glowing minefield using the number clues. Easy, medium and hard boards with a best time for each, plus a daily board everyone shares.</p>
     </td>
     <td width="50%" valign="top">
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/golf/"><img src="public/thumbs/golf.jpg" alt="Neon Golf gameplay: a glowing ball on a walled mini golf green" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/golf/">Neon Golf</a></h3>
       <p>Nine mini golf holes with sand traps, water, boost pads and sliding blockers. Drag back, let fly, and sink it in as few strokes as you can.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/crates/"><img src="public/thumbs/crates.jpg" alt="Neon Crates gameplay: a robot pushing a crate toward a target" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/crates/">Neon Crates</a></h3>
       <p>Push every crate onto a target across 15 hand-built warehouse puzzles. Push one at a time, never pull, undo freely and chase par on every level.</p>
     </td>
     <td width="50%" valign="top">
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/match/"><img src="public/thumbs/match.jpg" alt="Neon Match gameplay: a board of shaped neon gems" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/match/">Neon Match</a></h3>
       <p>Swap glowing gems to line up three or more. Chain cascades, build line blasts and bombs, and race the clock or make every move count.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/bubbles/"><img src="public/thumbs/bubbles.jpg" alt="Neon Bubbles gameplay: a launcher aiming at a field of colored bubbles" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/bubbles/">Neon Bubbles</a></h3>
       <p>Bank bubbles off the walls, pop groups of three and cut whole clusters loose for big bonuses before the ceiling creeps down.</p>
     </td>
     <td width="50%" valign="top">
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/tanks/"><img src="public/thumbs/tanks.jpg" alt="Neon Tanks gameplay: two tanks facing off across glowing hills" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/tanks/">Neon Tanks</a></h3>
       <p>Lob shells over destructible hills and read the wind. Take on the CPU at three difficulties or a friend in <b>two-player hot seat</b>, best of 3.</p>
     </td>
@@ -216,12 +223,12 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | **Plays anywhere** | A static site on GitHub Pages. Loads straight in the browser on desktop, tablet or phone. |
 | **Installable, works offline** | Install GH Arcade as an app from the hub. After one visit, every game plays with no connection. |
 | **Keyboard, touch or gamepad** | Every game supports all three. Plug in a controller and it just works, including pause on <kbd>Start</kbd>. If a controller disconnects mid-run, the game pauses. |
-| **Two-player** | Neon Snake and Neon Pong have versus modes and Star Siege has co-op, on one keyboard or two gamepads. |
-| **Daily challenges** | Neon Stack, Neon Hop, Neon Runner, Neon Snake, Astro Blaster and Star Siege have a Daily mode: the same game for everyone on a given UTC date, with its own best score and a streak. (In Snake the food and bonus stars follow a shared sequence, so runs match for as long as players steer the same way; in Astro Blaster and Star Siege the rocks, the saucer, the alien fire and the mothership do.) The hub counts down to the next challenge (midnight UTC), a card whose daily is still waiting opens the game on DAILY, and a shared daily result links to it (`games/<slug>/?mode=daily`). |
+| **Two-player** | Neon Snake and Neon Pong have versus modes and Star Siege has co-op, on one keyboard or two gamepads. Neon Tanks is a hot-seat duel, taking turns on one device. |
+| **Daily challenges** | Neon Stack, Neon Hop, Neon Runner, Neon Snake, Astro Blaster, Star Siege, Neon Lander, Neon Mines and Neon Bubbles have a Daily mode: the same game for everyone on a given UTC date, with its own best score and a streak. (In Snake the food and bonus stars follow a shared sequence, so runs match for as long as players steer the same way; in Astro Blaster and Star Siege the rocks, the saucer, the alien fire and the mothership do. Lander shares its terrain, pads and wind, Mines its board, and Bubbles its starting field, its new rows and the bubbles it deals.) The hub counts down to the next challenge (midnight UTC), a card whose daily is still waiting opens the game on DAILY, and a shared daily result links to it (`games/<slug>/?mode=daily`). |
 | **Pause menu and game over** | Every game pauses into a menu: resume, restart, settings (volume, sound, motion, colors and gamepad rumble), main menu or back to the arcade. Game over shows the trophies you just earned, with Play again, Menu and Arcade options. |
 | **Page controls** | On-screen pause and fullscreen buttons, a loading indicator, and a hint to rotate your phone for games that play best in landscape. The screen stays on during a run, even when you play with a gamepad, and may sleep again once you pause or the run ends. |
 | **Couch-friendly hub** | Browse the cabinets with the arrow keys or a gamepad: <kbd>A</kbd> opens a game, <kbd>LB</kbd> <kbd>RB</kbd> switch filters, <kbd>Y</kbd> shows trophies and <kbd>Start</kbd> opens settings. Inside a panel, up and down move between its controls (and scroll it), left and right change a slider, <kbd>A</kbd> presses a button or ticks a box, and <kbd>B</kbd> closes it. |
-| **Trophies and stats** | 43 trophies across the arcade, with plays and best scores per game in the Trophies panel. Saved on your device, no sign-up. |
+| **Trophies and stats** | 71 trophies across the arcade, with plays and best scores per game in the Trophies panel. Saved on your device, no sign-up. |
 | **Settings and accessibility** | Volume, reduced motion (no shake or flashes), a colorblind-friendly palette, rebindable keys and gamepad buttons, gamepad rumble on impacts (can be turned off), and touch options: button size, a left-handed layout and vibration. |
 | **Zero-asset audio** | Sound effects are synthesized live with the Web Audio API, so there are no audio files to download. |
 | **Fast loads** | Each game is its own page and bundle. Phaser is split into one shared file that your browser caches across games. |
@@ -329,7 +336,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`phaser-config.ts`](shared/phaser-config.ts) | `startArcadeGame()`: fit-to-screen Phaser setup with gamepads enabled, once the pixel font has loaded. |
 | [`storage.ts`](shared/storage.ts) | `loadJSON()` and `saveJSON()`, backed by `localStorage` that never throws. If the browser blocks saved data, every page says so once (`storage-notice.ts`). |
 | [`sfx.ts`](shared/sfx.ts) | `tone()` and `noise()`: retro sound effects synthesized with Web Audio. |
-| [`achievements.ts`](shared/achievements.ts) | Trophies, stats and best scores. Each game lists its trophies in its own `trophies.ts` and gets type-checked `unlock()`, `reach()` and `addCounter()` helpers from `trophiesFor()`; `getHighScore()` returns a game's best and `getTopScores()` its five highest. Unlocks pop up as a [toast](shared/toast.ts). |
+| [`achievements.ts`](shared/achievements.ts) | Trophies, stats and best scores. Each game lists its trophies in its own `trophies.ts` and gets type-checked `unlock()`, `reach()` and `addCounter()` helpers from `trophiesFor()`; `getHighScore()` returns a game's best and `getTopScores()` its five highest. Unlocks pop up as a [toast](shared/toast.ts). A game that saves bests of its own lists their keys as `BEST_KEYS` in `trophies.ts`, so resetting best scores clears them too. |
 | [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key and gamepad bindings, rumble) that every game reads on start. |
 | [`backup.ts`](shared/backup.ts) | Export, import (replace or merge) and reset of everything saved on the device, used by the hub's settings dialog. |
 | [`rng.ts`](shared/rng.ts) | `createRng(seed)`: repeatable random numbers with `between`, `pick` and `shuffle`, plus what a daily challenge needs: `dailySeed()`, `dailyRng()`, `DAILY_MODES` for the menu (or `DAILY_MODE_LABEL` to add DAILY to a menu that already has modes), per-day best scores with history and a streak, `dailyRunFrom()` and `diceFor()` to seed a scene's random choices, and `dailyResult()` for the game-over line. Give the game the `daily` tag in `registry.json` so the hub shows today's result. |
@@ -398,7 +405,7 @@ Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `co
 - **Shared Phaser chunk.** Phaser is about 340 KB gzipped. It's split into its own file so it downloads once and is cached for every game.
 - **Procedural art and audio.** Games draw their graphics in code and synthesize their sounds, so each game adds only a few KB on top of Phaser.
 - **One input layer.** Games ask `ArcadeControls` about actions ("left", "action") instead of keys, so keyboard, gamepad and touch all work without per-game plumbing.
-- **Rules separate from rendering where it pays off.** Neon Stack's rules are pure functions in `logic.ts`, which keeps rotation, wall kicks and line clears easy to test. Snake, Maze, Runner, Hop and Pong keep theirs in Phaser-free modules too (`logic.ts`, `chase.ts`, `rules.ts`).
+- **Rules separate from rendering where it pays off.** Neon Stack's rules are pure functions in `logic.ts`, which keeps rotation, wall kicks and line clears easy to test. Snake, Maze, Runner, Hop and Pong keep theirs in Phaser-free modules too (`logic.ts`, `chase.ts`, `rules.ts`), and so does every newer game: Lander's physics, the Mines board, Golf's ball and holes, the Crates rules, the Match board, the Bubbles hex grid and the Tanks terrain, shells and CPU are all tested without Phaser.
 - **Offline first.** Everything is precached at build time, and all pages share one font stylesheet so a single visit caches it for every game.
 
 </details>
