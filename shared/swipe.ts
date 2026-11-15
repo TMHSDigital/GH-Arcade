@@ -58,7 +58,11 @@ export function onSwipe(scene: Phaser.Scene, handler: (dir: SwipeDir) => void, o
   scene.input.on('pointerupoutside', release);
 }
 
-function direction(dx: number, dy: number, threshold: number): SwipeDir | null {
+/**
+ * The direction of a drag of (dx, dy), or null when it is shorter than `threshold` on both axes (a
+ * tap). The longer axis wins, and an exact diagonal counts as vertical. Exported for its test.
+ */
+export function direction(dx: number, dy: number, threshold: number): SwipeDir | null {
   if (Math.max(Math.abs(dx), Math.abs(dy)) < threshold) return null;
   if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 'right' : 'left';
   return dy > 0 ? 'down' : 'up';

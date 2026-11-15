@@ -64,7 +64,37 @@ export const PHASER_EVENTS = {
  */
 export function phaserMock() {
   class Scene {}
-  return { default: { Scene, ...PHASER_EVENTS } };
+  class Rectangle {
+    constructor(
+      public x: number,
+      public y: number,
+      public width: number,
+      public height: number,
+    ) {}
+    get right(): number {
+      return this.x + this.width;
+    }
+    get bottom(): number {
+      return this.y + this.height;
+    }
+    contains(px: number, py: number): boolean {
+      return px >= this.x && px <= this.right && py >= this.y && py <= this.bottom;
+    }
+  }
+  class Circle {
+    constructor(
+      public x: number,
+      public y: number,
+      public radius: number,
+    ) {}
+    contains(px: number, py: number): boolean {
+      return Circle.Contains(this, px, py);
+    }
+    static Contains(c: Circle, px: number, py: number): boolean {
+      return Math.hypot(px - c.x, py - c.y) <= c.radius;
+    }
+  }
+  return { default: { Scene, Geom: { Rectangle, Circle }, ...PHASER_EVENTS } };
 }
 
 /** A minimal event emitter with Phaser's on / once / off / emit, including the listener context. */
@@ -165,4 +195,71 @@ export function fakeInputScene() {
       events.emit(PHASER_EVENTS.Scenes.Events.SHUTDOWN);
     },
   };
+}
+
+/**
+ * A drawn object (text, circle) that takes the chained calls the shared modules make and remembers
+ * what it was told: position, text, visibility and whether it can be clicked. `emit` fires its own
+ * pointer events, as a click or tap on it would.
+ */
+export class FakeGameObject extends FakeEmitter {
+  width = 0;
+  radius = 0;
+  text = '';
+  visible = true;
+  interactive = false;
+  color = '';
+  alpha = 1;
+
+  constructor(
+    public x = 0,
+    public y = 0,
+  ) {
+    super();
+  }
+
+  setPosition(x: number, y: number): this {
+    this.x = x;
+    this.y = y;
+    return this;
+  }
+  setText(text: string): this {
+    this.text = text;
+    return this;
+  }
+  setVisible(on: boolean): this {
+    this.visible = on;
+    return this;
+  }
+  setInteractive(): this {
+    this.interactive = true;
+    return this;
+  }
+  disableInteractive(): this {
+    this.interactive = false;
+    return this;
+  }
+  setColor(color: string): this {
+    this.color = color;
+    return this;
+  }
+  setAlpha(alpha: number): this {
+    this.alpha = alpha;
+    return this;
+  }
+  setDepth(): this {
+    return this;
+  }
+  setOrigin(): this {
+    return this;
+  }
+  setStrokeStyle(): this {
+    return this;
+  }
+  setFillStyle(): this {
+    return this;
+  }
+  setScrollFactor(): this {
+    return this;
+  }
 }
