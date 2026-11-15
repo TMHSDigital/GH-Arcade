@@ -141,6 +141,7 @@ export class PauseController {
       if (all.some((c) => c.justPressed('pause'))) this.toggle();
       if (all.some((c) => c.justPressed('mute'))) {
         setMuted(!isMuted());
+        this.refreshSettings();
         this.updateMuteText();
       }
     };
