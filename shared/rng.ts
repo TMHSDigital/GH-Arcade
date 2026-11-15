@@ -1,3 +1,4 @@
+import { linkedDay } from './modes';
 import { isRecord, loadJSON, saveJSON, savedNumber, STORAGE_PREFIX } from './storage';
 
 /**
@@ -185,6 +186,11 @@ export function dailyRng(game: string, day: string, part = ''): Rng {
 export interface DailyRun {
   /** The UTC date of the challenge, yyyy-mm-dd. */
   day: string;
+  /**
+   * True when the day is an earlier one, opened from a shared link. It plays the same board, but
+   * as a replay: nothing is written to the daily results, so streaks and today's best stay honest.
+   */
+  past: boolean;
   /** Seeded random numbers for one part of this challenge (see dailyRng). */
   rng: (part?: string) => Rng;
 }
@@ -192,11 +198,29 @@ export interface DailyRun {
 /**
  * The daily challenge a game scene was started for, or null for a normal game. Call it from the
  * scene's init() with the data the menu passed (`{ daily: true }` from DAILY_MODES).
+ *
+ * It is today's challenge, unless the page address names an earlier day that can still be played
+ * (a shared result links to its day: "?mode=daily&day=2026-11-13", see shared/modes.ts).
  */
-export function dailyRunFrom(data: { daily?: boolean } | undefined, game: string): DailyRun | null {
+export function dailyRunFrom(
+  data: { daily?: boolean } | undefined,
+  game: string,
+  search: string = typeof location === 'undefined' ? '' : location.search,
+): DailyRun | null {
   if (!data?.daily) return null;
-  const day = dailySeed();
-  return { day, rng: (part) => dailyRng(game, day, part) };
+  const today = dailySeed();
+  const day = linkedDay(search, today, DAILY_KEEP) ?? today;
+  return { day, past: day !== today, rng: (part) => dailyRng(game, day, part) };
+}
+
+/** What a game passes to endRun() about the daily challenge it was (nothing for a normal game). */
+export function dailyOutcome(run: DailyRun | null): { daily?: string; dailyPast?: boolean } {
+  return run ? { daily: run.day, dailyPast: run.past } : {};
+}
+
+/** The game-over line for a replay of an earlier day's challenge, which is not recorded. */
+export function pastDailyLine(day: string): string {
+  return `CHALLENGE ${day}   NOT TODAY'S DAILY`;
 }
 
 /**

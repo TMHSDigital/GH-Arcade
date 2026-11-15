@@ -37,7 +37,7 @@ import {
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
-import { type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
+import { dailyOutcome, type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { onSwipe } from '../../../shared/touch';
@@ -108,7 +108,7 @@ export class GameScene extends Phaser.Scene {
     const style = HUD_STYLE;
     this.scoreText = this.add.text(WIDTH / 2, 24, '0', style).setOrigin(0.5).setDepth(10);
     this.levelText = this.add.text(WIDTH - 20, 24, '', { ...style, fontSize: '12px' }).setOrigin(1, 0.5).setDepth(10);
-    if (this.daily) dailyHudLabel(this, 20, 10, GAME_ID, this.daily.day, { depth: 10 });
+    if (this.daily) dailyHudLabel(this, 20, 10, GAME_ID, this.daily, { depth: 10 });
 
     this.controls = new ArcadeControls(this);
     this.pause = new PauseController(this, this.controls, { canPause: () => !this.over });
@@ -273,7 +273,7 @@ export class GameScene extends Phaser.Scene {
     tone({ freq: 360, toFreq: 60, duration: 0.5, type: 'sawtooth', volume: 0.07 });
     if (this.lives <= 0) {
       this.over = true;
-      endRun(this, { gameId: GAME_ID, score: this.score, detail: `REACHED LEVEL ${this.level}`, daily: this.daily?.day }, 1400);
+      endRun(this, { gameId: GAME_ID, score: this.score, detail: `REACHED LEVEL ${this.level}`, ...dailyOutcome(this.daily) }, 1400);
       return;
     }
     this.time.delayedCall(1100, () => this.resetHopper());

@@ -6,6 +6,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 ### Added
 
+- A shared daily result links to its day, so a friend who opens it after midnight UTC still plays the same board. An earlier day plays as a challenge that does not count toward today's result or your streak.
 - Neon Pong: EASY CPU and HARD CPU modes beside VS CPU. The Table Champion and Clean Sheet trophies need the normal or the hard CPU.
 - After your first finished run, the arcade asks the browser to keep saved progress when the device is low on space. Settings, under "Your data", says whether it is protected.
 

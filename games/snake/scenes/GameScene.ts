@@ -18,7 +18,7 @@ import { advance, bonusPoints, type Cell, type DirName, DIRS, foodPoints, freeCe
 import { getHighScore, trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
-import { type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
+import { dailyOutcome, type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
 import { endRun, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, onSwipe } from '../../../shared/touch';
@@ -209,7 +209,7 @@ export class GameScene extends Phaser.Scene {
     this.scoreText = this.add.text(WIDTH / 2, FIELD_TOP / 2, '0', style).setOrigin(0.5);
     this.lengthText = this.add.text(WIDTH - 20, FIELD_TOP / 2, '', { ...style, fontSize: '12px' }).setOrigin(1, 0.5);
     // Left of the score: the daily challenge's label. Otherwise the best score sits beside the score.
-    if (this.daily) dailyHudLabel(this, 20, FIELD_TOP / 2 - 13, GAME_ID, this.daily.day);
+    if (this.daily) dailyHudLabel(this, 20, FIELD_TOP / 2 - 13, GAME_ID, this.daily);
     else {
       this.add
         .text(WIDTH / 2 + 110, FIELD_TOP / 2, `BEST ${getHighScore(GAME_ID).toLocaleString()}`, { ...style, fontSize: '10px', color: hex(NEON.yellow) })
@@ -340,7 +340,7 @@ export class GameScene extends Phaser.Scene {
       this.over = true;
       this.bonus = null;
       const p = this.players[0];
-      endRun(this, { gameId: GAME_ID, score: this.score, detail: `LENGTH ${p.segments.length}`, daily: this.daily?.day }, dissolveMs + 700);
+      endRun(this, { gameId: GAME_ID, score: this.score, detail: `LENGTH ${p.segments.length}`, ...dailyOutcome(this.daily) }, dissolveMs + 700);
       return;
     }
 

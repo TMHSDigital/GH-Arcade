@@ -44,7 +44,7 @@ import {
 import { getHighScore, trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
-import { type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
+import { dailyOutcome, type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, dailyHudLabel, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, neonText, sparkTexture, impact } from '../../../shared/ui';
@@ -156,7 +156,7 @@ export class GameScene extends Phaser.Scene {
     this.distText = this.add.text(WIDTH / 2, 24, '0m', style).setOrigin(0.5).setDepth(100);
     this.coinText = this.add.text(WIDTH - 20, 24, '0', { ...style, fontSize: '12px', color: hex(NEON.yellow) }).setOrigin(1, 0.5).setDepth(100);
     // Under the distance: the best score, or the daily challenge's label.
-    if (this.daily) dailyHudLabel(this, WIDTH / 2, 43, GAME_ID, this.daily.day, { align: 'center', depth: 100 });
+    if (this.daily) dailyHudLabel(this, WIDTH / 2, 43, GAME_ID, this.daily, { align: 'center', depth: 100 });
     else this.add.text(WIDTH / 2, 48, `BEST ${getHighScore(GAME_ID).toLocaleString()}`, HUD_LABEL_STYLE).setOrigin(0.5).setDepth(100);
     this.hint = neonText(this, WIDTH / 2, 200, 'TAP / SPACE TO JUMP   SWIPE DOWN / ↓ TO SLIDE', 12, NEON.white).setDepth(100);
     this.tweens.add({ targets: this.hint, alpha: 0, delay: 2500, duration: 800 });
@@ -381,7 +381,7 @@ export class GameScene extends Phaser.Scene {
     noise(0.5, 0.12);
     tone({ freq: 400, toFreq: 50, duration: 0.7, type: 'sawtooth', volume: 0.08 });
     const metres = metresRun(this.distance);
-    endRun(this, { gameId: GAME_ID, score: this.score, detail: `${metres}m   ${this.coinsTaken} COINS`, daily: this.daily?.day }, 1300);
+    endRun(this, { gameId: GAME_ID, score: this.score, detail: `${metres}m   ${this.coinsTaken} COINS`, ...dailyOutcome(this.daily) }, 1300);
   }
 
   // ---------------------------------------------------------------- render

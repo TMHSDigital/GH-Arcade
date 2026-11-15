@@ -42,7 +42,7 @@ import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun } from '../../../shared/scenes';
-import { type DailyRun, dailyRunFrom } from '../../../shared/rng';
+import { dailyOutcome, type DailyRun, dailyRunFrom } from '../../../shared/rng';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, VirtualButton } from '../../../shared/touch';
 import { burstEmitter, dailyHudLabel, HUD_LABEL_STYLE, HUD_STYLE, NEON, neonText, showBanner, impact } from '../../../shared/ui';
@@ -135,7 +135,7 @@ export class GameScene extends Phaser.Scene {
     this.levelText = this.add.text(LEFT_PANEL_X, statY + 78, '1', value);
     this.add.text(LEFT_PANEL_X, statY + 120, 'LINES', label);
     this.linesText = this.add.text(LEFT_PANEL_X, statY + 138, '0', value);
-    if (this.daily) dailyHudLabel(this, LEFT_PANEL_X, statY + 180, GAME_ID, this.daily.day, { narrow: true });
+    if (this.daily) dailyHudLabel(this, LEFT_PANEL_X, statY + 180, GAME_ID, this.daily, { narrow: true });
 
     this.controls = new ArcadeControls<Extra>(this, {
       rotCW: { keys: ['UP', 'X', 'W'], buttons: [0] },
@@ -468,7 +468,7 @@ export class GameScene extends Phaser.Scene {
         this.greyRows = i + 1;
       });
     }
-    endRun(this, { gameId: GAME_ID, score: this.score, detail: `LEVEL ${this.level}   LINES ${this.lines}`, daily: this.daily?.day }, VISIBLE_ROWS * 45 + 900);
+    endRun(this, { gameId: GAME_ID, score: this.score, detail: `LEVEL ${this.level}   LINES ${this.lines}`, ...dailyOutcome(this.daily) }, VISIBLE_ROWS * 45 + 900);
   }
 
   // ---------------------------------------------------------------- render

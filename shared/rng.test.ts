@@ -118,6 +118,20 @@ describe('daily challenge helpers', () => {
     expect(run.rng('orbs').next()).not.toBe(run.rng('lanes:1').next());
   });
 
+  it('dailyRunFrom plays an earlier day named by the page address as a replay', () => {
+    const today = dailySeed();
+    const yesterday = new Date(Date.parse(`${today}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
+    const linked = dailyRunFrom({ daily: true }, 'hop', `?mode=daily&day=${yesterday}`)!;
+    expect(linked).toMatchObject({ day: yesterday, past: true });
+    expect(linked.rng().next()).toBe(dailyRng('hop', yesterday).next());
+    // A link to today, to a day that cannot be played, or no link at all is today's challenge.
+    expect(dailyRunFrom({ daily: true }, 'hop', `?day=${today}`)).toMatchObject({ day: today, past: false });
+    expect(dailyRunFrom({ daily: true }, 'hop', '?day=2020-01-01')).toMatchObject({ day: today, past: false });
+    expect(dailyRunFrom({ daily: true }, 'hop')).toMatchObject({ day: today, past: false });
+    // The address alone does not start a daily.
+    expect(dailyRunFrom({}, 'hop', `?day=${yesterday}`)).toBeNull();
+  });
+
   it('dailyResult records the score and words the game-over line', () => {
     installMemoryStorage();
     expect(dailyResult('hop', 1200, '2026-11-13')).toBe('DAILY 2026-11-13   NEW BEST TODAY');

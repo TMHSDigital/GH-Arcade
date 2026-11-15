@@ -82,6 +82,14 @@ describe('recordGameOver', () => {
     expect(second.detail).toBe(`DAILY 2026-11-13   TODAY'S BEST ${(1200).toLocaleString()}`);
   });
 
+  it('does not record a replay of an earlier day', async () => {
+    const { recordGameOver } = await fresh();
+    const { getDailyHistory } = await import('./rng');
+    const result = recordGameOver({ gameId: 'hop', score: 700, detail: 'REACHED LEVEL 2', daily: '2026-11-13', dailyPast: true });
+    expect(getDailyHistory('hop')).toEqual({});
+    expect(result.detail).toBe("CHALLENGE 2026-11-13   NOT TODAY'S DAILY");
+  });
+
   it('leaves the daily results alone for a normal run and keeps its detail line', async () => {
     const { recordGameOver } = await fresh();
     const { getDailyHistory } = await import('./rng');

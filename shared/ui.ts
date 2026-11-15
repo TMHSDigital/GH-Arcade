@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { type AccentName, cssColor, PALETTES } from './palette';
-import { getDailyBest } from './rng';
+import { type DailyRun, getDailyBest } from './rng';
 import { getSettings, keyCodesFor } from './settings';
 
 export const PIXEL_FONT = '"Press Start 2P", monospace';
@@ -26,18 +26,19 @@ export function hudText(scene: Phaser.Scene, x: number, y: number, text: string,
 /**
  * The HUD label of a daily challenge, the same in every game: "DAILY <day>", and this device's best
  * for that day under it once there is one. `y` is the top of the first line. `narrow` puts the day
- * on a line of its own, for side panels too slim for one line.
+ * on a line of its own, for side panels too slim for one line. A replay of an earlier day reads
+ * "CHALLENGE" over its day instead, with no best: it is not recorded.
  */
 export function dailyHudLabel(
   scene: Phaser.Scene,
   x: number,
   y: number,
   game: string,
-  day: string,
+  run: DailyRun,
   opts: { align?: 'left' | 'center'; narrow?: boolean; depth?: number } = {},
 ): void {
-  const best = getDailyBest(game, day);
-  const lines = opts.narrow ? ['DAILY', day] : [`DAILY ${day}`];
+  const best = run.past ? 0 : getDailyBest(game, run.day);
+  const lines = run.past ? ['CHALLENGE', run.day] : opts.narrow ? ['DAILY', run.day] : [`DAILY ${run.day}`];
   if (best > 0) lines.push(`BEST ${best.toLocaleString()}`);
   lines.forEach((line, i) => {
     scene.add

@@ -3,7 +3,7 @@ import { clearRecentUnlocks, drainRecentUnlocks, getHighScore, recordRun, TOP_SI
 import { ArcadeControls } from './controls';
 import { OptionMenu } from './menu';
 import { modeIndex, modeQuery } from './modes';
-import { DAILY_MODE_LABEL, dailyResult } from './rng';
+import { DAILY_MODE_LABEL, dailyResult, pastDailyLine } from './rng';
 import { tone } from './sfx';
 import { keyLabel } from './settings';
 import { requestPersistence } from './storage';
@@ -105,12 +105,14 @@ export function finishRun(gameId: string, score?: number): { isRecord: boolean; 
 
 /**
  * Records the run the game-over screen is about to show, and returns what to say about it. A daily
- * run (one that carries its day) is recorded as today's result here as well, for every game, and
- * its daily line takes the place of the game's own detail line.
+ * run (one that carries its day) is recorded as that day's result here as well, for every game, and
+ * its daily line takes the place of the game's own detail line. A replay of an earlier day
+ * (`dailyPast`) is a normal run as far as the records go: it leaves the daily results alone.
  */
 export function recordGameOver(data: GameOverData): { isRecord: boolean; rank: number; earned: Trophy[]; detail?: string } {
   const result = finishRun(data.gameId, data.score);
-  return { ...result, detail: data.daily ? dailyResult(data.gameId, data.score, data.daily) : data.detail };
+  if (!data.daily) return { ...result, detail: data.detail };
+  return { ...result, detail: data.dailyPast ? pastDailyLine(data.daily) : dailyResult(data.gameId, data.score, data.daily) };
 }
 
 const restartData = new WeakMap<Phaser.Scene, object>();
@@ -218,6 +220,8 @@ export interface GameOverData {
    * the score as that day's result and names the day in the shared result.
    */
   daily?: string;
+  /** True when `daily` is an earlier day replayed from a shared link, which is not recorded. */
+  dailyPast?: boolean;
   restartScene?: string;
   restartData?: object;
 }
@@ -265,9 +269,9 @@ export class ArcadeGameOverScene extends Phaser.Scene {
         if (chosen) return;
         // The page is titled "<game> · GH Arcade" (build/game-pages.ts).
         const text = resultText({ title: document.title.split(' · ')[0], score: data.score, daily: data.daily });
-        // A daily result links to the daily, so whoever opens it lands on the same challenge.
+        // A daily result links to its day, so whoever opens it gets the same board even after midnight UTC.
         const page = window.location.origin + window.location.pathname;
-        const outcome = await shareResult(text, data.daily ? page + modeQuery(DAILY_MODE_LABEL) : page);
+        const outcome = await shareResult(text, data.daily ? page + modeQuery(DAILY_MODE_LABEL, data.daily) : page);
         if (outcome === 'copied') showToast('Copied', 'Paste your result anywhere');
         else if (outcome === 'failed') showToast("Couldn't share", 'Pick SHARE with a key, click or tap');
       };
