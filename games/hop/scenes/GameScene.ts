@@ -116,8 +116,8 @@ export class GameScene extends Phaser.Scene {
 
     this.controls = new ArcadeControls(this);
     this.pause = new PauseController(this, this.controls, { canPause: () => !this.over });
-    // Swipe to hop in that direction; a tap hops forward.
-    onSwipe(this, (d) => this.tryHop(d === 'tap' ? 'up' : d), { threshold: 20 });
+    // Swipe to hop in that direction; a tap hops forward. A touch that starts on the pause menu is not a hop.
+    onSwipe(this, (d) => this.tryHop(d === 'tap' ? 'up' : d), { threshold: 20, ignore: () => this.pause.isPaused });
 
     this.startLevel();
   }

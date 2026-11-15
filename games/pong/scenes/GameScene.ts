@@ -128,6 +128,8 @@ export class GameScene extends Phaser.Scene {
   /** Solo: any finger steers your paddle. Versus: each finger steers the paddle on its half of the screen. */
   private bindTouch(): void {
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      // A touch on the pause menu (the tap that chooses RESUME included) does not steer.
+      if (this.pause.isPaused) return;
       const paddle = this.versus ? this.paddles[p.x < WIDTH / 2 ? 0 : 1] : this.paddles[0];
       this.touchOwners.set(p.id, paddle);
       paddle.touchY = p.y;
