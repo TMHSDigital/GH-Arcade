@@ -174,8 +174,11 @@ function mergeTrophies(here: unknown, there: unknown): Record<string, unknown> {
   for (const slug of keysOf(a.games, b.games)) {
     const ga = isRecord(a.games) && isRecord(a.games[slug]) ? a.games[slug] : {};
     const gb = isRecord(b.games) && isRecord(b.games[slug]) ? b.games[slug] : {};
+    // A save from before scored plays were counted apart has none: all of its plays count as scored.
+    const scored = (g: Record<string, unknown>) => count(g.scoredPlays === undefined ? g.plays : g.scoredPlays);
     const stats: Record<string, number> = {
       plays: Math.max(count(ga.plays), count(gb.plays)),
+      scoredPlays: Math.max(scored(ga), scored(gb)),
       best: Math.max(count(ga.best), count(gb.best)),
       totalScore: Math.max(count(ga.totalScore), count(gb.totalScore)),
     };

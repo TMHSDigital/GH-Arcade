@@ -20,6 +20,8 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 - The pause menu's SOUND label updates immediately when Mute is pressed.
 - Neon Maze: being caught on the same tick as eating the last dot now costs a life instead of clearing the level.
 - Restoring or merging a backup that cannot be saved (for example when the browser is out of room) puts back what was on the device instead of leaving it wiped.
+- A daily challenge that ends on 0 points now counts as played: the hub stops offering it and the streak carries on.
+- The average in the Trophies panel no longer counts two-player matches, which have no score.
 - Resetting trophies or restoring a backup now sticks when a game is open mid-run in another tab.
 - Touch: tapping RESUME no longer makes the hopper hop in Neon Hop or moves the paddle in Neon Pong.
 - Neon Snake: the daily challenge starts with the same first food for everyone, including after PLAY AGAIN or an earlier run on the page.

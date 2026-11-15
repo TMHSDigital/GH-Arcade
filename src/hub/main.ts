@@ -3,7 +3,7 @@ import registry from '../../games/registry.json';
 import { registerOffline } from '../../shared/pwa';
 import { getHighScore, getStats, trophyProgress } from '../../shared/achievements';
 import { modeQuery } from '../../shared/modes';
-import { DAILY_MODE_LABEL, DAILY_TAG, getDailyBest, msUntilNextDaily, waitText } from '../../shared/rng';
+import { DAILY_MODE_LABEL, DAILY_TAG, getDailyBest, msUntilNextDaily, playedDaily, waitText } from '../../shared/rng';
 import { loadJSON, saveJSON } from '../../shared/storage';
 import { initStorageNotice } from '../../shared/storage-notice';
 import { initDataPanel } from './data-panel';
@@ -113,11 +113,14 @@ function card(game: GameEntry, isLastPlayed: boolean): HTMLLIElement {
   const best = getHighScore(game.slug);
   const trophies = trophyProgress(game.slug);
   // Games with a daily challenge say whether today's has been played (the day is the UTC date, as in the games).
-  const daily = game.tags.includes(DAILY_TAG) ? getDailyBest(game.slug) : -1;
+  // A day counts as played from its first finished run, even one that scored nothing.
+  const hasDaily = game.tags.includes(DAILY_TAG);
+  const dailyDone = hasDaily && playedDaily(game.slug);
+  const dailyWaiting = hasDaily && !dailyDone;
   // Relative link so it works under any base path (dev server and GitHub Pages). While today's daily
   // challenge is waiting, the card opens the game's menu on DAILY.
   li.innerHTML = `
-    <a class="card-link" href="games/${encodeURIComponent(game.slug)}/${daily === 0 ? modeQuery(DAILY_MODE_LABEL) : ''}">
+    <a class="card-link" href="games/${encodeURIComponent(game.slug)}/${dailyWaiting ? modeQuery(DAILY_MODE_LABEL) : ''}">
       <div class="card-art" aria-hidden="true">${
         game.thumbnail
           ? `<img src="${escapeHtml(game.thumbnail)}" alt="" loading="lazy" decoding="async" />`
@@ -130,8 +133,8 @@ function card(game: GameEntry, isLastPlayed: boolean): HTMLLIElement {
           ${game.tags.map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
           ${best > 0 ? `<span class="best">Best ${best.toLocaleString()}</span>` : ''}
           ${trophies.total ? `<span class="trophies" title="Trophies unlocked">Trophies ${trophies.unlocked}/${trophies.total}</span>` : ''}
-          ${daily > 0 ? `<span class="daily done" title="Your best in today's daily challenge">Daily ${daily.toLocaleString()}</span>` : ''}
-          ${daily === 0 ? '<span class="daily" title="Today\'s daily challenge is waiting: this card opens on it">Daily: not played</span>' : ''}
+          ${dailyDone ? `<span class="daily done" title="Your best in today's daily challenge">Daily ${getDailyBest(game.slug).toLocaleString()}</span>` : ''}
+          ${dailyWaiting ? '<span class="daily" title="Today\'s daily challenge is waiting: this card opens on it">Daily: not played</span>' : ''}
           ${isLastPlayed ? '<span class="recent">Last played</span>' : ''}
         </div>
         ${game.controls ? `<p class="controls">${escapeHtml(game.controls)}</p>` : ''}

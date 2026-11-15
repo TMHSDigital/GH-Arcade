@@ -49,6 +49,11 @@ const GAME_SLUGS = (registry as { slug: string }[]).map((g) => g.slug);
 
 export interface GameStats {
   plays: number;
+  /**
+   * The plays that had a score, which is what `totalScore` adds up: divide by this for an average.
+   * Matches without one (two-player versus) count as plays only.
+   */
+  scoredPlays: number;
   best: number;
   totalScore: number;
   /** When the last run finished (ms since epoch); missing for games not played since this was added. */
@@ -99,7 +104,7 @@ function adoptLegacyBests(games: Record<string, GameStats>): boolean {
     for (const key of keys) {
       const slug = key.slice(STORAGE_PREFIX.length).match(legacy)![1];
       const best = savedNumber(loadJSON<unknown>(key.slice(STORAGE_PREFIX.length), 0));
-      const stats = games[slug] ?? { plays: 0, best: 0, totalScore: 0 };
+      const stats = games[slug] ?? { plays: 0, scoredPlays: 0, best: 0, totalScore: 0 };
       games[slug] = { ...stats, best: Math.max(stats.best, best) };
       localStorage.removeItem(key);
       changed = true;
@@ -118,7 +123,9 @@ function read(): Save {
   if (isRecord(data.games)) {
     for (const [slug, stats] of Object.entries(data.games)) {
       if (isRecord(stats)) {
-        games[slug] = { plays: savedNumber(stats.plays), best: savedNumber(stats.best), totalScore: savedNumber(stats.totalScore) };
+        // A save from before scored plays were counted apart: every play is taken to have had a score.
+        const scoredPlays = stats.scoredPlays === undefined ? savedNumber(stats.plays) : savedNumber(stats.scoredPlays);
+        games[slug] = { plays: savedNumber(stats.plays), scoredPlays, best: savedNumber(stats.best), totalScore: savedNumber(stats.totalScore) };
         if (savedNumber(stats.lastPlayed)) games[slug].lastPlayed = savedNumber(stats.lastPlayed);
       }
     }
@@ -249,10 +256,11 @@ export function getTopScores(game: string): TopScore[] {
 }
 
 /**
- * Called once per finished game with its final score (0 for matches that have no score, e.g. versus).
+ * Called once per finished game with its final score. Leave the score out for matches that have
+ * none (two-player versus): the play counts, but not toward the game's average.
  * Returns true when the score beat the game's previous best.
  */
-export function recordPlay(game: string, score = 0): boolean {
+export function recordPlay(game: string, score?: number): boolean {
   return recordRun(game, score).isRecord;
 }
 
@@ -261,8 +269,9 @@ export function recordPlay(game: string, score = 0): boolean {
  * new best, 2 to TOP_SIZE for a score that made the table, and 0 for one that did not. A score that
  * only ties an entry ranks below it, so the earlier run keeps its place.
  */
-export function recordRun(game: string, score = 0): { isRecord: boolean; rank: number } {
-  const stats = save.games[game] ?? { plays: 0, best: 0, totalScore: 0 };
+export function recordRun(game: string, runScore?: number): { isRecord: boolean; rank: number } {
+  const score = runScore ?? 0;
+  const stats = save.games[game] ?? { plays: 0, scoredPlays: 0, best: 0, totalScore: 0 };
   const isRecord = score > stats.best;
   let rank = 0;
   if (score > 0) {
@@ -274,6 +283,7 @@ export function recordRun(game: string, score = 0): { isRecord: boolean; rank: n
     }
   }
   stats.plays++;
+  if (runScore !== undefined) stats.scoredPlays++;
   stats.best = Math.max(stats.best, score);
   stats.totalScore += score;
   stats.lastPlayed = Date.now();
@@ -293,7 +303,7 @@ export function getHighScore(game: string): number {
 }
 
 export function getStats(game: string): GameStats {
-  return save.games[game] ?? { plays: 0, best: 0, totalScore: 0 };
+  return save.games[game] ?? { plays: 0, scoredPlays: 0, best: 0, totalScore: 0 };
 }
 
 /** How many of a game's trophies are unlocked, e.g. for a "2/4" chip on its hub card. */
@@ -323,7 +333,7 @@ export function onUnlock(fn: (t: Trophy) => void): () => void {
 /** Clears trophies, counters, plays and totals. Best scores and the score tables are kept. */
 export function resetTrophies(): void {
   const games: Record<string, GameStats> = {};
-  for (const [slug, stats] of Object.entries(save.games)) if (stats.best > 0) games[slug] = { plays: 0, best: stats.best, totalScore: 0 };
+  for (const [slug, stats] of Object.entries(save.games)) if (stats.best > 0) games[slug] = { plays: 0, scoredPlays: 0, best: stats.best, totalScore: 0 };
   save = { unlocked: {}, counters: {}, games, top: save.top };
   recent = [];
   persist();

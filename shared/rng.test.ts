@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createRng, DAILY_KEEP, DAILY_MODES, dailyResult, dailyRng, dailyRunFrom, dailySeed, dailyStreak, getDailyBest, getDailyHistory, msUntilNextDaily, submitDailyScore, waitText } from './rng';
+import { createRng, DAILY_KEEP, DAILY_MODES, dailyResult, dailyRng, dailyRunFrom, dailySeed, dailyStreak, getDailyBest, getDailyHistory, msUntilNextDaily, playedDaily, submitDailyScore, waitText } from './rng';
 import { installMemoryStorage } from './test-utils';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -226,6 +226,22 @@ describe('dailyStreak', () => {
   it('is 0 before the first daily run', () => {
     installMemoryStorage();
     expect(dailyStreak('hop', '2026-11-13')).toBe(0);
+  });
+
+  it('counts a day that was played for no points', () => {
+    installMemoryStorage();
+    submitDailyScore('hop', 10, '2026-11-11');
+    expect(submitDailyScore('hop', 0, '2026-11-12')).toBe(false);
+    submitDailyScore('hop', 10, '2026-11-13');
+    expect(playedDaily('hop', '2026-11-12')).toBe(true);
+    expect(getDailyBest('hop', '2026-11-12')).toBe(0);
+    expect(getDailyHistory('hop')).toEqual({ '2026-11-11': 10, '2026-11-12': 0, '2026-11-13': 10 });
+    expect(dailyStreak('hop', '2026-11-13')).toBe(3);
+    // A later run that day still sets its best, and a 0 after it changes nothing.
+    expect(submitDailyScore('hop', 40, '2026-11-12')).toBe(true);
+    expect(submitDailyScore('hop', 0, '2026-11-12')).toBe(false);
+    expect(getDailyBest('hop', '2026-11-12')).toBe(40);
+    expect(playedDaily('hop', '2026-11-10')).toBe(false);
   });
 
   it('counts consecutive days ending today', () => {

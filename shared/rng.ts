@@ -116,7 +116,12 @@ function newest(history: Record<string, number>): Record<string, number> {
 export function getDailyHistory(game: string): Record<string, number> {
   const raw = loadJSON<unknown>(dailyKey(game), {});
   let history: Record<string, number> = {};
-  if (isRecord(raw)) for (const [day, score] of Object.entries(raw)) if (DAY.test(day) && savedNumber(score) > 0) history[day] = savedNumber(score);
+  // A day is in the history once it has been played, even for no points.
+  if (isRecord(raw)) {
+    for (const [day, score] of Object.entries(raw)) {
+      if (DAY.test(day) && typeof score === 'number' && Number.isFinite(score) && score >= 0) history[day] = score;
+    }
+  }
   if (foldLegacyDays(game, history)) {
     history = newest(history);
     saveJSON(dailyKey(game), history);
@@ -124,18 +129,27 @@ export function getDailyHistory(game: string): Record<string, number> {
   return history;
 }
 
+/** True once this device has finished a game's daily challenge on the given day (today by default), whatever the score. */
+export function playedDaily(game: string, day: string = dailySeed()): boolean {
+  return day in getDailyHistory(game);
+}
+
 /** The best score this device has for a game's daily challenge on the given day (today by default). */
 export function getDailyBest(game: string, day: string = dailySeed()): number {
   return getDailyHistory(game)[day] ?? 0;
 }
 
-/** Records a daily challenge score. Returns true if it beat this device's best for that day. */
+/**
+ * Records a daily challenge score: the day counts as played from its first finished run, even one
+ * that scored nothing. Returns true if the score beat this device's best for that day.
+ */
 export function submitDailyScore(game: string, score: number, day: string = dailySeed()): boolean {
   const history = getDailyHistory(game);
-  if (score <= (history[day] ?? 0)) return false;
-  history[day] = score;
+  const best = history[day] ?? 0;
+  if (day in history && score <= best) return false;
+  history[day] = Math.max(best, score);
   saveJSON(dailyKey(game), newest(history));
-  return true;
+  return score > best;
 }
 
 /** The day before a yyyy-mm-dd day. */
@@ -149,9 +163,9 @@ function previousDay(day: string): string {
  */
 export function dailyStreak(game: string, today: string = dailySeed()): number {
   const history = getDailyHistory(game);
-  let day = history[today] ? today : previousDay(today);
+  let day = today in history ? today : previousDay(today);
   let streak = 0;
-  while (history[day]) {
+  while (day in history) {
     streak++;
     day = previousDay(day);
   }

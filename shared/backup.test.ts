@@ -169,9 +169,9 @@ describe('mergeBackup', () => {
     const storage = installMemoryStorage({ 'gh-arcade:trophies': JSON.stringify(here) });
     mergeBackup(file({ trophies: there }));
     const merged = trophies(storage);
-    expect(merged.games.snake).toEqual({ plays: 8, best: 450, totalScore: 900, lastPlayed: 2000 });
-    expect(merged.games.runner).toEqual({ plays: 4, best: 80, totalScore: 200, lastPlayed: 3000 });
-    expect(merged.games.pong).toEqual({ plays: 3, best: 0, totalScore: 0 });
+    expect(merged.games.snake).toEqual({ plays: 8, scoredPlays: 8, best: 450, totalScore: 900, lastPlayed: 2000 });
+    expect(merged.games.runner).toEqual({ plays: 4, scoredPlays: 4, best: 80, totalScore: 200, lastPlayed: 3000 });
+    expect(merged.games.pong).toEqual({ plays: 3, scoredPlays: 3, best: 0, totalScore: 0 });
     expect(merged.counters).toEqual({ 'arcade.plays': 12, 'stack.lines': 40, 'runner.coins': 60 });
   });
 

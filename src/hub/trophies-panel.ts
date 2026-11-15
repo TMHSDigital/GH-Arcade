@@ -47,7 +47,7 @@ export function initTrophiesPanel(): void {
             : stats.plays
               ? `Played ${stats.plays} · Best ${stats.best.toLocaleString()}${
                   // Two-player matches count as plays but carry no score, so only show an average when there is one.
-                  stats.totalScore > 0 ? ` · Average ${Math.round(stats.totalScore / stats.plays).toLocaleString()}` : ''
+                  stats.totalScore > 0 && stats.scoredPlays > 0 ? ` · Average ${Math.round(stats.totalScore / stats.scoredPlays).toLocaleString()}` : ''
                 }`
               : stats.best
                 ? `Best ${stats.best.toLocaleString()}`

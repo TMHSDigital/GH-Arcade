@@ -146,12 +146,32 @@ describe('a change made in another tab', () => {
 describe('recordPlay', () => {
   it('accumulates plays, best and total score', async () => {
     const { a } = await fresh();
-    expect(a.getStats('snake')).toEqual({ plays: 0, best: 0, totalScore: 0 });
+    expect(a.getStats('snake')).toEqual({ plays: 0, scoredPlays: 0, best: 0, totalScore: 0 });
     a.recordPlay('snake', 100);
     a.recordPlay('snake', 40);
     a.recordPlay('snake');
     expect(a.getStats('snake')).toMatchObject({ plays: 3, best: 100, totalScore: 140 });
     expect(a.getCounter('arcade.plays')).toBe(3);
+  });
+
+  it('keeps matches without a score out of the average', async () => {
+    const { a, storage } = await fresh();
+    a.recordPlay('snake', 100);
+    for (let i = 0; i < 9; i++) a.recordPlay('snake');
+    const stats = a.getStats('snake');
+    expect(stats).toMatchObject({ plays: 10, scoredPlays: 1, totalScore: 100 });
+    expect(stats.totalScore / stats.scoredPlays).toBe(100);
+    // A run that scores 0 is still a scored play.
+    a.recordPlay('snake', 0);
+    expect(a.getStats('snake')).toMatchObject({ plays: 11, scoredPlays: 2 });
+    const again = await fresh({ 'gh-arcade:trophies': storage.data.get('gh-arcade:trophies')! });
+    expect(again.a.getStats('snake')).toMatchObject({ plays: 11, scoredPlays: 2 });
+  });
+
+  it('takes every play in an older save to have had a score', async () => {
+    const old = JSON.stringify({ version: 1, unlocked: {}, counters: {}, games: { snake: { plays: 4, best: 90, totalScore: 200 } } });
+    const { a } = await fresh({ 'gh-arcade:trophies': old });
+    expect(a.getStats('snake')).toMatchObject({ plays: 4, scoredPlays: 4 });
   });
 
   it('stamps the time of the last play and keeps it across a reload', async () => {
@@ -329,8 +349,8 @@ describe('persistence', () => {
     const { a } = await fresh({ 'gh-arcade:trophies': bad });
     expect(a.isUnlocked('snake.bonus')).toBe(false);
     expect(a.getCounter('stack.lines')).toBe(0);
-    expect(a.getStats('snake')).toEqual({ plays: 0, best: 0, totalScore: 0 });
-    expect(a.getStats('pong')).toEqual({ plays: 0, best: 3, totalScore: 0 });
+    expect(a.getStats('snake')).toEqual({ plays: 0, scoredPlays: 0, best: 0, totalScore: 0 });
+    expect(a.getStats('pong')).toEqual({ plays: 0, scoredPlays: 0, best: 3, totalScore: 0 });
     expect(a.unlock('snake.bonus')).toBe(true);
   });
 });

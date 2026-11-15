@@ -97,7 +97,7 @@ export function buildMenu(scene: Phaser.Scene, opts: MenuOptions): void {
  * cannot be a record.
  */
 export function finishRun(gameId: string, score?: number): { isRecord: boolean; rank: number; earned: Trophy[] } {
-  const { isRecord, rank } = recordRun(gameId, score ?? 0);
+  const { isRecord, rank } = recordRun(gameId, score);
   // There is now progress worth keeping: ask the browser not to clear it (once per device).
   requestPersistence();
   return { isRecord: isRecord && score !== undefined, rank: score === undefined ? 0 : rank, earned: drainRecentUnlocks() };
