@@ -32,10 +32,11 @@ import { EXTRA_CONTROLS } from '../controls';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
+import { dailyOutcome, type DailyRun, dailyRunFrom, type Dice, diceFor } from '../../../shared/rng';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, VirtualButton, VirtualStick } from '../../../shared/touch';
-import { burstEmitter, floatText, HUD_STYLE, NEON, showBanner, impact } from '../../../shared/ui';
+import { burstEmitter, dailyHudLabel, floatText, HUD_STYLE, NEON, showBanner, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { addCounter, reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -113,6 +114,10 @@ export class GameScene extends Phaser.Scene {
   private burst!: Phaser.GameObjects.Particles.ParticleEmitter;
   private scoreText!: Phaser.GameObjects.Text;
   private waveText!: Phaser.GameObjects.Text;
+  /** The daily challenge being played, or null in a normal game. */
+  private daily: DailyRun | null = null;
+  /** The random choices of this run: seeded in a daily challenge, plain random otherwise. */
+  private dice = diceFor(null);
   private controls!: ArcadeControls<Extra>;
   private pause!: PauseController;
 
@@ -120,7 +125,11 @@ export class GameScene extends Phaser.Scene {
     super('Game');
   }
 
-  init(): void {
+  init(data: { daily?: boolean } = {}): void {
+    // Daily challenge: the rocks of each wave, the saucer and the warp jumps are seeded from the
+    // date, so everyone gets the same game today. The stars and debris stay random; they are scenery.
+    this.daily = dailyRunFrom(data, GAME_ID);
+    this.dice = diceFor(this.daily);
     this.ship = { x: WIDTH / 2, y: HEIGHT / 2, vx: 0, vy: 0, angle: -Math.PI / 2 };
     this.alive = true;
     this.invulnerable = INVULNERABLE_MS;
@@ -128,7 +137,7 @@ export class GameScene extends Phaser.Scene {
     this.rocks = [];
     this.debris = [];
     this.ufo = null;
-    this.ufoTimer = Phaser.Math.Between(...UFO_SPAWN_MS);
+    this.ufoTimer = this.dice('ufo').between(...UFO_SPAWN_MS);
     this.score = 0;
     this.lives = START_LIVES;
     this.nextExtraLife = EXTRA_LIFE_EVERY;
@@ -149,6 +158,7 @@ export class GameScene extends Phaser.Scene {
     const style = HUD_STYLE;
     this.scoreText = this.add.text(WIDTH / 2, 24, '0', style).setOrigin(0.5).setDepth(100);
     this.waveText = this.add.text(WIDTH - 20, 24, '', { ...style, fontSize: '12px' }).setOrigin(1, 0.5).setDepth(100);
+    if (this.daily) dailyHudLabel(this, 20, 10, GAME_ID, this.daily, { depth: 100 });
 
     this.controls = new ArcadeControls<Extra>(this, EXTRA_CONTROLS);
     this.pause = new PauseController(this, this.controls, { canPause: () => !this.over });
@@ -179,25 +189,28 @@ export class GameScene extends Phaser.Scene {
     this.wave++;
     reach('astro.wave5', this.wave);
     this.waveRocks = Math.min(FIRST_WAVE_ROCKS + this.wave - 1, MAX_WAVE_ROCKS);
+    // Each wave has its own sequence, so how long a wave took never changes the next one.
+    const dice = this.dice(`wave:${this.wave}`);
     for (let i = 0; i < this.waveRocks; i++) {
       // Spawn on the edges, away from the ship.
       let x: number;
       let y: number;
       do {
-        x = Phaser.Math.Between(0, WIDTH);
-        y = Phaser.Math.Between(0, HEIGHT);
+        x = dice.between(0, WIDTH);
+        y = dice.between(0, HEIGHT);
       } while (Phaser.Math.Distance.Between(x, y, this.ship.x, this.ship.y) < 220);
-      this.addRock(x, y, 3);
+      this.addRock(x, y, 3, dice);
     }
     this.waveClearing = false;
     showBanner(this, `WAVE ${this.wave}`, NEON.cyan);
     this.updateHud();
   }
 
-  private addRock(x: number, y: number, size: RockSize): void {
+  /** Adds a rock. `dice` is the wave's own for the rocks a wave opens with; pieces of a split rock share one. */
+  private addRock(x: number, y: number, size: RockSize, dice: Dice = this.dice('split')): void {
     const { speed } = ROCKS[size];
-    const dir = Phaser.Math.FloatBetween(0, TAU);
-    const v = Phaser.Math.FloatBetween(speed[0], speed[1]) * (1 + Math.min(this.wave - 1, 8) * 0.04);
+    const dir = dice.float(0, TAU);
+    const v = dice.float(speed[0], speed[1]) * (1 + Math.min(this.wave - 1, 8) * 0.04);
     const points = 9 + size * 2;
     this.rocks.push({
       x,
@@ -205,9 +218,9 @@ export class GameScene extends Phaser.Scene {
       vx: Math.cos(dir) * v,
       vy: Math.sin(dir) * v,
       size,
-      angle: Phaser.Math.FloatBetween(0, TAU),
-      spin: Phaser.Math.FloatBetween(-1.2, 1.2),
-      shape: Array.from({ length: points }, () => Phaser.Math.FloatBetween(0.72, 1.08)),
+      angle: dice.float(0, TAU),
+      spin: dice.float(-1.2, 1.2),
+      shape: Array.from({ length: points }, () => dice.float(0.72, 1.08)),
     });
   }
 
@@ -290,8 +303,8 @@ export class GameScene extends Phaser.Scene {
     const s = this.ship;
     this.burst.setParticleTint(NEON.purple);
     this.burst.explode(16, s.x, s.y);
-    s.x = Phaser.Math.Between(60, WIDTH - 60);
-    s.y = Phaser.Math.Between(60, HEIGHT - 60);
+    s.x = this.dice('warp').between(60, WIDTH - 60);
+    s.y = this.dice('warp').between(60, HEIGHT - 60);
     s.vx = 0;
     s.vy = 0;
     this.invulnerable = Math.max(this.invulnerable, 600);
@@ -337,7 +350,7 @@ export class GameScene extends Phaser.Scene {
     // It crosses the screen once, then leaves.
     if (u.x < -UFO_RADIUS * 2 || u.x > WIDTH + UFO_RADIUS * 2) {
       this.ufo = null;
-      this.ufoTimer = Phaser.Math.Between(...UFO_SPAWN_MS);
+      this.ufoTimer = this.dice('ufo').between(...UFO_SPAWN_MS);
       return;
     }
     // Warbling siren.
@@ -348,7 +361,7 @@ export class GameScene extends Phaser.Scene {
     if (u.fireIn <= 0 && this.alive) {
       // Aims at the player, with some spread that tightens in later waves.
       const spread = Math.max(0.5 - this.wave * 0.04, 0.12);
-      const a = Math.atan2(this.ship.y - u.y, this.ship.x - u.x) + Phaser.Math.FloatBetween(-spread, spread);
+      const a = Math.atan2(this.ship.y - u.y, this.ship.x - u.x) + this.dice('ufo').float(-spread, spread);
       this.bullets.push({ x: u.x, y: u.y, vx: Math.cos(a) * 320, vy: Math.sin(a) * 320, life: 1.6, hostile: true });
       u.fireIn = UFO_FIRE_MS;
       tone({ freq: 400, toFreq: 200, duration: 0.1, type: 'sawtooth', volume: 0.04 });
@@ -356,10 +369,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   private spawnUfo(): void {
-    const fromLeft = Math.random() < 0.5;
+    const fromLeft = this.dice('ufo').chance(0.5);
     this.ufo = {
       x: fromLeft ? -UFO_RADIUS : WIDTH + UFO_RADIUS,
-      y: Phaser.Math.Between(80, HEIGHT - 80),
+      y: this.dice('ufo').between(80, HEIGHT - 80),
       vx: (fromLeft ? 1 : -1) * UFO_SPEED * (1 + Math.min(this.wave, 10) * 0.03),
       vy: 0,
       fireIn: 800,
@@ -456,7 +469,7 @@ export class GameScene extends Phaser.Scene {
     this.burst.explode(30, u.x, u.y);
     noise(0.4, 0.1);
     this.ufo = null;
-    this.ufoTimer = Phaser.Math.Between(...UFO_SPAWN_MS);
+    this.ufoTimer = this.dice('ufo').between(...UFO_SPAWN_MS);
   }
 
   private addScore(points: number, x: number, y: number, color: number = NEON.cyan): void {
@@ -493,7 +506,7 @@ export class GameScene extends Phaser.Scene {
 
     if (this.lives <= 0) {
       this.over = true;
-      endRun(this, { gameId: GAME_ID, score: this.score, detail: `REACHED WAVE ${this.wave}` }, 2000);
+      endRun(this, { gameId: GAME_ID, score: this.score, detail: `REACHED WAVE ${this.wave}`, ...dailyOutcome(this.daily) }, 2000);
       return;
     }
     this.time.delayedCall(RESPAWN_DELAY_MS, () => this.respawn());

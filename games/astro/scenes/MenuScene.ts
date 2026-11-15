@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, WIDTH } from '../config';
+import { DAILY_MODES } from '../../../shared/rng';
 import { buildMenu } from '../../../shared/scenes';
 import { helpKeys } from '../../../shared/settings';
 import { NEON, reducedMotion } from '../../../shared/ui';
@@ -45,6 +46,7 @@ export class MenuScene extends Phaser.Scene {
       title: ['ASTRO', 'BLASTER'],
       colors: [NEON.orange, NEON.cyan],
       help: `Turn: ${helpKeys(['left', 'right'], '← →')} / stick    Thrust: ${helpKeys('up', '↑')}    Fire: ${helpKeys('action', 'Space')} / Z / A    Warp: ${helpKeys('alt', 'Shift / X')} / B\nTouch: left stick, FIRE and WARP buttons    Pause: ${helpKeys('pause', 'P')} / Start`,
+      modes: DAILY_MODES,
     });
   }
 

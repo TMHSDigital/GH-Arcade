@@ -167,7 +167,7 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | **Installable, works offline** | Install GH Arcade as an app from the hub. After one visit, every game plays with no connection. |
 | **Keyboard, touch or gamepad** | Every game supports all three. Plug in a controller and it just works, including pause on <kbd>Start</kbd>. If a controller disconnects mid-run, the game pauses. |
 | **Two-player** | Neon Snake and Neon Pong have versus modes and Star Siege has co-op, on one keyboard or two gamepads. |
-| **Daily challenges** | Neon Stack, Neon Hop, Neon Runner and Neon Snake have a Daily mode: the same game for everyone on a given UTC date, with its own best score and a streak. (In Snake the food and bonus stars follow a shared sequence, so runs match for as long as players steer the same way.) The hub counts down to the next challenge (midnight UTC), a card whose daily is still waiting opens the game on DAILY, and a shared daily result links to it (`games/<slug>/?mode=daily`). |
+| **Daily challenges** | Neon Stack, Neon Hop, Neon Runner, Neon Snake, Astro Blaster and Star Siege have a Daily mode: the same game for everyone on a given UTC date, with its own best score and a streak. (In Snake the food and bonus stars follow a shared sequence, so runs match for as long as players steer the same way; in Astro Blaster and Star Siege the rocks, the saucer, the alien fire and the mothership do.) The hub counts down to the next challenge (midnight UTC), a card whose daily is still waiting opens the game on DAILY, and a shared daily result links to it (`games/<slug>/?mode=daily`). |
 | **Pause menu and game over** | Every game pauses into a menu: resume, restart, settings (volume, sound, motion, colors and gamepad rumble), main menu or back to the arcade. Game over shows the trophies you just earned, with Play again, Menu and Arcade options. |
 | **Page controls** | On-screen pause and fullscreen buttons, a loading indicator, and a hint to rotate your phone for games that play best in landscape. The screen stays on during a run, even when you play with a gamepad, and may sleep again once you pause or the run ends. |
 | **Couch-friendly hub** | Browse the cabinets with the arrow keys or a gamepad: <kbd>A</kbd> opens a game, <kbd>LB</kbd> <kbd>RB</kbd> switch filters, <kbd>Y</kbd> shows trophies and <kbd>Start</kbd> opens settings. Inside a panel, up and down move between its controls (and scroll it), left and right change a slider, <kbd>A</kbd> presses a button or ticks a box, and <kbd>B</kbd> closes it. |
@@ -282,7 +282,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`achievements.ts`](shared/achievements.ts) | Trophies, stats and best scores. Each game lists its trophies in its own `trophies.ts` and gets type-checked `unlock()`, `reach()` and `addCounter()` helpers from `trophiesFor()`; `getHighScore()` returns a game's best and `getTopScores()` its five highest. Unlocks pop up as a [toast](shared/toast.ts). |
 | [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key and gamepad bindings, rumble) that every game reads on start. |
 | [`backup.ts`](shared/backup.ts) | Export, import (replace or merge) and reset of everything saved on the device, used by the hub's settings dialog. |
-| [`rng.ts`](shared/rng.ts) | `createRng(seed)`: repeatable random numbers with `between`, `pick` and `shuffle`, plus what a daily challenge needs: `dailySeed()`, `dailyRng()`, `DAILY_MODES` for the menu (or `DAILY_MODE_LABEL` to add DAILY to a menu that already has modes), per-day best scores with history and a streak, and `dailyResult()` for the game-over line. Give the game the `daily` tag in `registry.json` so the hub shows today's result. |
+| [`rng.ts`](shared/rng.ts) | `createRng(seed)`: repeatable random numbers with `between`, `pick` and `shuffle`, plus what a daily challenge needs: `dailySeed()`, `dailyRng()`, `DAILY_MODES` for the menu (or `DAILY_MODE_LABEL` to add DAILY to a menu that already has modes), per-day best scores with history and a streak, `dailyRunFrom()` and `diceFor()` to seed a scene's random choices, and `dailyResult()` for the game-over line. Give the game the `daily` tag in `registry.json` so the hub shows today's result. |
 | [`pwa.ts`](shared/pwa.ts) | Registers the service worker that makes every page work offline, and announces when the arcade is ready offline or has updated. |
 
 > [!NOTE]
@@ -367,7 +367,7 @@ Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `co
 **Up next**
 
 - [x] Daily challenge with a shared seed (Neon Stack, Neon Hop, Neon Runner and Neon Snake)
-- [ ] Daily challenges for more games
+- [x] Daily challenges for more games: Astro Blaster and Star Siege joined Stack, Hop, Runner and Snake
 - [ ] Breakout level editor
 - [ ] More two-player modes
 - [x] A second maze layout for Neon Maze (levels alternate between the two)

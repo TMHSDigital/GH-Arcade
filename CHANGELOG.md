@@ -6,6 +6,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 ### Added
 
+- Astro Blaster and Star Siege have a Daily mode: the same rocks and saucer in Astro, and the same alien fire and mothership in Siege (solo), for everyone on a given UTC date.
 - A shared daily result links to its day, so a friend who opens it after midnight UTC still plays the same board. An earlier day plays as a challenge that does not count toward today's result or your streak.
 - Neon Pong: EASY CPU and HARD CPU modes beside VS CPU. The Table Champion and Clean Sheet trophies need the normal or the hard CPU.
 - After your first finished run, the arcade asks the browser to keep saved progress when the device is low on space. Settings, under "Your data", says whether it is protected.

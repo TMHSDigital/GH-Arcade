@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, WIDTH } from '../config';
 import { makeSprites, ROW_KINDS } from '../sprites';
+import { DAILY_MODE_LABEL } from '../../../shared/rng';
 import { buildMenu } from '../../../shared/scenes';
 import { helpKeys } from '../../../shared/settings';
 import { NEON, reducedMotion } from '../../../shared/ui';
@@ -41,6 +42,7 @@ export class MenuScene extends Phaser.Scene {
       help: `Move: ${helpKeys(['left', 'right'], '← →')} / stick / drag    Fire: ${helpKeys('action', 'Space')} / A / hold a finger down\nCo-op: P1 A D + Space or pad 1, P2 arrows + Enter or pad 2    Pause: ${helpKeys('pause', 'P')} / Start`,
       modes: [
         { label: '1 PLAYER', data: { players: 1 } },
+        { label: DAILY_MODE_LABEL, data: { players: 1, daily: true } },
         { label: '2 PLAYER CO-OP', data: { players: 2 } },
       ],
     });

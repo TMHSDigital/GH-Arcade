@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createRng, DAILY_KEEP, DAILY_MODES, dailyResult, dailyRng, dailyRunFrom, dailySeed, dailyStreak, getDailyBest, getDailyHistory, msUntilNextDaily, playedDaily, submitDailyScore, waitText } from './rng';
+import { createRng, DAILY_KEEP, DAILY_MODES, dailyResult, dailyRng, dailyRunFrom, dailySeed, diceFor, dailyStreak, getDailyBest, getDailyHistory, msUntilNextDaily, playedDaily, submitDailyScore, waitText } from './rng';
 import { installMemoryStorage } from './test-utils';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -130,6 +130,36 @@ describe('daily challenge helpers', () => {
     expect(dailyRunFrom({ daily: true }, 'hop')).toMatchObject({ day: today, past: false });
     // The address alone does not start a daily.
     expect(dailyRunFrom({}, 'hop', `?day=${yesterday}`)).toBeNull();
+  });
+
+  it('diceFor rolls the same sequence for the same daily, part by part', () => {
+    const run = dailyRunFrom({ daily: true }, 'astro')!;
+    const one = diceFor(run);
+    const two = diceFor(run);
+    const rolls = (dice: ReturnType<typeof diceFor>) => [dice('wave:1').between(0, 800), dice('ufo').float(0, 1), dice('wave:1').between(0, 800), dice('ufo').chance(0.5), dice('wave:2').pick(['a', 'b', 'c'])];
+    expect(rolls(one)).toEqual(rolls(two));
+    // A part carries on from call to call instead of starting over.
+    const part = diceFor(run)('wave:1');
+    const first = part.next();
+    expect(part.next()).not.toBe(first);
+    // Using one part more does not shift another.
+    const busy = diceFor(run);
+    for (let i = 0; i < 20; i++) busy('ufo').next();
+    expect(busy('wave:1').between(0, 800)).toBe(diceFor(run)('wave:1').between(0, 800));
+  });
+
+  it('diceFor keeps its rolls inside their ranges, seeded or not', () => {
+    for (const dice of [diceFor(dailyRunFrom({ daily: true }, 'siege')), diceFor(null)]) {
+      for (let i = 0; i < 200; i++) {
+        const whole = dice('a').between(3, 6);
+        expect(Number.isInteger(whole) && whole >= 3 && whole <= 6).toBe(true);
+        const float = dice('b').float(0.6, 1.3);
+        expect(float >= 0.6 && float < 1.3).toBe(true);
+        expect([50, 100, 150]).toContain(dice('c').pick([50, 100, 150]));
+      }
+      expect(dice('d').chance(0)).toBe(false);
+      expect(dice('d').chance(1)).toBe(true);
+    }
   });
 
   it('dailyResult records the score and words the game-over line', () => {

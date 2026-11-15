@@ -227,6 +227,46 @@ export function dailyRunFrom(
   return { day, past: day !== today, rng: (part) => dailyRng(game, day, part) };
 }
 
+/** Random choices for one part of a run. */
+export interface Dice {
+  /** A float in [0, 1). */
+  next: () => number;
+  /** A whole number from min to max, both included. */
+  between: (min: number, max: number) => number;
+  /** A float from min up to (not including) max. */
+  float: (min: number, max: number) => number;
+  /** True with the given probability, from 0 to 1. */
+  chance: (probability: number) => boolean;
+  /** One item from a non-empty list. */
+  pick: <T>(list: readonly T[]) => T;
+}
+
+/**
+ * The random choices of a run, by part: `const dice = diceFor(run)`, then `dice('ufo').between(1, 6)`.
+ * In a daily challenge each part is its own seeded sequence that carries on from call to call, so
+ * every player gets the same choices and one part never shifts another. In a normal game (`run` is
+ * null) every part is plain Math.random. A game written against this needs no "is it a daily?"
+ * checks where it rolls.
+ */
+export function diceFor(run: DailyRun | null): (part: string) => Dice {
+  const parts = new Map<string, Dice>();
+  return (part) => {
+    let dice = parts.get(part);
+    if (!dice) {
+      const next = run ? run.rng(part).next : Math.random;
+      dice = {
+        next,
+        between: (min, max) => min + Math.floor(next() * (max - min + 1)),
+        float: (min, max) => min + next() * (max - min),
+        chance: (probability) => next() < probability,
+        pick: (list) => list[Math.floor(next() * list.length)],
+      };
+      parts.set(part, dice);
+    }
+    return dice;
+  };
+}
+
 /** What a game passes to endRun() about the daily challenge it was (nothing for a normal game). */
 export function dailyOutcome(run: DailyRun | null): { daily?: string; dailyPast?: boolean } {
   return run ? { daily: run.day, dailyPast: run.past } : {};

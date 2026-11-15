@@ -35,10 +35,11 @@ import { ALIEN_POINTS, type AlienKind, makeSprites, ROW_KINDS } from '../sprites
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
+import { dailyOutcome, type DailyRun, dailyRunFrom, diceFor } from '../../../shared/rng';
 import { endRun } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice } from '../../../shared/touch';
-import { addGlow, burstEmitter, floatText, HUD_STYLE, impact, NEON, neonText, showBanner } from '../../../shared/ui';
+import { addGlow, burstEmitter, dailyHudLabel, floatText, HUD_STYLE, impact, NEON, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -78,6 +79,8 @@ interface Shield {
 
 export interface SiegeData {
   players?: 1 | 2;
+  /** Solo only: play today's daily challenge, where enemy fire and the mothership are seeded from the date. */
+  daily?: boolean;
 }
 
 /** Shield outline: a bunker with a notch cut into its base. */
@@ -96,6 +99,10 @@ const SHIELD_SHAPE = [
 
 export class GameScene extends Phaser.Scene {
   private coop = false;
+  /** The daily challenge being played, or null in a normal game. */
+  private daily: DailyRun | null = null;
+  /** The random choices of this run: seeded in a daily challenge, plain random otherwise. */
+  private dice = diceFor(null);
   private ships: Ship[] = [];
   private aliens: Alien[] = [];
   private enemyShots: (Shot & { phase: number })[] = [];
@@ -131,6 +138,10 @@ export class GameScene extends Phaser.Scene {
 
   init(data: SiegeData): void {
     this.coop = data.players === 2;
+    // Daily challenge (solo): when and where the aliens fire, the mothership's visits and its points
+    // are seeded from the date, so everyone faces the same siege today.
+    this.daily = this.coop ? null : dailyRunFrom(data, GAME_ID);
+    this.dice = diceFor(this.daily);
     this.ships = [];
     this.aliens = [];
     this.enemyShots = [];
@@ -143,7 +154,7 @@ export class GameScene extends Phaser.Scene {
     this.clearing = false;
     this.touchX = null;
     this.touchFiring = false;
-    this.motherTimer = Phaser.Math.Between(...MOTHERSHIP_MS);
+    this.motherTimer = this.dice('mothership').between(...MOTHERSHIP_MS);
   }
 
   create(): void {
@@ -158,6 +169,7 @@ export class GameScene extends Phaser.Scene {
     const style = HUD_STYLE;
     this.scoreText = this.add.text(WIDTH / 2, 24, '0', style).setOrigin(0.5).setDepth(10);
     this.waveText = this.add.text(WIDTH / 2, 46, '', { ...style, fontSize: '10px', color: '#8a8ab8' }).setOrigin(0.5).setDepth(10);
+    if (this.daily) dailyHudLabel(this, 20, 12, GAME_ID, this.daily, { depth: 10 });
 
     const seats: (1 | 2)[] = this.coop ? [1, 2] : [1];
     this.ships = seats.map((id) => this.makeShip(id));
@@ -407,13 +419,14 @@ export class GameScene extends Phaser.Scene {
   private updateEnemyFire(deltaMs: number): void {
     this.fireTimer -= deltaMs;
     if (this.fireTimer > 0 || this.enemyShots.length >= MAX_ENEMY_BULLETS + Math.min(this.wave - 1, 3)) return;
-    this.fireTimer = Math.max(350, ENEMY_FIRE_MS - (this.wave - 1) * 90) * Phaser.Math.FloatBetween(0.6, 1.3);
+    const dice = this.dice('fire');
+    this.fireTimer = Math.max(350, ENEMY_FIRE_MS - (this.wave - 1) * 90) * dice.float(0.6, 1.3);
     // A random column fires from its lowest alien; half the time it picks one above a player.
     const cols = [...new Set(this.aliens.filter((a) => a.alive).map((a) => a.col))];
     if (!cols.length) return;
     const target = this.ships.find((s) => s.active);
-    let col = Phaser.Utils.Array.GetRandom(cols);
-    if (target && Math.random() < 0.5) {
+    let col = dice.pick(cols);
+    if (target && dice.chance(0.5)) {
       col = cols.reduce((best, c) => {
         const x = this.aliens.find((a) => a.col === c)!.img.x;
         const bx = this.aliens.find((a) => a.col === best)!.img.x;
@@ -448,7 +461,7 @@ export class GameScene extends Phaser.Scene {
       if (this.over || this.clearing) return;
       this.motherTimer -= deltaMs;
       if (this.motherTimer <= 0) {
-        const fromLeft = Math.random() < 0.5;
+        const fromLeft = this.dice('mothership').chance(0.5);
         this.mothership = { x: fromLeft ? -30 : WIDTH + 30, vx: (fromLeft ? 1 : -1) * MOTHERSHIP_SPEED };
         this.motherImg.setVisible(true);
       }
@@ -466,12 +479,12 @@ export class GameScene extends Phaser.Scene {
   private hideMothership(): void {
     this.mothership = null;
     this.motherImg.setVisible(false);
-    this.motherTimer = Phaser.Math.Between(...MOTHERSHIP_MS);
+    this.motherTimer = this.dice('mothership').between(...MOTHERSHIP_MS);
   }
 
   private killMothership(): void {
     const x = this.mothership!.x;
-    const points = Phaser.Utils.Array.GetRandom(MOTHERSHIP_POINTS);
+    const points = this.dice('mothership').pick(MOTHERSHIP_POINTS);
     this.addScore(points);
     floatText(this, x, MOTHERSHIP_Y, `+${points}`, NEON.pink, 14);
     this.burst.setParticleTint(NEON.pink);
@@ -492,7 +505,7 @@ export class GameScene extends Phaser.Scene {
       if (!sh.cells[cy][cx]) continue;
       for (let dy = -2; dy <= 2; dy++) {
         for (let dx = -2; dx <= 2; dx++) {
-          if (Math.abs(dx) + Math.abs(dy) > 2 + (Math.random() < 0.5 ? 1 : 0)) continue;
+          if (Math.abs(dx) + Math.abs(dy) > 2 + (this.dice('shields').chance(0.5) ? 1 : 0)) continue;
           const row = sh.cells[cy + dy];
           if (row && cx + dx >= 0 && cx + dx < row.length) row[cx + dx] = false;
         }
@@ -546,7 +559,7 @@ export class GameScene extends Phaser.Scene {
   private endGame(detail: string): void {
     if (this.over) return;
     this.over = true;
-    endRun(this, { gameId: GAME_ID, score: this.score, detail, restartData: { players: this.coop ? 2 : 1 } }, 1800);
+    endRun(this, { gameId: GAME_ID, score: this.score, detail, restartData: { players: this.coop ? 2 : 1, daily: this.daily !== null }, ...dailyOutcome(this.daily) }, 1800);
   }
 
   private addScore(points: number): void {
@@ -560,7 +573,8 @@ export class GameScene extends Phaser.Scene {
     const left = ship.id === 1;
     ship.lifeIcons = Array.from({ length: Math.max(ship.lives, 0) }, (_, i) =>
       this.add
-        .image(left ? 140 + i * 30 : WIDTH - 40 - i * 30, 26, 'cannon')
+        // The daily label takes the left of the HUD, so the lives sit further right beside it.
+        .image(left ? (this.daily ? 205 : 140) + i * 30 : WIDTH - 40 - i * 30, 26, 'cannon')
         .setTint(ship.color)
         .setScale(0.55)
         .setDepth(10),
