@@ -57,6 +57,48 @@ export function checkStorage(): boolean {
   }
 }
 
+/** Remembers that the browser has been asked to keep saved data, so it is asked once per device. */
+const PERSIST_ASKED = 'persist-asked';
+/** Keys that describe this device and browser, not the player's progress. Backups leave them out. */
+export const DEVICE_KEYS: readonly string[] = [PERSIST_ASKED];
+
+/** The browser's storage manager, where there is one. */
+function storageManager(): StorageManager | undefined {
+  return typeof navigator === 'undefined' ? undefined : navigator.storage;
+}
+
+/**
+ * Asks the browser to keep the arcade's saved data when the device runs low on space, instead of
+ * treating it as disposable. It asks once per device (some browsers show a prompt), so call it when
+ * the player has something worth keeping: after a finished run, not on page load.
+ */
+export function requestPersistence(): void {
+  try {
+    const manager = storageManager();
+    if (!manager?.persist || loadJSON<unknown>(PERSIST_ASKED, false) === true) return;
+    // If the answer cannot be remembered, asking again on every run would nag.
+    if (!saveJSON(PERSIST_ASKED, true)) return;
+    manager.persist().catch(() => undefined);
+  } catch {
+    /* no storage manager, or it refused to answer: saved data stays as it was */
+  }
+}
+
+/**
+ * Whether the browser has agreed to keep saved data: 'protected', 'refused' (asked, and the answer
+ * was no), or 'unknown' (not asked yet, or the browser cannot say).
+ */
+export async function persistenceState(): Promise<'protected' | 'refused' | 'unknown'> {
+  try {
+    const manager = storageManager();
+    if (!manager?.persisted) return 'unknown';
+    if (await manager.persisted()) return 'protected';
+    return loadJSON<unknown>(PERSIST_ASKED, false) === true ? 'refused' : 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
 /**
  * Calls `fn` when the saved value for `key` may have changed behind this page's back: another tab
  * wrote or cleared it, or the page was restored from the back/forward cache. Modules that keep an

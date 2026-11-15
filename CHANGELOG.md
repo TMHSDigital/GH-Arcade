@@ -4,6 +4,10 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 ## 2026-11-15
 
+### Added
+
+- After your first finished run, the arcade asks the browser to keep saved progress when the device is low on space. Settings, under "Your data", says whether it is protected.
+
 ### Changed
 
 - Node 22.13 or newer is required (it was 22.12), and pull requests are checked on Node 22.13 as well as Node 24.

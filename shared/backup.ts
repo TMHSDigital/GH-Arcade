@@ -1,4 +1,4 @@
-import { isRecord, STORAGE_PREFIX as PREFIX } from './storage';
+import { DEVICE_KEYS, isRecord, STORAGE_PREFIX as PREFIX } from './storage';
 
 /**
  * Backup and restore of everything the arcade saves on this device (settings, trophies, stats,
@@ -23,14 +23,15 @@ export interface Backup {
   data: Record<string, unknown>;
 }
 
-/** Every arcade key currently in storage, without the prefix. */
+/** Every arcade key currently in storage that holds the player's data, without the prefix. */
 function savedKeys(): string[] {
   const keys: string[] = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (key?.startsWith(PREFIX)) keys.push(key.slice(PREFIX.length));
   }
-  return keys.sort();
+  // What this browser was asked or told stays with the browser: it is not exported, and a restore keeps it.
+  return keys.filter((key) => !DEVICE_KEYS.includes(key)).sort();
 }
 
 /** Collects everything saved on this device into one object that can be written to a file. */

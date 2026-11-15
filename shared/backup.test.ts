@@ -28,6 +28,14 @@ describe('exportBackup', () => {
     expect(Number.isNaN(Date.parse(backup.exportedAt))).toBe(false);
   });
 
+  it('leaves out what belongs to this browser, and a restore keeps it', () => {
+    const storage = installMemoryStorage({ ...saved, 'gh-arcade:persist-asked': 'true' });
+    const backup = JSON.parse(JSON.stringify(exportBackup()));
+    expect(Object.keys(backup.data)).not.toContain('persist-asked');
+    expect(importBackup(backup).ok).toBe(true);
+    expect(storage.data.get('gh-arcade:persist-asked')).toBe('true');
+  });
+
   it('returns an empty backup when storage is unavailable', () => {
     expect(exportBackup().data).toEqual({});
   });

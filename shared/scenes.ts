@@ -6,6 +6,7 @@ import { modeIndex, modeQuery } from './modes';
 import { DAILY_MODE_LABEL } from './rng';
 import { tone } from './sfx';
 import { keyLabel } from './settings';
+import { requestPersistence } from './storage';
 import { canShare, resultText, shareResult } from './share';
 import { showToast } from './toast';
 import { isTouchDevice } from './touch';
@@ -97,6 +98,8 @@ export function buildMenu(scene: Phaser.Scene, opts: MenuOptions): void {
  */
 export function finishRun(gameId: string, score?: number): { isRecord: boolean; rank: number; earned: Trophy[] } {
   const { isRecord, rank } = recordRun(gameId, score ?? 0);
+  // There is now progress worth keeping: ask the browser not to clear it (once per device).
+  requestPersistence();
   return { isRecord: isRecord && score !== undefined, rank: score === undefined ? 0 : rank, earned: drainRecentUnlocks() };
 }
 

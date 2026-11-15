@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { loadJSON, saveJSON, savedNumber } from './storage';
+import { loadJSON, persistenceState, requestPersistence, saveJSON, savedNumber } from './storage';
 import { installMemoryStorage } from './test-utils';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -127,5 +127,48 @@ describe('savedNumber', () => {
   it('passes finite positive numbers and turns anything else into 0', () => {
     expect(savedNumber(12)).toBe(12);
     for (const bad of [-5, NaN, Infinity, '12', null, undefined, {}]) expect(savedNumber(bad)).toBe(0);
+  });
+});
+
+describe('requestPersistence', () => {
+  /** A storage manager that answers `granted`, counting how often it is asked. */
+  function installManager(granted: boolean) {
+    const manager = { persist: vi.fn(() => Promise.resolve(granted)), persisted: vi.fn(() => Promise.resolve(granted)) };
+    vi.stubGlobal('navigator', { storage: manager });
+    return manager;
+  }
+
+  it('asks the browser once per device', () => {
+    installMemoryStorage();
+    const manager = installManager(true);
+    requestPersistence();
+    requestPersistence();
+    expect(manager.persist).toHaveBeenCalledTimes(1);
+  });
+
+  it('does nothing in a browser without a storage manager', () => {
+    const storage = installMemoryStorage();
+    vi.stubGlobal('navigator', {});
+    expect(() => requestPersistence()).not.toThrow();
+    expect(storage.data.size).toBe(0);
+  });
+
+  it('does not ask when the answer could not be remembered', () => {
+    // No localStorage: asking again on every run would nag.
+    const manager = installManager(true);
+    requestPersistence();
+    expect(manager.persist).not.toHaveBeenCalled();
+  });
+
+  it('reports the state: unknown before asking, then what the browser answered', async () => {
+    installMemoryStorage();
+    installManager(false);
+    expect(await persistenceState()).toBe('unknown');
+    requestPersistence();
+    expect(await persistenceState()).toBe('refused');
+    installManager(true);
+    expect(await persistenceState()).toBe('protected');
+    vi.stubGlobal('navigator', {});
+    expect(await persistenceState()).toBe('unknown');
   });
 });

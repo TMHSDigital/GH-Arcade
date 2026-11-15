@@ -1,5 +1,6 @@
 import { resetBestScores } from '../../shared/achievements';
 import { exportBackup, importBackup, mergeBackup } from '../../shared/backup';
+import { persistenceState } from '../../shared/storage';
 
 /**
  * Wires up the "Your data" section of the settings dialog: download a backup of everything saved
@@ -14,6 +15,17 @@ export function initDataPanel(): void {
     note.textContent = text;
     note.hidden = text === '';
   };
+
+  // Say whether the browser has agreed to keep saved data (it is asked after the first finished run).
+  const protection = section.querySelector<HTMLParagraphElement>('#data-protection')!;
+  void persistenceState().then((state) => {
+    if (state === 'unknown') return;
+    protection.textContent =
+      state === 'protected'
+        ? 'Saved progress is protected on this device.'
+        : 'This browser may clear saved progress when the device is low on space. Download a backup to be safe.';
+    protection.hidden = false;
+  });
 
   section.querySelector('#export-data')!.addEventListener('click', () => {
     const backup = exportBackup();
