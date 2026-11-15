@@ -240,7 +240,7 @@ export class GameScene extends Phaser.Scene {
     this.checkCatches();
 
     if (this.bonus && this.clock >= this.bonus.until) this.bonus = null;
-    if (this.dots.size === 0) this.clearLevel();
+    if (this.phase === 'play' && this.dots.size === 0) this.clearLevel();
   }
 
   // ---------------------------------------------------------------- movement
