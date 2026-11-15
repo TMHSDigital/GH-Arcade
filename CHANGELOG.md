@@ -39,6 +39,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 ### Fixed
 
+- The pause menu's SOUND label updates immediately when Mute is pressed.
 - The Arcade, Pause and Fullscreen buttons no longer cover the corners of the game in windows close to its own shape.
 - A rebound Pause or Mute key now works in two-player modes too.
 - A new version arriving while you play no longer reloads the game mid-run.
