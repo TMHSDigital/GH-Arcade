@@ -241,6 +241,17 @@ describe('best scores', () => {
     expect(a.getStats('snake').plays).toBe(1);
     expect(a.isUnlocked('snake.bonus')).toBe(true);
   });
+
+  it('resetBestScores also clears the bests a game keeps per mode or difficulty', async () => {
+    const { a, storage } = await fresh({
+      'gh-arcade:match:mode-best': '{"timed":900,"moves":700}',
+      'gh-arcade:mines:best-times': '{"easy":42}',
+    });
+    expect(a.GAME_BEST_KEYS).toEqual(expect.arrayContaining(['match:mode-best', 'mines:best-times']));
+    a.resetBestScores();
+    expect(storage.getItem('gh-arcade:match:mode-best')).toBeNull();
+    expect(storage.getItem('gh-arcade:mines:best-times')).toBeNull();
+  });
 });
 
 describe('trophiesFor', () => {

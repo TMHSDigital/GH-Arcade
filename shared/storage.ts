@@ -25,6 +25,15 @@ export function saveJSON(key: string, value: unknown): boolean {
   }
 }
 
+/** Forgets a saved value. Never throws. */
+export function removeJSON(key: string): void {
+  try {
+    localStorage.removeItem(PREFIX + key);
+  } catch {
+    // Blocked storage has nothing to remove.
+  }
+}
+
 let saveFailed = false;
 const saveFailureListeners = new Set<() => void>();
 

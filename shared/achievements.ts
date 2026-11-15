@@ -1,6 +1,6 @@
 import { GAMES } from '../games/registry';
 import { normaliseTop, numberMap, TOP_SIZE, type TopScore } from './saved-shapes';
-import { isRecord, loadJSON, onExternalChange, saveJSON, savedNumber, STORAGE_PREFIX } from './storage';
+import { isRecord, loadJSON, onExternalChange, removeJSON, saveJSON, savedNumber, STORAGE_PREFIX } from './storage';
 import type { Trophy, TrophyDef } from './trophy-types';
 
 /**
@@ -31,8 +31,14 @@ type CounterOf<T extends readonly TrophyDef[]> = Extract<T[number], { counter: s
 type ThresholdIdOf<T extends readonly TrophyDef[]> = Extract<T[number], { threshold: number }>['id'];
 
 // Every game declares its own trophies in games/<slug>/trophies.ts. They are plain data (no Phaser),
-// so collecting them here keeps the hub light.
-const perGame = import.meta.glob<{ TROPHIES: readonly TrophyDef[] }>('../games/*/trophies.ts', { eager: true });
+// so collecting them here keeps the hub light. A game that keeps bests of its own (per mode or per
+// difficulty) lists their storage keys as BEST_KEYS there, so "reset best scores" clears them too.
+const perGame = import.meta.glob<{ TROPHIES: readonly TrophyDef[]; BEST_KEYS?: readonly string[] }>('../games/*/trophies.ts', {
+  eager: true,
+});
+
+/** The storage keys of the bests that games keep beside the arcade's one best score each. */
+export const GAME_BEST_KEYS: string[] = Object.values(perGame).flatMap((mod) => mod.BEST_KEYS ?? []);
 
 export const TROPHIES: Trophy[] = [
   ...Object.entries(perGame)
@@ -319,4 +325,5 @@ export function resetBestScores(): void {
   for (const stats of Object.values(save.games)) stats.best = 0;
   save.top = {};
   persist();
+  for (const key of GAME_BEST_KEYS) removeJSON(key);
 }
