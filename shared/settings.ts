@@ -214,6 +214,22 @@ export function keyCodesFor(action: RebindableAction): number[] {
   return custom ? [custom.code] : DEFAULT_KEY_CODES[action];
 }
 
+/** The other action, if any, that a key already triggers (through its custom key or its defaults). */
+export function keyClash(action: RebindableAction, code: number): RebindableAction | undefined {
+  return REBINDABLE.find((other) => other !== action && keyCodesFor(other).includes(code));
+}
+
+/**
+ * The action, if any, that stops `action` going back to its default keys: one that has since been
+ * given one of them.
+ */
+export function keyRestoreBlocker(action: RebindableAction): RebindableAction | undefined {
+  return REBINDABLE.find((other) => {
+    const custom = current.bindings[other];
+    return other !== action && custom !== undefined && DEFAULT_KEY_CODES[action].includes(custom.code);
+  });
+}
+
 /**
  * Upper-case key name(s) for on-screen prompts, following the player's bindings: "K" when rebound,
  * otherwise the defaults ("P / ESC"). `first` keeps only the first default key ("SPACE").
@@ -227,6 +243,19 @@ export function keyLabel(action: RebindableAction, first = false): string {
 /** The gamepad button that currently triggers an action: the custom one, or the default. */
 export function padButtonFor(action: RebindableAction): number {
   return current.padBindings[action]?.button ?? DEFAULT_PAD_BUTTONS[action];
+}
+
+/** The other action, if any, that a gamepad button already triggers (its custom button, or its default). */
+export function padClash(action: RebindableAction, button: number): RebindableAction | undefined {
+  return REBINDABLE.find((other) => other !== action && padButtonFor(other) === button);
+}
+
+/**
+ * The action, if any, that stops `action` going back to its default button: one that has since been
+ * given it.
+ */
+export function padRestoreBlocker(action: RebindableAction): RebindableAction | undefined {
+  return REBINDABLE.find((other) => other !== action && current.padBindings[other]?.button === DEFAULT_PAD_BUTTONS[action]);
 }
 
 const PAD_BUTTON_NAMES = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'Left stick', 'Right stick', 'D-pad up', 'D-pad down', 'D-pad left', 'D-pad right'];

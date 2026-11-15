@@ -15,6 +15,7 @@ import {
   PIECE_COLORS,
   SOFT_DROP_SECONDS,
 } from '../config';
+import { EXTRA_CONTROLS } from '../controls';
 import {
   Bag,
   type Board,
@@ -50,7 +51,7 @@ import type { TROPHIES } from '../trophies';
 
 const { addCounter, reach, unlock } = trophiesFor<typeof TROPHIES>();
 
-type Extra = 'rotCW' | 'rotCCW' | 'hold' | 'drop';
+type Extra = keyof typeof EXTRA_CONTROLS;
 
 const BOARD_W = COLS * CELL;
 const BOARD_H = VISIBLE_ROWS * CELL;
@@ -137,12 +138,7 @@ export class GameScene extends Phaser.Scene {
     this.linesText = this.add.text(LEFT_PANEL_X, statY + 138, '0', value);
     if (this.daily) dailyHudLabel(this, LEFT_PANEL_X, statY + 180, GAME_ID, this.daily, { narrow: true });
 
-    this.controls = new ArcadeControls<Extra>(this, {
-      rotCW: { keys: ['UP', 'X', 'W'], buttons: [0] },
-      rotCCW: { keys: ['Z', 'CTRL'], buttons: [1, 2] },
-      hold: { keys: ['C', 'SHIFT'], buttons: [3, 4, 5] },
-      drop: { keys: ['SPACE'], buttons: [12] },
-    });
+    this.controls = new ArcadeControls<Extra>(this, EXTRA_CONTROLS);
     this.pause = new PauseController(this, this.controls, { canPause: () => this.state !== 'over' });
 
     if (isTouchDevice()) {

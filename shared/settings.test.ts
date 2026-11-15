@@ -251,3 +251,53 @@ describe('gamepad bindings', () => {
     expect(settings.padButtonLabel(17)).toBe('Button 17');
   });
 });
+
+describe('rebinding clashes', () => {
+  async function fresh() {
+    installMemoryStorage();
+    installWindow();
+    return (await freshModules()).settings;
+  }
+
+  it('finds the action a key already triggers, through its defaults or its custom key', async () => {
+    const settings = await fresh();
+    // M is Mute by default; K is free.
+    expect(settings.keyClash('pause', 77)).toBe('mute');
+    expect(settings.keyClash('pause', 75)).toBeUndefined();
+    // An action never clashes with itself.
+    expect(settings.keyClash('mute', 77)).toBeUndefined();
+    settings.updateSettings({ bindings: { mute: { code: 75, label: 'K' } } });
+    expect(settings.keyClash('pause', 75)).toBe('mute');
+    // Mute has moved off M, so M is free again.
+    expect(settings.keyClash('pause', 77)).toBeUndefined();
+  });
+
+  it('finds the action a gamepad button already triggers, including after one has moved', async () => {
+    const settings = await fresh();
+    // Start is Pause by default; LB (4) is free.
+    expect(settings.padClash('mute', 9)).toBe('pause');
+    expect(settings.padClash('mute', 4)).toBeUndefined();
+    expect(settings.padClash('pause', 9)).toBeUndefined();
+    settings.updateSettings({ padBindings: { pause: { button: 4 } } });
+    expect(settings.padClash('mute', 4)).toBe('pause');
+    expect(settings.padClash('mute', 9)).toBeUndefined();
+  });
+
+  it('blocks restoring default keys that another action has been given', async () => {
+    const settings = await fresh();
+    expect(settings.keyRestoreBlocker('mute')).toBeUndefined();
+    // Mute moves to K, then Pause takes M, which is Mute's default.
+    settings.updateSettings({ bindings: { mute: { code: 75, label: 'K' }, pause: { code: 77, label: 'M' } } });
+    expect(settings.keyRestoreBlocker('mute')).toBe('pause');
+    expect(settings.keyRestoreBlocker('pause')).toBeUndefined();
+  });
+
+  it('blocks restoring a default button that another action has been given', async () => {
+    const settings = await fresh();
+    expect(settings.padRestoreBlocker('pause')).toBeUndefined();
+    // Pause moves to LB, then Mute takes Start, which is Pause's default.
+    settings.updateSettings({ padBindings: { pause: { button: 4 }, mute: { button: 9 } } });
+    expect(settings.padRestoreBlocker('pause')).toBe('mute');
+    expect(settings.padRestoreBlocker('mute')).toBeUndefined();
+  });
+});

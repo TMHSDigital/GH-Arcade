@@ -1,10 +1,11 @@
 import { isTouchDevice } from '../../shared/device';
+import { extraKeyUses, extraUsesText } from '../../shared/extra-controls';
 import { cssColor, PALETTES } from '../../shared/palette';
 import {
-  DEFAULT_KEY_CODES,
   DEFAULT_KEY_LABELS,
   getSettings,
-  keyCodesFor,
+  keyClash,
+  keyRestoreBlocker,
   type KeyBinding,
   onSettingsChange,
   REBINDABLE,
@@ -13,6 +14,9 @@ import {
   type Settings,
   updateSettings,
 } from '../../shared/settings';
+
+/** Pause and Mute: the actions every game answers to, whatever else its keys and buttons do. */
+export const isSharedAction = (action: RebindableAction): boolean => action === 'pause' || action === 'mute';
 
 export const ACTION_NAMES: Record<RebindableAction, string> = {
   left: 'Move left',
@@ -98,17 +102,11 @@ export function initSettingsPanel(): void {
     bindingNote.hidden = text === '';
   };
 
-  /** The other action, if any, that a key already triggers (through its custom key or its defaults). */
-  const clashFor = (action: RebindableAction, code: number) =>
-    REBINDABLE.find((other) => other !== action && keyCodesFor(other).includes(code));
-
   /** Puts one action back on its default keys, unless another action has since been given one of them. */
   const restoreDefault = (action: RebindableAction) => {
     const bindings = { ...getSettings().bindings };
     delete bindings[action];
-    const taken = REBINDABLE.find(
-      (other) => other !== action && bindings[other] && DEFAULT_KEY_CODES[action].includes(bindings[other]!.code),
-    );
+    const taken = keyRestoreBlocker(action);
     if (taken) {
       note(`${ACTION_NAMES[taken]} is using one of those keys. Change it first.`);
       return;
@@ -136,11 +134,16 @@ export function initSettingsPanel(): void {
       listening = null;
       if (e.key !== 'Escape') {
         const binding: KeyBinding = { code: e.keyCode, label: keyLabel(e) };
-        const clash = clashFor(action, binding.code);
+        const clash = keyClash(action, binding.code);
         let problem = '';
         if (UNBINDABLE.has(e.key)) problem = `${binding.label} can't be used for controls.`;
         else if (clash) problem = `${binding.label} is already used for ${ACTION_NAMES[clash]}. Pick another key, or change that one first.`;
-        else updateSettings({ bindings: { ...getSettings().bindings, [action]: binding } });
+        else {
+          updateSettings({ bindings: { ...getSettings().bindings, [action]: binding } });
+          // Pause and Mute work in every game, so say when a game already uses the key for something of its own.
+          const uses = isSharedAction(action) ? extraKeyUses(binding.code) : [];
+          if (uses.length) problem = `${binding.label} is also used by ${extraUsesText(uses)}. One press will do both there.`;
+        }
         render();
         note(problem);
         return;

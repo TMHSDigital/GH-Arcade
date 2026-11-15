@@ -45,6 +45,7 @@ Tests live next to the code as `*.test.ts`. If you add logic that does not need 
 - **Fill in the hub card.** Edit the game's entry in [`games/registry.json`](games/registry.json): description, tags, accent color and controls hint.
 - **Thumbnail.** Optional, but nice: a 16:9 JPEG screenshot of gameplay at `public/thumbs/<slug>.jpg`, kept small (aim for 20 KB or less), referenced as `"thumbnail": "thumbs/<slug>.jpg"`. Without one the card shows the first letter of the title.
 - **Trophies.** List up to four trophies in the game's own `trophies.ts`; the arcade picks the file up automatically. Unlock them through `trophiesFor<typeof TROPHIES>()`, which type-checks the ids. A trophy earned at a number (a score, a level) declares it as `threshold` beside its description, and the game calls `reach(id, value)` instead of comparing against the number itself.
+- **Extra controls.** If the game adds keys or gamepad buttons beside the shared actions, list them in the game's own `controls.ts` as `EXTRA_CONTROLS` (see [`games/stack/controls.ts`](games/stack/controls.ts)) and pass that to `ArcadeControls`. The hub reads it to warn a player who gives Pause or Mute a key or button the game already uses.
 
 ## Level designs
 

@@ -28,6 +28,7 @@ import {
   WARP_COOLDOWN_MS,
   WIDTH,
 } from '../config';
+import { EXTRA_CONTROLS } from '../controls';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
@@ -66,7 +67,7 @@ interface Debris extends Body {
   life: number;
 }
 
-type Extra = 'fire';
+type Extra = keyof typeof EXTRA_CONTROLS;
 
 const TAU = Math.PI * 2;
 
@@ -149,7 +150,7 @@ export class GameScene extends Phaser.Scene {
     this.scoreText = this.add.text(WIDTH / 2, 24, '0', style).setOrigin(0.5).setDepth(100);
     this.waveText = this.add.text(WIDTH - 20, 24, '', { ...style, fontSize: '12px' }).setOrigin(1, 0.5).setDepth(100);
 
-    this.controls = new ArcadeControls<Extra>(this, { fire: { keys: ['Z', 'J'], buttons: [5, 7] } });
+    this.controls = new ArcadeControls<Extra>(this, EXTRA_CONTROLS);
     this.pause = new PauseController(this, this.controls, { canPause: () => !this.over });
 
     if (isTouchDevice()) {

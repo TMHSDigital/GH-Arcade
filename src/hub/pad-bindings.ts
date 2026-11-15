@@ -1,14 +1,16 @@
+import { extraButtonUses, extraUsesText } from '../../shared/extra-controls';
 import {
-  DEFAULT_PAD_BUTTONS,
   getSettings,
   onSettingsChange,
   padButtonFor,
   padButtonLabel,
+  padClash,
+  padRestoreBlocker,
   REBINDABLE,
   type RebindableAction,
   updateSettings,
 } from '../../shared/settings';
-import { ACTION_NAMES } from './settings-panel';
+import { ACTION_NAMES, isSharedAction } from './settings-panel';
 
 /**
  * Wires up the "Gamepad controls" section of the settings dialog: each action shows its gamepad
@@ -57,21 +59,23 @@ export function initPadPanel(): void {
 
   /** Gives an action a button, unless another action already uses it. */
   const assign = (action: RebindableAction, button: number) => {
-    const clash = REBINDABLE.find((other) => other !== action && padButtonFor(other) === button);
+    const clash = padClash(action, button);
     if (clash) {
       render();
       note(`${padButtonLabel(button)} is already used for ${ACTION_NAMES[clash]}. Pick another button, or change that one first.`);
       return;
     }
-    note('');
     updateSettings({ padBindings: { ...getSettings().padBindings, [action]: { button } } });
+    // Pause and Mute work in every game, so say when a game already uses the button for something of its own.
+    const uses = isSharedAction(action) ? extraButtonUses(button) : [];
+    note(uses.length ? `${padButtonLabel(button)} is also used by ${extraUsesText(uses)}. One press will do both there.` : '');
   };
 
   /** Puts one action back on its default button, unless another action has since been given it. */
   const restoreDefault = (action: RebindableAction) => {
     const padBindings = { ...getSettings().padBindings };
     delete padBindings[action];
-    const taken = REBINDABLE.find((other) => other !== action && padBindings[other]?.button === DEFAULT_PAD_BUTTONS[action]);
+    const taken = padRestoreBlocker(action);
     if (taken) {
       note(`${ACTION_NAMES[taken]} is using that button. Change it first.`);
       return;

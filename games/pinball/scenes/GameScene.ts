@@ -28,6 +28,7 @@ import {
   SUBSTEPS,
   WIDTH,
 } from '../config';
+import { EXTRA_CONTROLS } from '../controls';
 import {
   BUMPERS,
   FLIPPER_PIVOTS,
@@ -146,11 +147,8 @@ export class GameScene extends Phaser.Scene {
       return { pivot, side, angle: this.flipperAngle(side, false), omega: 0, held: false } satisfies Flipper;
     });
 
-    this.controls = new ArcadeControls(this, {
-      // Z and / and the shoulder buttons and triggers work the flippers too.
-      flipL: { keys: ['Z'], buttons: [4, 6] },
-      flipR: { keys: ['FORWARD_SLASH'], buttons: [5, 7] },
-    });
+    // Z and / and the shoulder buttons and triggers work the flippers too (controls.ts).
+    this.controls = new ArcadeControls(this, EXTRA_CONTROLS);
     this.pause = new PauseController(this, this.controls, { canPause: () => this.state !== 'over' });
     this.bindTouch();
     this.readyBall();
