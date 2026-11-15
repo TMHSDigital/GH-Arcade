@@ -138,7 +138,7 @@ export class GameScene extends Phaser.Scene {
     } else {
       this.players = [this.makePlayer(undefined, line(Math.floor(COLS / 3), midY, DIRS.right), DIRS.right, [NEON.green, NEON.cyan])];
     }
-    this.food = this.randomFreeCell();
+    this.food = this.randomFreeCell(true);
 
     this.pause = new PauseController(
       this,
@@ -459,9 +459,13 @@ export class GameScene extends Phaser.Scene {
     this.lengthText.setText(`LEN ${this.players[0].segments.length}`);
   }
 
-  private randomFreeCell(): Cell {
+  /**
+   * A cell nothing occupies. `opening` is for the first food of a run: the scene instance is reused,
+   * so `food` still holds the last run's cell then, and counting it would shift the daily sequence.
+   */
+  private randomFreeCell(opening = false): Cell {
     const taken = this.players.flatMap((p) => p.segments);
-    if (this.food) taken.push(this.food);
+    if (this.food && !opening) taken.push(this.food);
     if (this.bonus) taken.push(this.bonus.cell);
     const free = freeCells(taken);
     return this.cellRng ? this.cellRng.pick(free) : Phaser.Utils.Array.GetRandom(free);

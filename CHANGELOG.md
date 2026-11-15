@@ -12,6 +12,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 - The pause menu's SOUND label updates immediately when Mute is pressed.
 - Neon Maze: being caught on the same tick as eating the last dot now costs a life instead of clearing the level.
+- Neon Snake: the daily challenge starts with the same first food for everyone, including after PLAY AGAIN or an earlier run on the page.
 
 ## 2026-11-14
 
