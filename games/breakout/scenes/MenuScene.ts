@@ -1,12 +1,12 @@
 import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, ROW_COLORS, WIDTH } from '../config';
-import { buildMenu } from '../../../shared/scenes';
+import { buildMenu, SCENE } from '../../../shared/scenes';
 import { helpKeys } from '../../../shared/settings';
 import { reducedMotion } from '../../../shared/ui';
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
-    super('Menu');
+    super(SCENE.menu);
   }
 
   create(): void {

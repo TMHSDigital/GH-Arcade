@@ -34,12 +34,13 @@ import {
 import { ALIEN_POINTS, type AlienKind, makeSprites, ROW_KINDS } from '../sprites';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
+import { frameSeconds } from '../../../shared/frame';
 import { PauseController } from '../../../shared/pause';
 import { dailyOutcome, type DailyRun, dailyRunFrom, diceFor } from '../../../shared/rng';
-import { endRun } from '../../../shared/scenes';
+import { endRun, SCENE } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice } from '../../../shared/touch';
-import { addGlow, burstEmitter, dailyHudLabel, floatText, HUD_STYLE, impact, NEON, neonText, showBanner } from '../../../shared/ui';
+import { addGlow, burstEmitter, dailyHudLabel, floatText, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -133,7 +134,7 @@ export class GameScene extends Phaser.Scene {
   private pause!: PauseController;
 
   constructor() {
-    super('Game');
+    super(SCENE.game);
   }
 
   init(data: SiegeData): void {
@@ -168,7 +169,7 @@ export class GameScene extends Phaser.Scene {
 
     const style = HUD_STYLE;
     this.scoreText = this.add.text(WIDTH / 2, 24, '0', style).setOrigin(0.5).setDepth(10);
-    this.waveText = this.add.text(WIDTH / 2, 46, '', { ...style, fontSize: '10px', color: '#8a8ab8' }).setOrigin(0.5).setDepth(10);
+    this.waveText = this.add.text(WIDTH / 2, 46, '', HUD_LABEL_STYLE).setOrigin(0.5).setDepth(10);
     if (this.daily) dailyHudLabel(this, 20, 12, GAME_ID, this.daily, { depth: 10 });
 
     const seats: (1 | 2)[] = this.coop ? [1, 2] : [1];
@@ -176,7 +177,7 @@ export class GameScene extends Phaser.Scene {
     this.pause = new PauseController(
       this,
       this.ships.map((s) => s.controls),
-      { canPause: () => !this.over },
+      { canPause: () => !this.over, restartData: { players: this.coop ? 2 : 1, daily: this.daily !== null } },
     );
 
     if (!this.coop) this.bindTouch();
@@ -282,7 +283,7 @@ export class GameScene extends Phaser.Scene {
 
   update(_time: number, deltaMs: number): void {
     if (this.pause.isPaused) return;
-    const dt = Math.min(deltaMs, 50) / 1000;
+    const dt = frameSeconds(deltaMs);
     this.elapsed += deltaMs;
 
     for (const ship of this.ships) this.updateShip(ship, dt);
@@ -559,7 +560,7 @@ export class GameScene extends Phaser.Scene {
   private endGame(detail: string): void {
     if (this.over) return;
     this.over = true;
-    endRun(this, { gameId: GAME_ID, score: this.score, detail, restartData: { players: this.coop ? 2 : 1, daily: this.daily !== null }, ...dailyOutcome(this.daily) }, 1800);
+    endRun(this, { gameId: GAME_ID, score: this.score, detail, ...dailyOutcome(this.daily) }, 1800);
   }
 
   private addScore(points: number): void {

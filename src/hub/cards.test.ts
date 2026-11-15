@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { cardHref, type GameEntry, lastPlayedSlug, sorted, type StatsFor, validSort, validTag } from './cards';
+import type { GameEntry } from '../../games/registry';
+import { cardHref, lastPlayedSlug, sorted, type StatsFor, validSort, validTag } from './cards';
 
 const game = (slug: string, title: string, tags: string[] = []): GameEntry => ({ slug, title, description: '', tags, accent: '#fff' });
 

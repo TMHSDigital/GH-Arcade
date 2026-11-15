@@ -70,7 +70,7 @@ describe('counter persistence', () => {
   it('writes the counters when the run is recorded', async () => {
     const { a, storage } = await fresh();
     a.addCounter('runner.coins', 6);
-    a.recordPlay('runner', 150);
+    a.recordRun('runner', 150);
     expect(JSON.parse(storage.data.get('gh-arcade:trophies')!).counters['runner.coins']).toBe(6);
   });
 
@@ -120,7 +120,7 @@ describe('a change made in another tab', () => {
     otherTabWrites({ counters: {} });
     expect(a.getCounter('stack.lines')).toBe(3);
     expect(a.getCounter('arcade.plays')).toBe(0);
-    a.recordPlay('stack', 100);
+    a.recordRun('stack', 100);
     expect(savedCounters()['stack.lines']).toBe(3);
   });
 
@@ -130,39 +130,39 @@ describe('a change made in another tab', () => {
     a.addCounter('runner.coins', 4);
     otherTabWrites({ counters: { 'runner.coins': 17 } });
     expect(a.getCounter('runner.coins')).toBe(21);
-    a.recordPlay('runner', 50);
+    a.recordRun('runner', 50);
     expect(savedCounters()['runner.coins']).toBe(21);
   });
 
   it('does not add the additions of this tab twice once they are written', async () => {
     const { a, otherTabWrites } = await withTabs();
     a.addCounter('runner.coins', 4);
-    a.recordPlay('runner', 50);
+    a.recordRun('runner', 50);
     otherTabWrites({ counters: { 'runner.coins': 9 } });
     expect(a.getCounter('runner.coins')).toBe(9);
   });
 });
 
-describe('recordPlay', () => {
+describe('recordRun', () => {
   it('accumulates plays, best and total score', async () => {
     const { a } = await fresh();
     expect(a.getStats('snake')).toEqual({ plays: 0, scoredPlays: 0, best: 0, totalScore: 0 });
-    a.recordPlay('snake', 100);
-    a.recordPlay('snake', 40);
-    a.recordPlay('snake');
+    a.recordRun('snake', 100);
+    a.recordRun('snake', 40);
+    a.recordRun('snake');
     expect(a.getStats('snake')).toMatchObject({ plays: 3, best: 100, totalScore: 140 });
     expect(a.getCounter('arcade.plays')).toBe(3);
   });
 
   it('keeps matches without a score out of the average', async () => {
     const { a, storage } = await fresh();
-    a.recordPlay('snake', 100);
-    for (let i = 0; i < 9; i++) a.recordPlay('snake');
+    a.recordRun('snake', 100);
+    for (let i = 0; i < 9; i++) a.recordRun('snake');
     const stats = a.getStats('snake');
     expect(stats).toMatchObject({ plays: 10, scoredPlays: 1, totalScore: 100 });
     expect(stats.totalScore / stats.scoredPlays).toBe(100);
     // A run that scores 0 is still a scored play.
-    a.recordPlay('snake', 0);
+    a.recordRun('snake', 0);
     expect(a.getStats('snake')).toMatchObject({ plays: 11, scoredPlays: 2 });
     const again = await fresh({ 'gh-arcade:trophies': storage.data.get('gh-arcade:trophies')! });
     expect(again.a.getStats('snake')).toMatchObject({ plays: 11, scoredPlays: 2 });
@@ -178,7 +178,7 @@ describe('recordPlay', () => {
     const { a, storage } = await fresh();
     expect(a.getStats('snake').lastPlayed).toBeUndefined();
     const before = Date.now();
-    a.recordPlay('snake', 5);
+    a.recordRun('snake', 5);
     expect(a.getStats('snake').lastPlayed).toBeGreaterThanOrEqual(before);
     const again = await fresh({ 'gh-arcade:trophies': storage.data.get('gh-arcade:trophies')! });
     expect(again.a.getStats('snake').lastPlayed).toBe(a.getStats('snake').lastPlayed);
@@ -187,21 +187,21 @@ describe('recordPlay', () => {
   it('unlocks "play every game" only after every game has a play', async () => {
     const { a } = await fresh();
     const games = (registry as { slug: string }[]).map((g) => g.slug);
-    games.slice(0, -1).forEach((g) => a.recordPlay(g, 1));
+    games.slice(0, -1).forEach((g) => a.recordRun(g, 1));
     expect(a.isUnlocked('arcade.all')).toBe(false);
-    a.recordPlay(games[games.length - 1], 1);
+    a.recordRun(games[games.length - 1], 1);
     expect(a.isUnlocked('arcade.all')).toBe(true);
   });
 });
 
 describe('best scores', () => {
-  it('recordPlay reports a record only for a strictly higher score', async () => {
+  it('reports a record only for a strictly higher score', async () => {
     const { a } = await fresh();
-    expect(a.recordPlay('snake', 0)).toBe(false);
-    expect(a.recordPlay('snake', 10)).toBe(true);
-    expect(a.recordPlay('snake', 10)).toBe(false);
-    expect(a.recordPlay('snake', 9)).toBe(false);
-    expect(a.recordPlay('snake', 11)).toBe(true);
+    expect(a.recordRun('snake', 0).isRecord).toBe(false);
+    expect(a.recordRun('snake', 10).isRecord).toBe(true);
+    expect(a.recordRun('snake', 10).isRecord).toBe(false);
+    expect(a.recordRun('snake', 9).isRecord).toBe(false);
+    expect(a.recordRun('snake', 11).isRecord).toBe(true);
     expect(a.getHighScore('snake')).toBe(11);
     expect(a.getHighScore('pong')).toBe(0);
   });
@@ -228,14 +228,14 @@ describe('best scores', () => {
     const games = (registry as { slug: string }[]).map((g) => g.slug);
     const legacy = Object.fromEntries(games.map((g) => [`gh-arcade:${g}:highscore`, '5']));
     const { a } = await fresh(legacy);
-    a.recordPlay(games[0], 1);
+    a.recordRun(games[0], 1);
     expect(a.isUnlocked('arcade.all')).toBe(false);
   });
 
   it('resetBestScores clears bests and keeps everything else', async () => {
     const { a } = await fresh();
     a.unlock('snake.bonus');
-    a.recordPlay('snake', 30);
+    a.recordRun('snake', 30);
     a.resetBestScores();
     expect(a.getHighScore('snake')).toBe(0);
     expect(a.getStats('snake').plays).toBe(1);
@@ -321,7 +321,7 @@ describe('resetTrophies', () => {
     const { a } = await fresh();
     a.unlock('snake.bonus');
     a.addCounter('stack.lines', 5);
-    a.recordPlay('snake', 10);
+    a.recordRun('snake', 10);
     a.resetTrophies();
     expect(a.isUnlocked('snake.bonus')).toBe(false);
     expect(a.getCounter('stack.lines')).toBe(0);
@@ -335,7 +335,7 @@ describe('persistence', () => {
   it('saves under gh-arcade:trophies and reloads it', async () => {
     const { a, storage } = await fresh();
     a.unlock('snake.bonus');
-    a.recordPlay('snake', 12);
+    a.recordRun('snake', 12);
     const saved = storage.data.get('gh-arcade:trophies')!;
     expect(JSON.parse(saved)).toMatchObject({ version: 1, games: { snake: { plays: 1, best: 12, totalScore: 12 } } });
 
@@ -360,7 +360,7 @@ describe('top scores', () => {
 
   it('keeps the five highest scores, best first, with the time of each run', async () => {
     const { a } = await fresh();
-    for (const score of [30, 80, 10, 50, 70, 20, 60]) a.recordPlay('snake', score);
+    for (const score of [30, 80, 10, 50, 70, 20, 60]) a.recordRun('snake', score);
     expect(scores(a)).toEqual([80, 70, 60, 50, 30]);
     for (const entry of a.getTopScores('snake')) expect(entry.at).toBeGreaterThan(0);
     expect(a.getHighScore('snake')).toBe(80);
@@ -379,7 +379,7 @@ describe('top scores', () => {
 
   it('leaves out a run that does not make the table, a tie for last place included', async () => {
     const { a } = await fresh();
-    for (const score of [50, 40, 30, 20, 10]) a.recordPlay('snake', score);
+    for (const score of [50, 40, 30, 20, 10]) a.recordRun('snake', score);
     expect(a.recordRun('snake', 5)).toEqual({ isRecord: false, rank: 0 });
     expect(a.recordRun('snake', 10)).toEqual({ isRecord: false, rank: 0 });
     expect(scores(a)).toEqual([50, 40, 30, 20, 10]);
@@ -394,8 +394,8 @@ describe('top scores', () => {
 
   it('keeps a table per game', async () => {
     const { a } = await fresh();
-    a.recordPlay('snake', 10);
-    a.recordPlay('runner', 99);
+    a.recordRun('snake', 10);
+    a.recordRun('runner', 99);
     expect(scores(a, 'snake')).toEqual([10]);
     expect(scores(a, 'runner')).toEqual([99]);
   });
@@ -410,7 +410,7 @@ describe('top scores', () => {
 
   it('survives a reload', async () => {
     const { a, storage } = await fresh();
-    for (const score of [30, 80, 10]) a.recordPlay('snake', score);
+    for (const score of [30, 80, 10]) a.recordRun('snake', score);
     const again = await fresh(Object.fromEntries(storage.data));
     expect(scores(again.a)).toEqual([80, 30, 10]);
   });
@@ -425,7 +425,7 @@ describe('top scores', () => {
 
   it('is cleared with the best scores and kept through a trophy reset', async () => {
     const { a } = await fresh();
-    for (const score of [30, 80]) a.recordPlay('snake', score);
+    for (const score of [30, 80]) a.recordRun('snake', score);
     a.resetTrophies();
     expect(scores(a)).toEqual([80, 30]);
     a.resetBestScores();

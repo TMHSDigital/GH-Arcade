@@ -36,9 +36,10 @@ import {
 } from '../rules';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
+import { frameSeconds } from '../../../shared/frame';
 import { PauseController } from '../../../shared/pause';
 import { dailyOutcome, type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
-import { endRun } from '../../../shared/scenes';
+import { endRun, SCENE } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { onSwipe } from '../../../shared/touch';
 import { burstEmitter, dailyHudLabel, floatText, HUD_STYLE, NEON, showBanner, impact } from '../../../shared/ui';
@@ -84,7 +85,7 @@ export class GameScene extends Phaser.Scene {
   private pause!: PauseController;
 
   constructor() {
-    super('Game');
+    super(SCENE.game);
   }
 
   init(data: { daily?: boolean } = {}): void {
@@ -165,7 +166,7 @@ export class GameScene extends Phaser.Scene {
 
   update(_time: number, deltaMs: number): void {
     if (this.pause.isPaused) return;
-    const dt = Math.min(deltaMs, 50) / 1000;
+    const dt = frameSeconds(deltaMs);
     this.elapsed += deltaMs;
     for (const name of Object.keys(DIRS) as DirName[]) if (this.controls.justPressed(name)) this.tryHop(name);
     if (this.controls.justPressed('action')) this.tryHop('up');

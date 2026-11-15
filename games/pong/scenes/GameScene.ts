@@ -20,8 +20,9 @@ import {
 import { bounceOffPaddle, cpuAimError, cpuMove, matchScore, touchesPaddle } from '../rules';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
+import { frameSeconds } from '../../../shared/frame';
 import { PauseController } from '../../../shared/pause';
-import { endRun, showMatchResult } from '../../../shared/scenes';
+import { endRun, SCENE, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, hex, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
@@ -67,7 +68,7 @@ export class GameScene extends Phaser.Scene {
   private pause!: PauseController;
 
   constructor() {
-    super('Game');
+    super(SCENE.game);
   }
 
   init(data: PongData): void {
@@ -173,7 +174,7 @@ export class GameScene extends Phaser.Scene {
 
   update(_time: number, deltaMs: number): void {
     if (this.pause.isPaused) return;
-    const dt = Math.min(deltaMs, 50) / 1000;
+    const dt = frameSeconds(deltaMs);
     for (const p of this.paddles) this.movePaddle(p, dt);
     if (this.live && !this.over) this.moveBall(dt);
     this.trail.setPosition(this.ball.x, this.ball.y);

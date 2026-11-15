@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, PIECE_COLORS, WIDTH } from '../config';
 import { PIECE_TYPES, ROTATIONS } from '../logic';
 import { DAILY_MODES } from '../../../shared/rng';
-import { buildMenu } from '../../../shared/scenes';
+import { buildMenu, SCENE } from '../../../shared/scenes';
 import { helpKeys } from '../../../shared/settings';
 import { NEON, reducedMotion } from '../../../shared/ui';
 
@@ -10,7 +10,7 @@ const CELL = 22;
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
-    super('Menu');
+    super(SCENE.menu);
   }
 
   create(): void {

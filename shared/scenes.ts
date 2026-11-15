@@ -134,6 +134,14 @@ export function restartDataFor(scene: Phaser.Scene): object {
 const endedScenes = new WeakSet<Phaser.Scene>();
 
 /**
+ * True once endRun() has been called for the scene's current run, until the scene shuts down. The
+ * pause menu uses it, so a game that is over cannot be paused whatever else the game allows.
+ */
+export function hasEnded(scene: Phaser.Scene): boolean {
+  return endedScenes.has(scene);
+}
+
+/**
  * Ends a run: after `delayMs` (time for the death effects to play), hands over to the shared
  * game-over screen. Only the first call per run counts, so two things ending the run in the same
  * moment cannot start the screen twice. PLAY AGAIN restarts with `data.restartData`, or with the

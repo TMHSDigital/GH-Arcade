@@ -17,12 +17,13 @@ import {
 import { advance, bonusPoints, type Cell, type DirName, DIRS, foodPoints, freeCells, nextStepMs, queueTurn, resolveStep, same } from '../logic';
 import { getHighScore, trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
+import { frameMs } from '../../../shared/frame';
 import { PauseController } from '../../../shared/pause';
 import { dailyOutcome, type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
-import { endRun, showMatchResult } from '../../../shared/scenes';
+import { endRun, SCENE, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, onSwipe } from '../../../shared/touch';
-import { burstEmitter, dailyHudLabel, fadeToScene, floatText, hex, HUD_STYLE, impact, NEON, neonText, showBanner } from '../../../shared/ui';
+import { burstEmitter, dailyHudLabel, fadeToScene, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -99,7 +100,7 @@ export class GameScene extends Phaser.Scene {
   private pause!: PauseController;
 
   constructor() {
-    super('Game');
+    super(SCENE.game);
   }
 
   init(data: SnakeGameData): void {
@@ -200,7 +201,7 @@ export class GameScene extends Phaser.Scene {
         drawPip(66 + i * 18, p1.colors[0], i < this.wins[0]);
         drawPip(WIDTH - 66 - i * 18, p2.colors[0], i < this.wins[1]);
       }
-      this.scoreText = this.add.text(WIDTH / 2, FIELD_TOP / 2, `FIRST TO ${ROUNDS_TO_WIN}`, { ...style, fontSize: '10px', color: '#8a8ab8' }).setOrigin(0.5);
+      this.scoreText = this.add.text(WIDTH / 2, FIELD_TOP / 2, `FIRST TO ${ROUNDS_TO_WIN}`, HUD_LABEL_STYLE).setOrigin(0.5);
       this.lengthText = this.add.text(0, 0, '').setVisible(false);
       const help = isTouchDevice() ? 'SWIPE ON YOUR HALF OF THE SCREEN' : 'P1: WASD / PAD 1     P2: ARROWS / PAD 2';
       this.hint = neonText(this, WIDTH / 2, HEIGHT - 30, help, 10, NEON.white).setAlpha(0.8);
@@ -238,8 +239,11 @@ export class GameScene extends Phaser.Scene {
 
   // ---------------------------------------------------------------- loop
 
-  update(_time: number, delta: number): void {
+  update(_time: number, rawDelta: number): void {
     if (this.pause.isPaused) return;
+    // A long frame (a stalled tab) is played as a short one, so the game never takes several steps
+    // before the player can react.
+    const delta = frameMs(rawDelta);
     for (const p of this.players) {
       for (const name of Object.keys(DIRS) as DirName[]) if (p.controls.justPressed(name)) this.turn(p, name);
     }
@@ -353,7 +357,7 @@ export class GameScene extends Phaser.Scene {
       if (winner && this.wins[winner.id - 1] >= ROUNDS_TO_WIN) this.matchOver(winner);
       else {
         showBanner(this, winner ? `P${winner.id} TAKES THE ROUND` : 'DRAW', winner ? winner.colors[0] : NEON.white);
-        this.time.delayedCall(1400, () => fadeToScene(this, 'Game', { players: 2, wins: this.wins, round: this.round + 1 }));
+        this.time.delayedCall(1400, () => fadeToScene(this, SCENE.game, { players: 2, wins: this.wins, round: this.round + 1 }));
       }
     });
   }

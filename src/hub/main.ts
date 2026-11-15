@@ -1,11 +1,11 @@
 import './hub.css';
-import registry from '../../games/registry.json';
+import { GAMES, type GameEntry } from '../../games/registry';
 import { registerOffline } from '../../shared/pwa';
 import { getHighScore, getStats, trophyProgress } from '../../shared/achievements';
 import { DAILY_TAG, getDailyBest, playedDaily } from '../../shared/rng';
 import { loadJSON, saveJSON } from '../../shared/storage';
 import { initStorageNotice } from '../../shared/storage-notice';
-import { cardHref, type GameEntry, lastPlayedSlug, type Sort, sorted, validSort, validTag } from './cards';
+import { cardHref, lastPlayedSlug, type Sort, sorted, validSort, validTag } from './cards';
 import { initDailyBanner } from './daily-banner';
 import { initDataPanel } from './data-panel';
 import { escapeHtml } from './html';
@@ -18,7 +18,7 @@ import { initTrophiesPanel } from './trophies-panel';
 registerOffline('hub');
 initStorageNotice();
 
-const games = registry as GameEntry[];
+const games = GAMES;
 const grid = document.querySelector<HTMLUListElement>('#game-grid')!;
 const filters = document.querySelector<HTMLDivElement>('#filters')!;
 const count = document.querySelector<HTMLSpanElement>('#game-count')!;

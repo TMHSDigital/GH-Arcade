@@ -1,3 +1,4 @@
+import type { GameEntry } from '../../games/registry';
 import { modeQuery } from '../../shared/modes';
 import { DAILY_MODE_LABEL } from '../../shared/rng';
 
@@ -6,18 +7,6 @@ import { DAILY_MODE_LABEL } from '../../shared/rng';
  * links to and which saved choices are still valid. No DOM and no storage here: the stats and saved
  * values are passed in, so each rule can be tested on its own.
  */
-
-/** A game as games/registry.json lists it. */
-export interface GameEntry {
-  slug: string;
-  title: string;
-  description: string;
-  tags: string[];
-  accent: string;
-  controls?: string;
-  /** Optional 16:9 screenshot in public/, e.g. thumbs/snake.jpg. Without one the card shows the title's first letter. */
-  thumbnail?: string;
-}
 
 export const SORTS = ['featured', 'recent', 'plays', 'title'] as const;
 export type Sort = (typeof SORTS)[number];

@@ -283,6 +283,7 @@ startArcadeGame({ scenes: [MenuScene, GameScene, ArcadeGameOverScene] });
 | [`settings.ts`](shared/settings.ts) | Player settings (volume, reduced motion, palette, key and gamepad bindings, rumble) that every game reads on start. |
 | [`backup.ts`](shared/backup.ts) | Export, import (replace or merge) and reset of everything saved on the device, used by the hub's settings dialog. |
 | [`rng.ts`](shared/rng.ts) | `createRng(seed)`: repeatable random numbers with `between`, `pick` and `shuffle`, plus what a daily challenge needs: `dailySeed()`, `dailyRng()`, `DAILY_MODES` for the menu (or `DAILY_MODE_LABEL` to add DAILY to a menu that already has modes), per-day best scores with history and a streak, `dailyRunFrom()` and `diceFor()` to seed a scene's random choices, and `dailyResult()` for the game-over line. Give the game the `daily` tag in `registry.json` so the hub shows today's result. |
+| [`frame.ts`](shared/frame.ts) | `frameSeconds(deltaMs)`: a frame's length in seconds, capped so a stalled tab never makes the game jump. Use it for `dt` in every `update()`. |
 | [`pwa.ts`](shared/pwa.ts) | Registers the service worker that makes every page work offline, and announces when the arcade is ready offline or has updated. |
 
 > [!NOTE]

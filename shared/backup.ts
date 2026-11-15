@@ -1,4 +1,5 @@
-import { DEVICE_KEYS, isRecord, STORAGE_PREFIX as PREFIX } from './storage';
+import { normaliseTop, numberMap } from './saved-shapes';
+import { DEVICE_KEYS, isRecord, savedNumber, STORAGE_PREFIX as PREFIX } from './storage';
 
 /**
  * Backup and restore of everything the arcade saves on this device (settings, trophies, stats,
@@ -131,21 +132,12 @@ export function importBackup(raw: unknown): ImportResult {
   return { ok: true, keys: entries.length };
 }
 
-/** A finite, non-negative number, or 0 for anything else. */
-const count = (value: unknown): number => (typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0);
-
-/** The numeric entries of a saved map (unlock times, counters). */
-function numbers(raw: unknown): Record<string, number> {
-  const out: Record<string, number> = {};
-  if (isRecord(raw)) for (const [k, v] of Object.entries(raw)) if (typeof v === 'number' && Number.isFinite(v)) out[k] = v;
-  return out;
-}
+// The readers shared with the trophies module, under the short names the merge rules below use.
+const count = savedNumber;
+const numbers = numberMap;
 
 /** Every key of two saved sections, each once. */
 const keysOf = (a: unknown, b: unknown): string[] => [...new Set([...Object.keys(isRecord(a) ? a : {}), ...Object.keys(isRecord(b) ? b : {})])];
-
-/** How many scores a game's table keeps; matches TOP_SIZE in shared/achievements.ts. */
-const TOP_SIZE = 5;
 
 /**
  * Combines two trophies saves (see Save in shared/achievements.ts) so that nothing is lost and
@@ -190,15 +182,8 @@ function mergeTrophies(here: unknown, there: unknown): Record<string, unknown> {
   const top: Record<string, { score: number; at: number }[]> = {};
   for (const slug of keysOf(a.top, b.top)) {
     const lists = [isRecord(a.top) ? a.top[slug] : [], isRecord(b.top) ? b.top[slug] : []];
-    const seen = new Set<string>();
-    const entries = lists
-      .flatMap((list) => (Array.isArray(list) ? list : []))
-      .filter(isRecord)
-      .map((e) => ({ score: count(e.score), at: count(e.at) }))
-      // The same run can be in both saves (a backup made on this device earlier); list it once.
-      .filter((e) => e.score > 0 && !seen.has(`${e.score}@${e.at}`) && seen.add(`${e.score}@${e.at}`))
-      .sort((x, y) => y.score - x.score || x.at - y.at)
-      .slice(0, TOP_SIZE);
+    // The same run can be in both saves (a backup made on this device earlier); normaliseTop lists it once.
+    const entries = normaliseTop(lists.flatMap((list) => (Array.isArray(list) ? list : [])));
     if (entries.length) top[slug] = entries;
   }
 

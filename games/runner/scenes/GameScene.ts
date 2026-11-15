@@ -43,9 +43,10 @@ import {
 } from '../rules';
 import { getHighScore, trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
+import { frameSeconds } from '../../../shared/frame';
 import { PauseController } from '../../../shared/pause';
 import { dailyOutcome, type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
-import { endRun } from '../../../shared/scenes';
+import { endRun, SCENE } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, dailyHudLabel, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, neonText, sparkTexture, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
@@ -103,7 +104,7 @@ export class GameScene extends Phaser.Scene {
   private pointerStartY: number | null = null;
 
   constructor() {
-    super('Game');
+    super(SCENE.game);
   }
 
   init(data: { daily?: boolean } = {}): void {
@@ -243,7 +244,7 @@ export class GameScene extends Phaser.Scene {
 
   update(_time: number, deltaMs: number): void {
     if (this.pause.isPaused) return;
-    const dt = Math.min(deltaMs, 50) / 1000;
+    const dt = frameSeconds(deltaMs);
     this.elapsed += deltaMs;
     if (this.alive) {
       const c = this.controls;

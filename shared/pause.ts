@@ -3,7 +3,7 @@ import { clearRecentUnlocks } from './achievements';
 import type { ArcadeControls } from './controls';
 import { isTouchDevice } from './device';
 import { type MenuItem, OptionMenu } from './menu';
-import { restartDataFor, SCENE, setRestartData, toArcade } from './scenes';
+import { hasEnded, restartDataFor, SCENE, setRestartData, toArcade } from './scenes';
 import {
   getSettings,
   keyLabel,
@@ -19,7 +19,10 @@ import { isMuted, setMuted } from './sfx';
 import { NEON, neonText, PIXEL_FONT } from './ui';
 
 export interface PauseOptions {
-  /** Return false while pausing makes no sense (level transition, game over). */
+  /**
+   * Return false while pausing makes no sense (a level transition, a death animation). A run that
+   * has ended (endRun was called) can never be paused, so games only need this for their own states.
+   */
   canPause?: () => boolean;
   onChange?: (paused: boolean) => void;
   /** Data for "Restart"; defaults to whatever the scene was started with. */
@@ -184,7 +187,7 @@ export class PauseController {
   /** Toggles pause. `forceResume` unpauses unconditionally (used before leaving the scene). */
   toggle(forceResume = false): void {
     if (forceResume && !this.paused) return;
-    if (!forceResume && !this.paused && this.opts.canPause && !this.opts.canPause()) return;
+    if (!forceResume && !this.paused && (hasEnded(this.scene) || this.opts.canPause?.() === false)) return;
     this.paused = !this.paused;
     this.resuming = !this.paused;
     const { scene } = this;

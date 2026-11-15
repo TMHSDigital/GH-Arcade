@@ -41,8 +41,9 @@ import {
 } from '../logic';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
+import { frameMs } from '../../../shared/frame';
 import { PauseController } from '../../../shared/pause';
-import { endRun } from '../../../shared/scenes';
+import { endRun, SCENE } from '../../../shared/scenes';
 import { dailyOutcome, type DailyRun, dailyRunFrom } from '../../../shared/rng';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, VirtualButton } from '../../../shared/touch';
@@ -97,7 +98,7 @@ export class GameScene extends Phaser.Scene {
   private holdButton?: VirtualButton;
 
   constructor() {
-    super('Game');
+    super(SCENE.game);
   }
 
   init(data: { daily?: boolean } = {}): void {
@@ -213,8 +214,11 @@ export class GameScene extends Phaser.Scene {
 
   // ---------------------------------------------------------------- loop
 
-  update(_time: number, delta: number): void {
+  update(_time: number, rawDelta: number): void {
     if (this.pause.isPaused) return;
+    // A long frame (a stalled tab) is played as a short one, so the game never takes several steps
+    // before the player can react.
+    const delta = frameMs(rawDelta);
     if (this.state === 'playing') {
       this.handleInput(delta);
       if (this.state === 'playing') this.applyGravity(delta);

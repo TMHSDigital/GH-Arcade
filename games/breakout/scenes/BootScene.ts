@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { BALL_RADIUS, BRICK_H, BRICK_W, PADDLE_WIDTH } from '../config';
+import { SCENE } from '../../../shared/scenes';
 
 /**
  * Draws Breakout's own textures procedurally (white, so they can be tinted), then hands off to the
@@ -31,6 +32,6 @@ export class BootScene extends Phaser.Scene {
     g.generateTexture('pill', 40, 16);
     g.destroy();
 
-    this.scene.start('Menu');
+    this.scene.start(SCENE.menu);
   }
 }

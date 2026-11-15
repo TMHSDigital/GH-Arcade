@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import registry from './registry.json';
+import { GAMES } from './registry';
 import { TROPHIES } from '../shared/achievements';
 
 /**
@@ -14,16 +14,7 @@ const gamesDir = import.meta.dirname;
 const publicDir = resolve(gamesDir, '..', 'public');
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
-interface Entry {
-  slug: string;
-  title: string;
-  description: string;
-  tags: string[];
-  accent: string;
-  controls?: string;
-  thumbnail?: string;
-}
-const games = registry as Entry[];
+const games = GAMES;
 const slugs = games.map((g) => g.slug);
 
 /** Folders Vite turns into pages: not starting with "_" and containing index.html (see vite.config.ts). */

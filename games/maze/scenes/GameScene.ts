@@ -39,11 +39,12 @@ import {
 import { BONUS_CELL, find, HOUSE_EXIT, HOUSE_Y, maze, OPPOSITE, open, tile, useLayout, VEC, wrapX, type Dir } from '../maze';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
+import { frameSeconds } from '../../../shared/frame';
 import { PauseController } from '../../../shared/pause';
-import { endRun } from '../../../shared/scenes';
+import { endRun, SCENE } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { onSwipe } from '../../../shared/touch';
-import { burstEmitter, floatText, HUD_STYLE, NEON, showBanner, impact } from '../../../shared/ui';
+import { burstEmitter, floatText, HUD_LABEL_STYLE, HUD_STYLE, NEON, showBanner, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -104,7 +105,7 @@ export class GameScene extends Phaser.Scene {
   private pause!: PauseController;
 
   constructor() {
-    super('Game');
+    super(SCENE.game);
   }
 
   init(): void {
@@ -121,7 +122,7 @@ export class GameScene extends Phaser.Scene {
     this.gfx = this.add.graphics();
     this.burst = burstEmitter(this, 220, 600);
     const style = HUD_STYLE;
-    this.add.text(GRID_X, 22, 'SCORE', { ...style, fontSize: '10px', color: '#8a8ab8' });
+    this.add.text(GRID_X, 22, 'SCORE', HUD_LABEL_STYLE);
     this.scoreText = this.add.text(GRID_X, 38, '0', style);
     this.levelText = this.add.text(WIDTH / 2, 38, '', { ...style, fontSize: '12px' }).setOrigin(0.5, 0);
 
@@ -189,7 +190,7 @@ export class GameScene extends Phaser.Scene {
 
   update(_time: number, deltaMs: number): void {
     if (this.pause.isPaused) return;
-    const dt = Math.min(deltaMs, 50) / 1000;
+    const dt = frameSeconds(deltaMs);
     this.clock += dt * 1000;
     this.readInput();
 

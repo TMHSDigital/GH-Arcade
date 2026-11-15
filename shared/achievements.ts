@@ -1,4 +1,5 @@
-import registry from '../games/registry.json';
+import { GAMES } from '../games/registry';
+import { normaliseTop, numberMap, TOP_SIZE, type TopScore } from './saved-shapes';
 import { isRecord, loadJSON, onExternalChange, saveJSON, savedNumber, STORAGE_PREFIX } from './storage';
 import type { Trophy, TrophyDef } from './trophy-types';
 
@@ -45,7 +46,7 @@ export const TROPHIES: Trophy[] = [
 ];
 
 /** Every game on the hub; the "play every game" trophy needs a play in each. */
-const GAME_SLUGS = (registry as { slug: string }[]).map((g) => g.slug);
+const GAME_SLUGS = GAMES.map((g) => g.slug);
 
 export interface GameStats {
   plays: number;
@@ -61,14 +62,7 @@ export interface GameStats {
 }
 
 /** One line of a game's score table. */
-export interface TopScore {
-  score: number;
-  /** When the run finished (ms since epoch), or 0 for a best score from before the table existed. */
-  at: number;
-}
-
-/** How many scores each game's table keeps. */
-export const TOP_SIZE = 5;
+export { TOP_SIZE, type TopScore };
 
 interface Save {
   unlocked: Record<string, number>;
@@ -81,12 +75,6 @@ interface Save {
 const KEY = 'trophies';
 /** Bumped when the saved shape changes, so a later version can tell old saves apart. */
 const SAVE_VERSION = 1;
-
-function numberMap(raw: unknown): Record<string, number> {
-  const out: Record<string, number> = {};
-  if (isRecord(raw)) for (const [k, v] of Object.entries(raw)) if (typeof v === 'number' && Number.isFinite(v)) out[k] = v;
-  return out;
-}
 
 /**
  * Best scores used to be stored a second time under "<slug>:highscore". Folds any such keys into
@@ -133,13 +121,7 @@ function read(): Save {
   const top: Record<string, TopScore[]> = {};
   if (isRecord(data.top)) {
     for (const [slug, list] of Object.entries(data.top)) {
-      if (!Array.isArray(list)) continue;
-      const entries = list
-        .filter(isRecord)
-        .map((e) => ({ score: savedNumber(e.score), at: savedNumber(e.at) }))
-        .filter((e) => e.score > 0)
-        .sort((a, b) => b.score - a.score)
-        .slice(0, TOP_SIZE);
+      const entries = normaliseTop(list);
       if (entries.length) top[slug] = entries;
     }
   }
@@ -256,16 +238,9 @@ export function getTopScores(game: string): TopScore[] {
 }
 
 /**
- * Called once per finished game with its final score. Leave the score out for matches that have
- * none (two-player versus): the play counts, but not toward the game's average.
- * Returns true when the score beat the game's previous best.
- */
-export function recordPlay(game: string, score?: number): boolean {
-  return recordRun(game, score).isRecord;
-}
-
-/**
- * Like recordPlay(), and also says where the score landed in the game's table: `rank` is 1 for a
+ * Records a finished game with its final score. Leave the score out for matches that have none
+ * (two-player versus): the play counts, but not toward the game's average. `isRecord` says whether
+ * the score beat the game's previous best, and `rank` where it landed in the game's table: 1 for a
  * new best, 2 to TOP_SIZE for a score that made the table, and 0 for one that did not. A score that
  * only ties an entry ranks below it, so the earlier run keeps its place.
  */

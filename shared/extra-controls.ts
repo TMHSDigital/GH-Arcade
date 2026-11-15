@@ -1,4 +1,4 @@
-import registry from '../games/registry.json';
+import { GAMES } from '../games/registry';
 import type { Binding } from './controls';
 
 /**
@@ -27,7 +27,7 @@ export interface GameExtras {
 }
 
 const perGame = import.meta.glob<{ EXTRA_CONTROLS: Record<string, ExtraControl> }>('../games/*/controls.ts', { eager: true });
-const titles = new Map((registry as { slug: string; title: string }[]).map((g) => [g.slug, g.title]));
+const titles = new Map(GAMES.map((g) => [g.slug, g.title]));
 
 /** Every game's extra controls, in the order of the game folders. */
 export const GAME_EXTRAS: GameExtras[] = Object.entries(perGame)

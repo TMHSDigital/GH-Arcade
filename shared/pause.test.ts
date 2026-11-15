@@ -9,7 +9,15 @@ import { FakeEmitter, FakeGameObject, installMemoryStorage } from './test-utils'
 vi.mock('phaser', async () => (await import('./test-utils')).phaserMock());
 vi.mock('./achievements', () => ({ clearRecentUnlocks: vi.fn() }));
 vi.mock('./device', () => ({ isTouchDevice: () => false }));
-vi.mock('./scenes', () => ({ SCENE: { menu: 'Menu', game: 'Game', gameOver: 'GameOver' }, restartDataFor: () => ({ restarted: true }), setRestartData: vi.fn(), toArcade: vi.fn() }));
+// The scene counts as ended while this is set, as after endRun().
+const ended = { value: false };
+vi.mock('./scenes', () => ({
+  SCENE: { menu: 'Menu', game: 'Game', gameOver: 'GameOver' },
+  hasEnded: () => ended.value,
+  restartDataFor: () => ({ restarted: true }),
+  setRestartData: vi.fn(),
+  toArcade: vi.fn(),
+}));
 vi.mock('./ui', async () => {
   const { FakeGameObject: Fake } = await import('./test-utils');
   return { NEON: {}, PIXEL_FONT: 'pixel', neonText: (_scene: unknown, x: number, y: number, text: string) => Object.assign(new Fake(x, y), { text }) };
@@ -48,7 +56,10 @@ vi.mock('./menu', () => {
   return { OptionMenu };
 });
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  ended.value = false;
+});
 
 interface StubMenu {
   opts: { items: MenuItem[] };
@@ -178,6 +189,22 @@ describe('pausing', () => {
     pause.toggle();
     expect(pause.isPaused).toBe(true);
     allowed = false;
+    pause.toggle();
+    endFrame();
+    expect(pause.isPaused).toBe(false);
+  });
+
+  it('cannot be paused once the run has ended, whatever the game allows', async () => {
+    const { pause, frame, blur, endFrame } = await setup({ canPause: () => true });
+    ended.value = true;
+    pause.toggle();
+    frame('pause');
+    blur();
+    expect(pause.isPaused).toBe(false);
+    // A game that was already paused when it ended can still be resumed.
+    ended.value = false;
+    pause.toggle();
+    ended.value = true;
     pause.toggle();
     endFrame();
     expect(pause.isPaused).toBe(false);

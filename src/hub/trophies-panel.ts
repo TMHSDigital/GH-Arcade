@@ -1,13 +1,11 @@
-import registry from '../../games/registry.json';
+import { GAMES } from '../../games/registry';
 import { askToConfirm } from './confirm';
 import { escapeHtml } from './html';
 import { getCounter, getStats, getTopScores, isUnlocked, resetTrophies, TROPHIES, unlockedAt } from '../../shared/achievements';
 import { DAILY_TAG, dailyStreak, getDailyHistory } from '../../shared/rng';
 
-const gameTitles: Record<string, string> = Object.fromEntries(
-  (registry as { slug: string; title: string }[]).map((g) => [g.slug, g.title]),
-);
-const dailyGames = new Set((registry as { slug: string; tags: string[] }[]).filter((g) => g.tags.includes(DAILY_TAG)).map((g) => g.slug));
+const gameTitles: Record<string, string> = Object.fromEntries(GAMES.map((g) => [g.slug, g.title]));
+const dailyGames = new Set(GAMES.filter((g) => g.tags.includes(DAILY_TAG)).map((g) => g.slug));
 
 /** How many past daily results the panel lists per game. */
 const DAILY_SHOWN = 7;

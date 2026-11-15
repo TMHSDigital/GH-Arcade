@@ -125,6 +125,16 @@ describe('endRun', () => {
     expect(starts).toHaveLength(2);
   });
 
+  it('says the run has ended from the first call until the scene shuts down', async () => {
+    const { endRun, hasEnded } = await fresh();
+    const { scene, shutDown } = fakeScene();
+    expect(hasEnded(scene)).toBe(false);
+    endRun(scene, run, 500);
+    expect(hasEnded(scene)).toBe(true);
+    shutDown();
+    expect(hasEnded(scene)).toBe(false);
+  });
+
   it('waits for the delay it is given, and not at all without one', async () => {
     const { endRun } = await fresh();
     const delayed = fakeScene();

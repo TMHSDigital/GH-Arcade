@@ -23,8 +23,9 @@ import {
 } from '../config';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
+import { frameSeconds } from '../../../shared/frame';
 import { PauseController } from '../../../shared/pause';
-import { endRun } from '../../../shared/scenes';
+import { endRun, SCENE } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { addGlow, burstEmitter, floatText, HUD_STYLE, neonText, PIXEL_FONT, showBanner, sparkTexture, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
@@ -80,7 +81,7 @@ export class GameScene extends Phaser.Scene {
   private slowTimer?: Phaser.Time.TimerEvent;
 
   constructor() {
-    super('Game');
+    super(SCENE.game);
   }
 
   init(data: GameData): void {
@@ -237,7 +238,7 @@ export class GameScene extends Phaser.Scene {
 
   update(_time: number, deltaMs: number): void {
     if (this.pause.isPaused) return;
-    const dt = deltaMs / 1000;
+    const dt = frameSeconds(deltaMs);
 
     if (this.controls.justPressed('action') || this.controls.justPressed('up')) this.launch();
 

@@ -46,8 +46,9 @@ import {
 } from '../table';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
+import { frameSeconds } from '../../../shared/frame';
 import { PauseController } from '../../../shared/pause';
-import { endRun } from '../../../shared/scenes';
+import { endRun, SCENE } from '../../../shared/scenes';
 import { getSettings, helpKeys } from '../../../shared/settings';
 import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, floatText, HUD_LABEL_STYLE, HUD_STYLE, NEON, showBanner, impact } from '../../../shared/ui';
@@ -100,7 +101,7 @@ export class GameScene extends Phaser.Scene {
   private pause!: PauseController;
 
   constructor() {
-    super('Game');
+    super(SCENE.game);
   }
 
   init(): void {
@@ -187,7 +188,7 @@ export class GameScene extends Phaser.Scene {
 
   update(_time: number, deltaMs: number): void {
     if (this.pause.isPaused) return;
-    const dt = Math.min(deltaMs, 40) / 1000;
+    const dt = frameSeconds(deltaMs, 40);
     this.clock += dt * 1000;
     this.readInput(dt);
     if (this.state !== 'over') {
