@@ -50,3 +50,119 @@ export async function freshModules() {
   const achievements = await import('./achievements');
   return { storage, settings, achievements };
 }
+
+/** The Phaser event names the shared modules listen for. Use with `vi.mock('phaser', ...)`, see phaserMock(). */
+export const PHASER_EVENTS = {
+  Scenes: { Events: { PRE_UPDATE: 'preupdate', UPDATE: 'update', POST_UPDATE: 'postupdate', SHUTDOWN: 'shutdown' } },
+  Core: { Events: { BLUR: 'blur', FOCUS: 'focus' } },
+};
+
+/**
+ * A stand-in for the `phaser` module with just the constants the shared modules read at run time:
+ *
+ *   vi.mock('phaser', async () => (await import('./test-utils')).phaserMock());
+ */
+export function phaserMock() {
+  class Scene {}
+  return { default: { Scene, ...PHASER_EVENTS } };
+}
+
+/** A minimal event emitter with Phaser's on / once / off / emit, including the listener context. */
+export class FakeEmitter {
+  private readonly handlers = new Map<string, { fn: (...args: unknown[]) => void; context?: unknown; once: boolean }[]>();
+
+  on(event: string, fn: (...args: never[]) => void, context?: unknown): this {
+    this.handlers.set(event, [...(this.handlers.get(event) ?? []), { fn: fn as (...args: unknown[]) => void, context, once: false }]);
+    return this;
+  }
+
+  once(event: string, fn: (...args: never[]) => void, context?: unknown): this {
+    this.handlers.set(event, [...(this.handlers.get(event) ?? []), { fn: fn as (...args: unknown[]) => void, context, once: true }]);
+    return this;
+  }
+
+  off(event: string, fn?: (...args: never[]) => void): this {
+    this.handlers.set(event, fn ? (this.handlers.get(event) ?? []).filter((h) => h.fn !== fn) : []);
+    return this;
+  }
+
+  emit(event: string, ...args: unknown[]): void {
+    const list = this.handlers.get(event) ?? [];
+    this.handlers.set(
+      event,
+      list.filter((h) => !h.once),
+    );
+    for (const h of list) h.fn.apply(h.context, args);
+  }
+
+  /** How many listeners an event has, for checking that they are removed. */
+  count(event: string): number {
+    return (this.handlers.get(event) ?? []).length;
+  }
+}
+
+export interface FakePad {
+  index: number;
+  connected: boolean;
+  buttons: { pressed: boolean }[];
+  leftStick: { x: number; y: number };
+  pad: { vibrationActuator?: { playEffect: (type: string, params: unknown) => unknown } };
+}
+
+/** A connected gamepad with no buttons down and the stick at rest. */
+export function fakePad(index: number): FakePad {
+  return { index, connected: true, buttons: Array.from({ length: 17 }, () => ({ pressed: false })), leftStick: { x: 0, y: 0 }, pad: {} };
+}
+
+/** keyCodes for the Phaser key names the shared bindings use. Letters and digits need no entry. */
+const KEY_NAMES: Record<string, number> = { ENTER: 13, SHIFT: 16, CTRL: 17, ESC: 27, SPACE: 32, LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, FORWARD_SLASH: 191 };
+
+/**
+ * A scene with just the input and lifecycle parts ArcadeControls uses, and ways to drive them:
+ * `press` / `release` a key by keyCode, plug in `pads`, and `frame()` to run one scene update.
+ */
+export function fakeInputScene() {
+  const events = new FakeEmitter();
+  const keyboard = new FakeEmitter();
+  const keys = new Map<number, { keyCode: number; isDown: boolean }>();
+  const pads: FakePad[] = [];
+  const addKey = (key: string | number) => {
+    const keyCode = typeof key === 'number' ? key : (KEY_NAMES[key] ?? key.charCodeAt(0));
+    if (!keys.has(keyCode)) keys.set(keyCode, { keyCode, isDown: false });
+    return keys.get(keyCode)!;
+  };
+  const scene = {
+    events,
+    input: {
+      keyboard: Object.assign(keyboard, { addKey }),
+      gamepad: {
+        get total() {
+          return pads.length;
+        },
+        getAll: () => pads,
+      },
+    },
+  };
+  return {
+    scene,
+    events,
+    pads,
+    /** A key goes down: Phaser marks it held and fires `keydown`. */
+    press(keyCode: number, repeat = false) {
+      const key = keys.get(keyCode);
+      if (key) key.isDown = true;
+      keyboard.emit('keydown', { keyCode, repeat });
+    },
+    release(keyCode: number) {
+      const key = keys.get(keyCode);
+      if (key) key.isDown = false;
+    },
+    /** The start of one scene update, where ArcadeControls refreshes. */
+    frame() {
+      events.emit(PHASER_EVENTS.Scenes.Events.PRE_UPDATE);
+    },
+    shutdown() {
+      events.emit(PHASER_EVENTS.Scenes.Events.SHUTDOWN);
+    },
+  };
+}
