@@ -21,6 +21,8 @@ export class MenuScene extends Phaser.Scene {
       help: `Solo: ${helpKeys(['up', 'down'], '↑ ↓ / W S')} / stick / drag vs the CPU    Two players: P1 W S or pad 1, P2 ↑ ↓ or pad 2\nFirst to 7 wins    Pause: ${helpKeys('pause', 'P')} / Start`,
       modes: [
         { label: 'VS CPU', data: { players: 1 } },
+        { label: 'EASY CPU', data: { players: 1, cpu: 'easy' } },
+        { label: 'HARD CPU', data: { players: 1, cpu: 'hard' } },
         { label: '2 PLAYERS', data: { players: 2 } },
       ],
     });

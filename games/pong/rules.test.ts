@@ -2,9 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   BALL_SIZE,
   BOTTOM,
-  CPU_ERROR,
-  CPU_REACT,
-  CPU_SPEED,
+  CPU_PROFILES,
+  type CpuLevel,
   MAX_ANGLE,
   MAX_SPEED,
   PADDLE_H,
@@ -19,6 +18,8 @@ import {
 } from './config';
 import { type Ball, bounceOffPaddle, cpuAimError, cpuMove, matchScore, type PaddleCore, predictY, touchesPaddle } from './rules';
 
+const { speed: CPU_SPEED, error: CPU_ERROR, react: CPU_REACT } = CPU_PROFILES.normal;
+const LEVELS = Object.keys(CPU_PROFILES) as CpuLevel[];
 const MID = (TOP + BOTTOM) / 2;
 const LOW = TOP + BALL_SIZE / 2;
 const HIGH = BOTTOM - BALL_SIZE / 2;
@@ -93,6 +94,40 @@ describe('cpuMove', () => {
     const b = ball({ x: WIDTH * (1 - CPU_REACT) - 50, vx: -400, vy: -300 });
     const p = left({ y: MID });
     expect(Math.sign(cpuMove(p, b, true, 0.016) - p.y)).toBe(Math.sign(predictY(b, p.x) - p.y));
+  });
+});
+
+describe('the CPU profiles', () => {
+  it('get faster, more accurate and quicker to react from easy to hard', () => {
+    const { easy, normal, hard } = CPU_PROFILES;
+    expect(easy.speed).toBeLessThan(normal.speed);
+    expect(normal.speed).toBeLessThan(hard.speed);
+    expect(easy.error).toBeGreaterThan(normal.error);
+    expect(normal.error).toBeGreaterThan(hard.error);
+    expect(easy.react).toBeGreaterThan(normal.react);
+    expect(normal.react).toBeGreaterThan(hard.react);
+  });
+
+  it.each(LEVELS)('%s moves no faster than its own top speed', (level) => {
+    const cpu = CPU_PROFILES[level];
+    const b = ball({ x: WIDTH - 100, vx: 400, vy: 300 });
+    const p = right({ y: MID });
+    expect(Math.abs(cpuMove(p, b, true, 0.016, cpu) - p.y)).toBeCloseTo(cpu.speed * 0.016);
+  });
+
+  it.each(LEVELS)('%s starts tracking where its own reaction line is', (level) => {
+    const cpu = CPU_PROFILES[level];
+    const p = right({ y: MID });
+    const before = ball({ x: WIDTH * cpu.react - 10, vx: 400, vy: 300 });
+    const after = ball({ x: WIDTH * cpu.react + 10, vx: 400, vy: 300 });
+    expect(cpuMove(p, before, true, 0.016, cpu)).toBe(MID);
+    expect(cpuMove(p, after, true, 0.016, cpu)).not.toBe(MID);
+  });
+
+  it.each(LEVELS)('%s misjudges by its own error', (level) => {
+    const cpu = CPU_PROFILES[level];
+    expect(cpuAimError(SERVE_SPEED, 1, cpu)).toBeCloseTo(cpu.error);
+    expect(cpuAimError(SERVE_SPEED * 10, -1, cpu)).toBeCloseTo(-cpu.error * 1.8);
   });
 });
 

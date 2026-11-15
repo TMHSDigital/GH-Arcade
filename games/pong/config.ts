@@ -25,8 +25,27 @@ export const SPIN = 0.25;
 export const POINTS_TO_WIN = 7;
 export const SERVE_DELAY_MS = 900;
 
-/** CPU opponent: top speed, and how far off its aim can be (it misjudges faster balls more). */
-export const CPU_SPEED = 400;
-export const CPU_ERROR = 34;
-/** The CPU starts tracking once the ball passes this fraction of the table width. */
-export const CPU_REACT = 0.45;
+/** How strong a CPU opponent is. */
+export interface CpuProfile {
+  /** Top paddle speed, in pixels per second. */
+  speed: number;
+  /** How far off its aim can be, in pixels (it misjudges faster balls more). */
+  error: number;
+  /** It starts tracking once the ball passes this fraction of the table width: lower reacts sooner. */
+  react: number;
+}
+
+/** The CPU strengths the menu offers. `normal` is the plain VS CPU mode. */
+export const CPU_PROFILES = {
+  easy: { speed: 290, error: 58, react: 0.6 },
+  normal: { speed: 400, error: 34, react: 0.45 },
+  hard: { speed: 500, error: 16, react: 0.3 },
+} as const satisfies Record<string, CpuProfile>;
+
+export type CpuLevel = keyof typeof CPU_PROFILES;
+
+/**
+ * The Table Champion and Clean Sheet trophies are for beating the CPU at its normal strength or
+ * harder. A win against the easy CPU still counts as a play and scores, but unlocks neither.
+ */
+export const TROPHY_LEVELS: readonly CpuLevel[] = ['normal', 'hard'];

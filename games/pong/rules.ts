@@ -1,9 +1,8 @@
 import {
   BALL_SIZE,
   BOTTOM,
-  CPU_ERROR,
-  CPU_REACT,
-  CPU_SPEED,
+  CPU_PROFILES,
+  type CpuProfile,
   MAX_ANGLE,
   MAX_SPEED,
   PADDLE_H,
@@ -56,21 +55,22 @@ export function predictY(b: Ball, atX: number): number {
 
 /**
  * Where the CPU paddle moves to this frame. It tracks where the ball will arrive (bounces
- * included), with a little error and a speed limit, and drifts back to the middle otherwise.
+ * included), with a little error and a speed limit, and drifts back to the middle otherwise. `cpu`
+ * sets how fast it is and how early it reacts.
  */
-export function cpuMove(p: PaddleCore, b: Ball, live: boolean, dt: number): number {
+export function cpuMove(p: PaddleCore, b: Ball, live: boolean, dt: number, cpu: CpuProfile = CPU_PROFILES.normal): number {
   let target = (TOP + BOTTOM) / 2;
   // It only starts reading the ball once it crosses into its own half, so steep fast shots can beat it.
-  const inHalf = p.side > 0 ? b.x > WIDTH * CPU_REACT : b.x < WIDTH * (1 - CPU_REACT);
+  const inHalf = p.side > 0 ? b.x > WIDTH * cpu.react : b.x < WIDTH * (1 - cpu.react);
   if (live && Math.sign(b.vx) === p.side && inHalf) target = predictY(b, p.x) + p.aimError;
   const diff = target - p.y;
   if (Math.abs(diff) < 6) return p.y;
-  return p.y + clamp(diff, -CPU_SPEED * dt, CPU_SPEED * dt);
+  return p.y + clamp(diff, -cpu.speed * dt, cpu.speed * dt);
 }
 
 /** How far off the CPU aims after a hit: `roll` is -1 to 1, and faster balls make it less precise. */
-export function cpuAimError(ballSpeed: number, roll: number): number {
-  return roll * CPU_ERROR * Math.min(ballSpeed / SERVE_SPEED, 1.8);
+export function cpuAimError(ballSpeed: number, roll: number, cpu: CpuProfile = CPU_PROFILES.normal): number {
+  return roll * cpu.error * Math.min(ballSpeed / SERVE_SPEED, 1.8);
 }
 
 /** True when the ball, travelling toward the paddle, has reached its face without already being past it. */

@@ -6,8 +6,8 @@ import type { TrophyDef } from '../../shared/trophy-types';
  * from `trophiesFor<typeof TROPHIES>()`, which only accept the ids and counters listed here.
  */
 export const TROPHIES = [
-  { id: 'pong.win', title: 'Table Champion', description: 'Beat the CPU' },
-  { id: 'pong.shutout', title: 'Clean Sheet', description: 'Beat the CPU 7-0' },
+  { id: 'pong.win', title: 'Table Champion', description: 'Beat the CPU (not on easy)' },
+  { id: 'pong.shutout', title: 'Clean Sheet', description: 'Beat the CPU 7-0 (not on easy)' },
   { id: 'pong.rally', title: 'Long Rally', description: 'Keep a rally going for 20 hits', threshold: 20 },
   { id: 'pong.versus', title: 'Friendly Match', description: 'Finish a two-player match' },
 ] as const satisfies readonly TrophyDef[];

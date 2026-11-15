@@ -69,7 +69,7 @@ export function buildMenu(scene: Phaser.Scene, opts: MenuOptions): void {
       x: width / 2,
       y: 410,
       // Three or more choices sit closer together to fit the screen.
-      spacing: opts.modes.length > 2 ? 230 : 300,
+      spacing: opts.modes.length > 3 ? 190 : opts.modes.length > 2 ? 230 : 300,
       // A link such as "?mode=daily" opens the menu on that mode (shared/modes.ts).
       selected: modeIndex(
         opts.modes.map((m) => m.label),

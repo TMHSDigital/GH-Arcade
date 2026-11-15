@@ -2,7 +2,9 @@ import Phaser from 'phaser';
 import {
   BALL_SIZE,
   BOTTOM,
-  CPU_ERROR,
+  CPU_PROFILES,
+  type CpuLevel,
+  TROPHY_LEVELS,
   GAME_ID,
   HEIGHT,
   PADDLE_H,
@@ -43,10 +45,13 @@ interface Paddle {
 
 export interface PongData {
   players?: 1 | 2;
+  /** Solo only: how strong the CPU is. Normal when left out. */
+  cpu?: CpuLevel;
 }
 
 export class GameScene extends Phaser.Scene {
   private versus = false;
+  private cpuLevel: CpuLevel = 'normal';
   private paddles: Paddle[] = [];
   private ball = { x: WIDTH / 2, y: HEIGHT / 2, vx: 0, vy: 0, speed: SERVE_SPEED };
   private live = false;
@@ -67,6 +72,7 @@ export class GameScene extends Phaser.Scene {
 
   init(data: PongData): void {
     this.versus = data.players === 2;
+    this.cpuLevel = data.cpu && data.cpu in CPU_PROFILES ? data.cpu : 'normal';
     this.live = false;
     this.over = false;
     this.rally = 0;
@@ -120,7 +126,7 @@ export class GameScene extends Phaser.Scene {
     this.rallyText = this.add.text(WIDTH / 2, HEIGHT - 34, '', { fontFamily: PIXEL_FONT, fontSize: '11px', color: hex(NEON.yellow) }).setOrigin(0.5);
 
     const humans = this.paddles.filter((p) => p.controls).map((p) => p.controls!);
-    this.pause = new PauseController(this, humans, { canPause: () => !this.over, restartData: { players: this.versus ? 2 : 1 } });
+    this.pause = new PauseController(this, humans, { canPause: () => !this.over, restartData: this.versus ? { players: 2 } : { players: 1, cpu: this.cpuLevel } });
     this.bindTouch();
     this.serve(Math.random() < 0.5 ? -1 : 1);
   }
@@ -154,7 +160,7 @@ export class GameScene extends Phaser.Scene {
     this.rally = 0;
     this.rallyText.setText('');
     this.ball = { x: WIDTH / 2, y: (TOP + BOTTOM) / 2, vx: 0, vy: 0, speed: SERVE_SPEED };
-    for (const p of this.paddles) p.aimError = Phaser.Math.FloatBetween(-0.5, 0.5) * CPU_ERROR;
+    for (const p of this.paddles) p.aimError = Phaser.Math.FloatBetween(-0.5, 0.5) * CPU_PROFILES[this.cpuLevel].error;
     this.time.delayedCall(SERVE_DELAY_MS, () => {
       if (this.over) return;
       const angle = Phaser.Math.FloatBetween(-0.45, 0.45);
@@ -177,7 +183,7 @@ export class GameScene extends Phaser.Scene {
   private movePaddle(p: Paddle, dt: number): void {
     const before = p.y;
     if (p.cpu) {
-      p.y = cpuMove(p, this.ball, this.live, dt);
+      p.y = cpuMove(p, this.ball, this.live, dt, CPU_PROFILES[this.cpuLevel]);
     } else if (p.touchY !== null) {
       // Fingers get a faster, snappier follow than keys.
       const diff = p.touchY - p.y;
@@ -217,7 +223,7 @@ export class GameScene extends Phaser.Scene {
     reach('pong.rally', this.rally);
     this.rallyText.setText(this.rally >= 5 ? `RALLY ${this.rally}` : '');
     // The CPU rethinks its aim each time the ball comes back; faster balls make it less precise.
-    for (const q of this.paddles) if (q.cpu) q.aimError = cpuAimError(b.speed, Phaser.Math.FloatBetween(-1, 1));
+    for (const q of this.paddles) if (q.cpu) q.aimError = cpuAimError(b.speed, Phaser.Math.FloatBetween(-1, 1), CPU_PROFILES[this.cpuLevel]);
     this.burst.setParticleTint(p.color);
     this.burst.explode(10, b.x, b.y);
     tone({ freq: 440 + Math.min(this.rally, 20) * 20, duration: 0.05, type: 'square', volume: 0.06 });
@@ -251,10 +257,13 @@ export class GameScene extends Phaser.Scene {
     const [you, other] = this.paddles;
     if (!this.versus) {
       const won = winner === you;
-      if (won) unlock('pong.win');
-      if (won && other.score === 0) unlock('pong.shutout');
+      // Beating the easy CPU earns no trophy (see TROPHY_LEVELS).
+      const counts = won && TROPHY_LEVELS.includes(this.cpuLevel);
+      if (counts) unlock('pong.win');
+      if (counts && other.score === 0) unlock('pong.shutout');
       const score = matchScore(you.score, other.score, won);
-      const detail = won ? `YOU WIN ${you.score}-${other.score}` : `CPU WINS ${other.score}-${you.score}`;
+      const cpuName = this.cpuLevel === 'normal' ? 'CPU' : `${this.cpuLevel.toUpperCase()} CPU`;
+      const detail = won ? `YOU BEAT THE ${cpuName} ${you.score}-${other.score}` : `${cpuName} WINS ${other.score}-${you.score}`;
       endRun(this, { gameId: GAME_ID, score, detail }, 900);
       return;
     }
