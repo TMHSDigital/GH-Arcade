@@ -126,6 +126,19 @@ describe('gamepad buttons', () => {
     expect(one.controls.usingGamepad).toBe(true);
   });
 
+  it('looks its pad up once a frame, so one plugged in mid-frame counts from the next', async () => {
+    const { controls, pads, frame } = await setup();
+    frame();
+    expect(controls.pad).toBeUndefined();
+    pads.push(fakePad(0));
+    expect(controls.pad).toBeUndefined();
+    frame();
+    expect(controls.pad?.index).toBe(0);
+    pads[0].connected = false;
+    frame();
+    expect(controls.pad).toBeUndefined();
+  });
+
   it('rumbles only when the player has rumble on', async () => {
     const on = await setup({ rumble: true });
     const playOn = vi.fn();

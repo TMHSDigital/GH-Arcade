@@ -48,21 +48,38 @@ export function tone({ freq, toFreq, duration = 0.1, type = 'square', volume = 0
   osc.stop(t + duration);
 }
 
-/** Short burst of filtered noise, for explosions and impacts. */
+/** How much white noise is kept, in seconds. Every burst plays a stretch of it. */
+const NOISE_SECONDS = 1;
+let noiseBuffer: AudioBuffer | null = null;
+
+/**
+ * One buffer of white noise, made the first time it is needed. Games call noise() many times a
+ * second (a thruster, a slide), so filling a fresh buffer per call was steady garbage.
+ */
+function whiteNoise(ac: AudioContext): AudioBuffer {
+  if (!noiseBuffer || noiseBuffer.sampleRate !== ac.sampleRate) {
+    noiseBuffer = ac.createBuffer(1, Math.ceil(ac.sampleRate * NOISE_SECONDS), ac.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  }
+  return noiseBuffer;
+}
+
+/** Short burst of noise, for explosions and impacts. */
 export function noise(duration = 0.2, volume = 0.1): void {
   const ac = audio();
   if (!ac) return;
   const t = ac.currentTime;
-  const buffer = ac.createBuffer(1, Math.ceil(ac.sampleRate * duration), ac.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
   const src = ac.createBufferSource();
-  src.buffer = buffer;
+  src.buffer = whiteNoise(ac);
+  // Looping from a random point: bursts do not all sound alike, and one longer than the buffer still plays in full.
+  src.loop = true;
   const gain = ac.createGain();
   gain.gain.setValueAtTime(volume * master(), t);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
   src.connect(gain).connect(ac.destination);
-  src.start(t);
+  src.start(t, Math.random() * NOISE_SECONDS);
+  src.stop(t + duration);
 }
 
 export function setMuted(value: boolean): void {

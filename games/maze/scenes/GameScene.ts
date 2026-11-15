@@ -98,6 +98,9 @@ export class GameScene extends Phaser.Scene {
 
   private walls!: Phaser.GameObjects.Graphics;
   private gfx!: Phaser.GameObjects.Graphics;
+  /** The plain dots have their own layer, redrawn only when one is eaten (see render). */
+  private dotGfx!: Phaser.GameObjects.Graphics;
+  private dotsChanged = true;
   private burst!: Phaser.GameObjects.Particles.ParticleEmitter;
   private scoreText!: Phaser.GameObjects.Text;
   private levelText!: Phaser.GameObjects.Text;
@@ -119,6 +122,8 @@ export class GameScene extends Phaser.Scene {
   create(): void {
     this.cameras.main.fadeIn(250, 5, 5, 13);
     this.walls = this.add.graphics();
+    // Under everything that moves, which is drawn on gfx every frame.
+    this.dotGfx = this.add.graphics();
     this.gfx = this.add.graphics();
     this.burst = burstEmitter(this, 220, 600);
     const style = HUD_STYLE;
@@ -145,6 +150,7 @@ export class GameScene extends Phaser.Scene {
         else if (ch === 'o') this.dots.set(y * COLS + x, 'power');
       }),
     );
+    this.dotsChanged = true;
     this.dotsEaten = 0;
     this.bonus = null;
     this.levelText.setText(`LEVEL ${this.level}`);
@@ -383,6 +389,7 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     this.dots.delete(key);
+    this.dotsChanged = true;
     this.dotsEaten++;
     if (kind === 'power') {
       this.addScore(POINTS_POWER);
@@ -525,16 +532,20 @@ export class GameScene extends Phaser.Scene {
       this.walls.setAlpha(1);
     }
 
+    // A couple of hundred plain dots only change when one is eaten, so they are not replayed every
+    // frame. The power pellets pulse, so they stay on the per-frame layer.
+    if (this.dotsChanged) {
+      this.dotsChanged = false;
+      const d = this.dotGfx.clear().fillStyle(NEON.white, 0.85);
+      for (const [key, kind] of this.dots) if (kind === 'dot') d.fillRect(px(key % COLS) - 2, py(Math.floor(key / COLS)) - 2, 4, 4);
+    }
     for (const [key, kind] of this.dots) {
+      if (kind !== 'power') continue;
       const x = px(key % COLS);
       const y = py(Math.floor(key / COLS));
-      if (kind === 'dot') {
-        g.fillStyle(NEON.white, 0.85).fillRect(x - 2, y - 2, 4, 4);
-      } else {
-        const pulse = 0.6 + 0.4 * Math.abs(Math.sin(now / 180));
-        g.fillStyle(NEON.yellow, 0.25 * pulse).fillCircle(x, y, 10);
-        g.fillStyle(NEON.yellow, pulse).fillCircle(x, y, 6);
-      }
+      const pulse = 0.6 + 0.4 * Math.abs(Math.sin(now / 180));
+      g.fillStyle(NEON.yellow, 0.25 * pulse).fillCircle(x, y, 10);
+      g.fillStyle(NEON.yellow, pulse).fillCircle(x, y, 6);
     }
 
     if (this.bonus) {

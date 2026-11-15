@@ -66,6 +66,9 @@ export class ArcadeControls<Extra extends string = never> {
   private prevNonKey = new Set<string>();
   private pressed = new Set<string>();
   private latched = new Set<string>();
+  /** The pad found for this frame, and whether it has been looked up yet (see `pad`). */
+  private framePad: Phaser.Input.Gamepad.Gamepad | undefined;
+  private padKnown = false;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -119,15 +122,24 @@ export class ArcadeControls<Extra extends string = never> {
     return this.options.player !== undefined;
   }
 
-  /** This seat's gamepad: the first connected pad for solo play, or pad 1 / pad 2 in two-player games. */
+  /**
+   * This seat's gamepad: the first connected pad for solo play, or pad 1 / pad 2 in two-player games.
+   * It is looked up once per frame (the buttons, the stick and the axes all read it several times)
+   * and again at the start of the next.
+   */
   get pad(): Phaser.Input.Gamepad.Gamepad | undefined {
-    const gp = this.scene.input.gamepad;
-    if (!gp || gp.total === 0) return undefined;
-    const pads = gp
-      .getAll()
-      .filter((p) => p.connected)
-      .sort((a, b) => a.index - b.index);
-    return pads[(this.options.player ?? 1) - 1];
+    if (!this.padKnown) {
+      this.padKnown = true;
+      const gp = this.scene.input.gamepad;
+      this.framePad =
+        !gp || gp.total === 0
+          ? undefined
+          : gp
+              .getAll()
+              .filter((p) => p.connected)
+              .sort((a, b) => a.index - b.index)[(this.options.player ?? 1) - 1];
+    }
+    return this.framePad;
   }
 
   get usingGamepad(): boolean {
@@ -212,6 +224,8 @@ export class ArcadeControls<Extra extends string = never> {
   }
 
   private refresh(): void {
+    // A new frame: gamepads may have come or gone.
+    this.padKnown = false;
     const stick = this.stickValue();
     const down = new Set<string>();
     const nonKeyDown = new Set<string>();

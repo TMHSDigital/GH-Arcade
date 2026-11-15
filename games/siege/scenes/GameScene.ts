@@ -127,6 +127,9 @@ export class GameScene extends Phaser.Scene {
   private touchFiring = false;
 
   private gfx!: Phaser.GameObjects.Graphics;
+  /** The shields have their own layer, redrawn only when a cell is lost (see render). */
+  private shieldGfx!: Phaser.GameObjects.Graphics;
+  private shieldsChanged = true;
   private burst!: Phaser.GameObjects.Particles.ParticleEmitter;
   private motherImg!: Phaser.GameObjects.Image;
   private scoreText!: Phaser.GameObjects.Text;
@@ -162,6 +165,8 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.fadeIn(250, 5, 5, 13);
     makeSprites(this);
     this.drawStars();
+    // Under the shots, which are drawn on gfx every frame.
+    this.shieldGfx = this.add.graphics();
     this.gfx = this.add.graphics();
     this.burst = burstEmitter(this, 240, 600);
     this.motherImg = this.add.image(-100, MOTHERSHIP_Y, 'mothership').setTint(NEON.pink).setVisible(false);
@@ -277,6 +282,7 @@ export class GameScene extends Phaser.Scene {
       y: SHIELD_Y,
       cells: SHIELD_SHAPE.map((row) => [...row].map((c) => c === '#')),
     }));
+    this.shieldsChanged = true;
   }
 
   // ---------------------------------------------------------------- loop
@@ -511,6 +517,7 @@ export class GameScene extends Phaser.Scene {
           if (row && cx + dx >= 0 && cx + dx < row.length) row[cx + dx] = false;
         }
       }
+      this.shieldsChanged = true;
       return true;
     }
     return false;
@@ -523,7 +530,10 @@ export class GameScene extends Phaser.Scene {
           if (!on) return;
           const px = sh.x + cx * SHIELD_CELL + SHIELD_CELL / 2;
           const py = sh.y + cy * SHIELD_CELL + SHIELD_CELL / 2;
-          if (Math.abs(px - x) < hw && Math.abs(py - y) < hh) row[cx] = false;
+          if (Math.abs(px - x) < hw && Math.abs(py - y) < hh) {
+            row[cx] = false;
+            this.shieldsChanged = true;
+          }
         }),
       );
     }
@@ -585,11 +595,15 @@ export class GameScene extends Phaser.Scene {
   // ---------------------------------------------------------------- render
 
   private render(): void {
-    const g = this.gfx.clear();
-    for (const sh of this.shields) {
-      g.fillStyle(NEON.green, 0.85);
-      sh.cells.forEach((row, cy) => row.forEach((on, cx) => on && g.fillRect(sh.x + cx * SHIELD_CELL, sh.y + cy * SHIELD_CELL, SHIELD_CELL, SHIELD_CELL)));
+    // Several hundred shield cells only change on a hit, so they are not replayed every frame.
+    if (this.shieldsChanged) {
+      this.shieldsChanged = false;
+      const s = this.shieldGfx.clear().fillStyle(NEON.green, 0.85);
+      for (const sh of this.shields) {
+        sh.cells.forEach((row, cy) => row.forEach((on, cx) => on && s.fillRect(sh.x + cx * SHIELD_CELL, sh.y + cy * SHIELD_CELL, SHIELD_CELL, SHIELD_CELL)));
+      }
     }
+    const g = this.gfx.clear();
     for (const ship of this.ships) {
       if (!ship.shot) continue;
       g.fillStyle(ship.color, 0.3).fillRect(ship.shot.x - 3, ship.shot.y - 8, 6, 16);

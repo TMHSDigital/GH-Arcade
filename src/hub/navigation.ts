@@ -173,9 +173,18 @@ export function initHubNavigation(): void {
   let heldSince = 0;
   let lastRepeat = 0;
 
+  // The loop only runs while a gamepad is connected, so a hub without one goes idle.
+  let polling = false;
+  const connectedPad = () => navigator.getGamepads?.().find((p) => p && p.connected) ?? null;
   const poll = (now: number) => {
-    const pad = navigator.getGamepads?.().find((p) => p && p.connected);
-    if (pad) {
+    const pad = connectedPad();
+    if (!pad) {
+      polling = false;
+      prev.clear();
+      heldDir = '';
+      return;
+    }
+    {
       const down = new Set<string>();
       const b = (i: number) => !!pad.buttons[i]?.pressed;
       const [ax, ay] = [pad.axes[0] ?? 0, pad.axes[1] ?? 0];
@@ -241,5 +250,12 @@ export function initHubNavigation(): void {
     else if (dy) movePanelFocus(dialog, dy);
     else adjustPanelControl(dx);
   };
-  requestAnimationFrame(poll);
+  const startPolling = () => {
+    if (polling) return;
+    polling = true;
+    requestAnimationFrame(poll);
+  };
+  // Browsers announce a gamepad on its first button press; one that is already known is picked up at once.
+  window.addEventListener('gamepadconnected', startPolling);
+  if (connectedPad()) startPolling();
 }
