@@ -2,6 +2,17 @@
 
 Notable changes to GH Arcade, newest first. The site deploys from `main` on every push, so there are no version numbers; entries are grouped by date. The [roadmap](README.md#roadmap) lists what is planned.
 
+## 2026-11-15
+
+### Changed
+
+- Node 22.13 or newer is required (it was 22.12), and pull requests are checked on Node 22.13 as well as Node 24.
+
+### Fixed
+
+- The pause menu's SOUND label updates immediately when Mute is pressed.
+- Neon Maze: being caught on the same tick as eating the last dot now costs a life instead of clearing the level.
+
 ## 2026-11-14
 
 ### Added
@@ -36,7 +47,6 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 ### Fixed
 
-- The pause menu's SOUND label updates immediately when Mute is pressed.
 - The Arcade, Pause and Fullscreen buttons no longer cover the corners of the game in windows close to its own shape.
 - A rebound Pause or Mute key now works in two-player modes too.
 - Neon Pinball: with the left-handed touch layout, holding the left half of the screen launches the ball.
