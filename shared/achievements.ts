@@ -144,12 +144,15 @@ function read(): Save {
 let save: Save = read();
 /** True while counters have changed in memory but not been written yet (see addCounter). */
 let dirty = false;
+/** What this tab has added to each counter since its last write. */
+let pending: Record<string, number> = {};
 // Another tab unlocked something, recorded a play or reset trophies: pick that up before the next save.
 onExternalChange(KEY, () => {
-  const unsaved = dirty ? save.counters : {};
   save = read();
-  // Counter progress from the run in this tab has not been written yet; do not lose it.
-  for (const [name, total] of Object.entries(unsaved)) save.counters[name] = Math.max(save.counters[name] ?? 0, total);
+  // Counter progress from the run in this tab has not been written yet; do not lose it. Only this
+  // tab's own additions are carried over, on top of what the other tab wrote: its totals win, so a
+  // reset or a restored backup there is not undone by the totals this tab had in memory.
+  for (const [name, added] of Object.entries(pending)) save.counters[name] = (save.counters[name] ?? 0) + added;
 });
 // Counters are written when a run ends or a trophy unlocks. If the player closes or leaves the tab
 // mid-run, this is the last chance to save them.
@@ -168,6 +171,7 @@ let recent: Trophy[] = [];
 
 function persist(): void {
   dirty = false;
+  pending = {};
   saveJSON(KEY, { version: SAVE_VERSION, ...save });
 }
 
@@ -224,6 +228,7 @@ export function reach(id: string, value: number): boolean {
 export function addCounter(counter: string, amount = 1): number {
   const total = (save.counters[counter] ?? 0) + amount;
   save.counters[counter] = total;
+  pending[counter] = (pending[counter] ?? 0) + amount;
   dirty = true;
   for (const t of TROPHIES) if (t.counter === counter && t.target !== undefined && total >= t.target) unlock(t.id);
   return total;

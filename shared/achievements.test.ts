@@ -96,6 +96,53 @@ describe('counter persistence', () => {
   });
 });
 
+describe('a change made in another tab', () => {
+  /** Loads the module with a window that can deliver a `storage` event for the trophies key. */
+  async function withTabs(initial: Record<string, string> = {}) {
+    const storage = installMemoryStorage(initial);
+    const handlers: Record<string, ((e: unknown) => void)[]> = {};
+    const listen = (type: string, fn: (e: unknown) => void) => void (handlers[type] ??= []).push(fn);
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: false }), addEventListener: listen });
+    const { achievements: a } = await freshModules();
+    /** Another tab writes the trophies save. */
+    const otherTabWrites = (value: object) => {
+      storage.setItem('gh-arcade:trophies', JSON.stringify({ version: 1, unlocked: {}, games: {}, ...value }));
+      for (const fn of handlers.storage ?? []) fn({ key: 'gh-arcade:trophies' });
+    };
+    const savedCounters = () => JSON.parse(storage.data.get('gh-arcade:trophies')!).counters;
+    return { a, otherTabWrites, savedCounters };
+  }
+
+  it('keeps a reset: only the additions this tab has not written are carried over', async () => {
+    const before = JSON.stringify({ version: 1, unlocked: {}, games: {}, counters: { 'stack.lines': 60, 'arcade.plays': 12 } });
+    const { a, otherTabWrites, savedCounters } = await withTabs({ 'gh-arcade:trophies': before });
+    a.addCounter('stack.lines', 3);
+    otherTabWrites({ counters: {} });
+    expect(a.getCounter('stack.lines')).toBe(3);
+    expect(a.getCounter('arcade.plays')).toBe(0);
+    a.recordPlay('stack', 100);
+    expect(savedCounters()['stack.lines']).toBe(3);
+  });
+
+  it('keeps the additions of both tabs to the same counter', async () => {
+    const before = JSON.stringify({ version: 1, unlocked: {}, games: {}, counters: { 'runner.coins': 10 } });
+    const { a, otherTabWrites, savedCounters } = await withTabs({ 'gh-arcade:trophies': before });
+    a.addCounter('runner.coins', 4);
+    otherTabWrites({ counters: { 'runner.coins': 17 } });
+    expect(a.getCounter('runner.coins')).toBe(21);
+    a.recordPlay('runner', 50);
+    expect(savedCounters()['runner.coins']).toBe(21);
+  });
+
+  it('does not add the additions of this tab twice once they are written', async () => {
+    const { a, otherTabWrites } = await withTabs();
+    a.addCounter('runner.coins', 4);
+    a.recordPlay('runner', 50);
+    otherTabWrites({ counters: { 'runner.coins': 9 } });
+    expect(a.getCounter('runner.coins')).toBe(9);
+  });
+});
+
 describe('recordPlay', () => {
   it('accumulates plays, best and total score', async () => {
     const { a } = await fresh();
