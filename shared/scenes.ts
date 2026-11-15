@@ -140,7 +140,8 @@ export function toArcade(): void {
   window.location.assign('../../');
 }
 
-function trophyLine(earned: Trophy[]): string {
+/** The end screens' trophy line: up to two names, then a count of the rest. Exported for its test. */
+export function trophyLine(earned: Trophy[]): string {
   const names = earned.map((t) => t.title.toUpperCase());
   return `TROPHY: ${names.length > 2 ? `${names.slice(0, 2).join(', ')} +${names.length - 2} MORE` : names.join(', ')}`;
 }
