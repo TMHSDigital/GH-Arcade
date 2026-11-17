@@ -3,7 +3,7 @@ import { BOARD, GAME_ID, HEIGHT, MAX_CELL, REPEAT_DELAY_MS, SOLVED_MS, STEP_MS, 
 import { EXTRA_CONTROLS } from '../controls';
 import { LEVELS } from '../levels';
 import { loadProgress, parCount, type Progress, recordSolve, saveProgress, solvedCount, totalScore } from '../progress';
-import { DIRS, type Dir, type Level, type MoveResult, parseLevel, Puzzle } from '../rules';
+import { DIRS, type Dir, type Level, type MoveResult, liveCells, parseLevel, Puzzle } from '../rules';
 import type { TROPHIES } from '../trophies';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
@@ -37,6 +37,7 @@ interface CrateView {
 export class GameScene extends Phaser.Scene {
   private index = 0;
   private level!: Level;
+  private live: boolean[] = [];
   private puzzle!: Puzzle;
   private progress: Progress = {};
   private phase: Phase = 'play';
@@ -83,6 +84,7 @@ export class GameScene extends Phaser.Scene {
     this.progress = loadProgress();
     const def = LEVELS[this.index];
     this.level = parseLevel(def.map);
+    this.live = liveCells(this.level);
     this.puzzle = new Puzzle(this.level);
 
     this.cell = Math.floor(Math.min(MAX_CELL, BOARD.width / this.level.width, BOARD.height / this.level.height));
@@ -185,6 +187,11 @@ export class GameScene extends Phaser.Scene {
     }
     const crate = this.crates.find((c) => c.cell === result.push!.from)!;
     this.moveCrate(crate, result.push.to, duration);
+    if (!this.live[result.push.to]) {
+      showBanner(this, 'UNDO?', NEON.pink);
+      tone({ freq: 110, toFreq: 65, duration: 0.14, type: 'sawtooth', volume: 0.04 });
+      return;
+    }
     tone({ freq: 140, toFreq: 110, duration: 0.08, type: 'square', volume: 0.04 });
   }
 
@@ -304,9 +311,9 @@ export class GameScene extends Phaser.Scene {
   /** Lights a crate green with a glow while it sits on a target; `announce` adds a chime and sparks. */
   private paintCrate(crate: CrateView, announce: boolean): void {
     const home = this.level.targets.includes(crate.cell);
+    crate.body.setTint(home ? NEON.green : this.live[crate.cell] ? NEON.orange : NEON.pink);
     if (home === crate.home) return;
     crate.home = home;
-    crate.body.setTint(home ? NEON.green : NEON.orange);
     this.tweens.killTweensOf(crate.glow);
     crate.glow.setTint(NEON.green);
     if (home) {

@@ -1,4 +1,4 @@
-import { DIRS, type Dir, isSolved, type Level, type State, step } from './rules';
+import { DIRS, type Dir, isSolved, liveCells, type Level, type State, step } from './rules';
 
 /**
  * A small move-optimal solver, used by the tests to prove every level can be solved and that its
@@ -26,27 +26,6 @@ interface Node {
 }
 
 const OPPOSITE: Record<Dir, Dir> = { left: 'right', right: 'left', up: 'down', down: 'up' };
-
-/** Cells a crate may stand on: the targets and every cell a crate can be pushed to a target from. */
-export function liveCells(level: Level): boolean[] {
-  const open = (c: number) => c !== -1 && !level.walls[c] && level.floor[c];
-  const live = level.walls.map(() => false);
-  const queue = [...level.targets];
-  for (const t of queue) live[t] = true;
-  while (queue.length) {
-    const c = queue.pop()!;
-    // Pull the crate from c one step in d: it lands on c + d and the robot stands one further on.
-    for (const d of DIRS) {
-      const to = step(level, c, d);
-      const robot = to === -1 ? -1 : step(level, to, d);
-      if (open(to) && open(robot) && !live[to]) {
-        live[to] = true;
-        queue.push(to);
-      }
-    }
-  }
-  return live;
-}
 
 /** Distances (and the step taken into each cell) for the robot walking around the crates. */
 function walk(level: Level, state: State): { dist: Int32Array; came: (Dir | null)[] } {

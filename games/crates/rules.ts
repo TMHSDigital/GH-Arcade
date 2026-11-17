@@ -98,6 +98,27 @@ export function step(level: Pick<Level, 'width' | 'height'>, cell: number, dir: 
   return y * level.width + x;
 }
 
+/** Cells a crate may stand on: the targets and every cell a crate can be pushed to a target from. */
+export function liveCells(level: Level): boolean[] {
+  const open = (c: number) => c !== -1 && !level.walls[c] && level.floor[c];
+  const live = level.walls.map(() => false);
+  const queue = [...level.targets];
+  for (const t of queue) live[t] = true;
+  while (queue.length) {
+    const c = queue.pop()!;
+    // Pull the crate from c one step in d: it lands on c + d and the robot stands one further on.
+    for (const d of DIRS) {
+      const to = step(level, c, d);
+      const robot = to === -1 ? -1 : step(level, to, d);
+      if (open(to) && open(robot) && !live[to]) {
+        live[to] = true;
+        queue.push(to);
+      }
+    }
+  }
+  return live;
+}
+
 export interface MoveResult {
   state: State;
   /** Where the robot went from and to. */

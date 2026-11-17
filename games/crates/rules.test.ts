@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cratesHome, isSolved, levelScore, parseLevel, Puzzle, step, tryMove } from './rules';
+import { cratesHome, isSolved, levelScore, liveCells, parseLevel, Puzzle, step, tryMove } from './rules';
 
 /** A corridor: robot, crate, gap, target. */
 const LINE = ['#######', '#@$ . #', '#######'];
@@ -32,6 +32,22 @@ describe('parseLevel', () => {
     expect(() => parseLevel(['#@x#'])).toThrow();
     expect(() => parseLevel(['# $.#'])).toThrow();
     expect(() => parseLevel(['#@@#'])).toThrow();
+  });
+});
+
+describe('liveCells', () => {
+  it('marks a non-target corner as dead, even on a row with a target', () => {
+    const level = parseLevel(LINE);
+    const live = liveCells(level);
+    expect(live[at(5, 1)]).toBe(false);
+    expect(live[at(3, 1)]).toBe(true);
+  });
+
+  it('keeps a corner target and its approach live', () => {
+    const level = parseLevel(['#####', '#@$.#', '#####']);
+    const live = liveCells(level);
+    expect(live[level.targets[0]]).toBe(true);
+    expect(live[level.start.crates[0]]).toBe(true);
   });
 });
 

@@ -6,6 +6,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 ### Added
 
+- Neon Crates highlights stuck crates and shows an undo prompt when a push leaves a crate unable to reach any target.
 - Neon Match has a Daily mode: a Moves game on the same boards for everyone on a given UTC date, with its own result and streak.
 
 ### Changed
