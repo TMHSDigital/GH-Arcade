@@ -34,13 +34,13 @@ describe('gameSlugOf', () => {
 describe('gamePageTags', () => {
   const tags = gamePageTags('Neon Snake');
 
-  it('adds the title, icons, viewport, theme color and font stylesheet to the head', () => {
+  it('adds the title, icons, viewport and theme color to the head, and nothing from another host', () => {
     expect(find(tags, 'title')?.children).toBe('Neon Snake · GH Arcade');
     expect(find(tags, 'link', { rel: 'icon' })?.attrs?.href).toBe('/favicon.svg');
     expect(find(tags, 'link', { rel: 'apple-touch-icon' })).toBeDefined();
     expect(find(tags, 'meta', { name: 'viewport' })).toBeDefined();
     expect(find(tags, 'meta', { name: 'theme-color' })).toBeDefined();
-    expect(String(find(tags, 'link', { rel: 'stylesheet' })?.attrs?.href)).toContain('fonts.googleapis.com');
+    expect(JSON.stringify(tags)).not.toMatch(/https?:/);
     for (const t of tags.filter((t) => ['title', 'meta', 'link'].includes(t.tag))) expect(t.injectTo).toBe('head');
   });
 
@@ -86,14 +86,15 @@ describe('Content-Security-Policy', () => {
     expect(tagsFor(resolve(gamesDir, 'snake', 'index.html'), true).some((t) => t.attrs?.['http-equiv'])).toBe(false);
   });
 
-  it('allows only the arcade itself and Google Fonts', () => {
+  it('allows only the arcade itself', () => {
     const directives = Object.fromEntries(CONTENT_SECURITY_POLICY.split('; ').map((d) => [d.split(' ')[0], d.split(' ').slice(1)]));
     expect(directives['default-src']).toEqual(["'self'"]);
     expect(directives['script-src']).toEqual(["'self'"]);
     expect(directives['object-src']).toEqual(["'none'"]);
     expect(directives['base-uri']).toEqual(["'none'"]);
-    const hosts = CONTENT_SECURITY_POLICY.match(/https:\/\/[^\s;]+/g) ?? [];
-    expect([...new Set(hosts)].sort()).toEqual(['https://fonts.googleapis.com', 'https://fonts.gstatic.com']);
+    expect(directives['font-src']).toEqual(["'self'"]);
+    expect(directives['style-src']).toEqual(["'self'"]);
+    expect(CONTENT_SECURITY_POLICY).not.toMatch(/https?:/);
     expect(CONTENT_SECURITY_POLICY).not.toContain('unsafe');
   });
 });

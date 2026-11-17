@@ -2,6 +2,12 @@
 
 Notable changes to GH Arcade, newest first. The site deploys from `main` on every push, so there are no version numbers; entries are grouped by date. The [roadmap](README.md#roadmap) lists what is planned.
 
+## 2026-11-16
+
+### Changed
+
+- The arcade's fonts are served from the site itself instead of Google Fonts, so pages make no requests to any other host and the fonts work offline from the first visit.
+
 ## 2026-11-15
 
 ### Added

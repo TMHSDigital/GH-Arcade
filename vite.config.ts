@@ -71,7 +71,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,jpg}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,jpg,woff2}'],
         // Raised from Workbox's 2 MB default so the ~1.5 MB shared Phaser chunk keeps fitting as it grows.
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         // Multi-page site: every page is precached by its own URL, so no single-page fallback.
@@ -80,22 +80,6 @@ export default defineConfig({
         // shared/modes.ts) is still the precached page.
         ignoreURLParametersMatching: [/^utm_/, /^fbclid$/, /^mode$/, /^day$/],
         cleanupOutdatedCaches: true,
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'google-fonts-css' },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-files',
-              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-        ],
       },
     }),
   ],

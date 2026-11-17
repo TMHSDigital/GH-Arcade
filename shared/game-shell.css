@@ -1,4 +1,6 @@
 /* Page chrome shared by every game: full-screen canvas plus a back-to-arcade link. */
+@import './fonts.css';
+
 :root {
   --shell-bg: #05050d;
   --shell-fg: #e8e8ff;

@@ -12,8 +12,6 @@ export interface GameInfo {
   title: string;
 }
 
-const FONTS = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;700&display=swap';
-
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
@@ -21,17 +19,17 @@ function escapeHtml(s: string): string {
 /**
  * Content-Security-Policy for every page. GitHub Pages cannot send response headers, so it is a
  * meta tag; it is defence in depth for a static site with no user content. The arcade loads its
- * own scripts and styles, Google Fonts, and nothing else. Changing what the pages load (a new CDN,
+ * own scripts, styles and fonts, and nothing else. Changing what the pages load (a new CDN,
  * inline scripts, images from elsewhere) means updating this list.
  */
 export const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "script-src 'self'",
   // Phaser and the hub set styles from script, which CSP allows; nothing uses inline style attributes or blocks.
-  "style-src 'self' https://fonts.googleapis.com",
-  'font-src https://fonts.gstatic.com',
+  "style-src 'self'",
+  "font-src 'self'",
   "img-src 'self' data: blob:",
-  "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com",
+  "connect-src 'self'",
   "worker-src 'self'",
   "manifest-src 'self'",
   "base-uri 'none'",
@@ -57,9 +55,6 @@ export function gamePageTags(title: string): HtmlTagDescriptor[] {
     { tag: 'title', children: `${escapeHtml(title)} · GH Arcade`, injectTo: 'head' },
     { tag: 'link', attrs: { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' }, injectTo: 'head' },
     { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }, injectTo: 'head' },
-    { tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.googleapis.com' }, injectTo: 'head' },
-    { tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: true }, injectTo: 'head' },
-    { tag: 'link', attrs: { href: FONTS, rel: 'stylesheet' }, injectTo: 'head' },
     { tag: 'a', attrs: { class: 'back-to-arcade', href: '../../' }, children: '← Arcade', injectTo: 'body-prepend' },
     { tag: 'div', attrs: { class: 'game-loading', 'aria-hidden': 'true' }, children: 'LOADING', injectTo: 'body-prepend' },
   ];
