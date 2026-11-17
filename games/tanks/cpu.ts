@@ -41,9 +41,18 @@ export function bestShot(heights: Heights, tanks: readonly TankPos[], shooter: n
     // A tie goes to the flatter shot, which is less affected by small aim errors in power.
     if (m < best.miss || (m === best.miss && elev < best.elev)) best = { angle, power: p, miss: m, elev };
   };
-  for (let elev = 15; elev <= 80; elev += 2.5) for (let p = MIN_POWER; p <= MAX_POWER; p += 2) tryShot(elev, p);
-  const coarse = best;
-  for (let de = -2.5; de <= 2.5; de += 0.5) for (let dp = -2; dp <= 2; dp += 0.25) tryShot(coarse.elev + de, coarse.power + dp);
+  // Elevations rise in the outer loop, so the first direct hit is already the flattest one the
+  // sweep would find, and nothing can beat it: stop there.
+  coarse: for (let elev = 15; elev <= 80; elev += 2.5) {
+    for (let p = MIN_POWER; p <= MAX_POWER; p += 2) {
+      tryShot(elev, p);
+      if (best.miss === 0) break coarse;
+    }
+  }
+  if (best.miss > 0) {
+    const coarse = best;
+    for (let de = -2.5; de <= 2.5; de += 0.5) for (let dp = -2; dp <= 2; dp += 0.25) tryShot(coarse.elev + de, coarse.power + dp);
+  }
   return { angle: best.angle, power: best.power, miss: best.miss };
 }
 

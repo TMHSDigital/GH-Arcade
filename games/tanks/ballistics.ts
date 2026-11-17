@@ -98,8 +98,10 @@ export function stepShell(s: Shell, wind: number, dt: number = SIM_DT): void {
 export function checkImpact(s: Shell, heights: Heights, tanks: readonly TankPos[], shooter: number): Impact | null {
   for (let i = 0; i < tanks.length; i++) {
     if (i === shooter && s.t < SAFE_LAUNCH_S) continue;
-    const c = centerOf(tanks[i]);
-    if (Math.hypot(s.x - c.x, s.y - c.y) <= TANK_HIT_R) return { kind: 'tank', x: s.x, y: s.y, tank: i };
+    // The same test as centerOf and a distance, without allocating: this runs every step of every planned shot.
+    const dx = s.x - tanks[i].x;
+    const dy = s.y - (tanks[i].y - TANK_CENTER_Y);
+    if (dx * dx + dy * dy <= TANK_HIT_R * TANK_HIT_R) return { kind: 'tank', x: s.x, y: s.y, tank: i };
   }
   if (s.x >= 0 && s.x <= heights.length - 1 && s.y >= surfaceAt(heights, s.x)) {
     return { kind: 'ground', x: s.x, y: surfaceAt(heights, s.x) };
