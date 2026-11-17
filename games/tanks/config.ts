@@ -1,3 +1,5 @@
+import { type CpuLevel, TROPHY_LEVELS } from '../../shared/versus';
+
 export const GAME_ID = 'tanks';
 
 export const WIDTH = 800;
@@ -95,12 +97,10 @@ export const CPU_PROFILES = {
   easy: { angleError: 7, powerError: 8, windSense: 0.4, focus: 0.8 },
   normal: { angleError: 4, powerError: 4.5, windSense: 0.8, focus: 0.6 },
   hard: { angleError: 1.5, powerError: 1.5, windSense: 1, focus: 0.45 },
-} as const satisfies Record<string, CpuProfile>;
+} as const satisfies Record<CpuLevel, CpuProfile>;
 
-export type CpuLevel = keyof typeof CPU_PROFILES;
-
-/** Wins against the easy CPU still score and keep the streak going, but do not lengthen it and earn no trophy. */
-export const TROPHY_LEVELS: readonly CpuLevel[] = ['normal', 'hard'];
+/** Wins against the easy CPU still score and keep the streak going, but do not lengthen it and earn no trophy (TROPHY_LEVELS). */
+export { type CpuLevel, TROPHY_LEVELS };
 
 /** Score multiplier for beating each CPU strength. */
 export const LEVEL_MULT: Record<CpuLevel, number> = { easy: 1, normal: 2, hard: 3 };

@@ -218,8 +218,8 @@ export class GameScene extends Phaser.Scene {
       this.charging = false;
       return;
     }
-    const stick = this.controls.pad?.leftStick;
-    if (stick && Math.hypot(stick.x, stick.y) > 0.5) {
+    const stick = this.controls.stick;
+    if (Math.hypot(stick.x, stick.y) > 0.5) {
       // The stick points the shot directly.
       this.aimAngle = Math.atan2(stick.y, stick.x);
     } else {

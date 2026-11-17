@@ -63,6 +63,7 @@ import { noise, tone } from '../../../shared/sfx';
 import { loadJSON, saveJSON } from '../../../shared/storage';
 import { isTouchDevice, VirtualButton } from '../../../shared/touch';
 import { drawGrid, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, PIXEL_FONT, showBanner, sparkTexture } from '../../../shared/ui';
+import { cpuLabel, parseCpuLevel, versusRestartData } from '../../../shared/versus';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -147,7 +148,7 @@ export class GameScene extends Phaser.Scene {
 
   init(data: TanksData): void {
     this.versus = data.players === 2;
-    this.cpuLevel = data.cpu && data.cpu in CPU_PROFILES ? data.cpu : 'normal';
+    this.cpuLevel = parseCpuLevel(data.cpu);
     this.rng = createRng(Math.floor(Math.random() * 0xffffffff));
     this.rounds = [0, 0];
     this.round = 1;
@@ -206,7 +207,7 @@ export class GameScene extends Phaser.Scene {
     } else {
       this.controls = [new ArcadeControls(this)];
     }
-    const cpuName = this.cpuLevel === 'normal' ? 'CPU' : `${this.cpuLevel.toUpperCase()} CPU`;
+    const cpuName = cpuLabel(this.cpuLevel);
     const make = (seat: Seat, color: number, label: string, cpu: boolean): Tank => ({
       seat,
       color,
@@ -227,7 +228,7 @@ export class GameScene extends Phaser.Scene {
     this.buildHud();
     this.pause = new PauseController(this, this.controls, {
       canPause: () => this.phase !== 'over',
-      restartData: this.versus ? { players: 2 } : { players: 1, cpu: this.cpuLevel },
+      restartData: versusRestartData(this.versus, this.cpuLevel),
     });
     if (isTouchDevice()) this.buildButtons();
     this.bindTouch();

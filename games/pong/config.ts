@@ -1,3 +1,5 @@
+import { type CpuLevel, TROPHY_LEVELS } from '../../shared/versus';
+
 export const GAME_ID = 'pong';
 
 export const WIDTH = 800;
@@ -40,12 +42,10 @@ export const CPU_PROFILES = {
   easy: { speed: 290, error: 58, react: 0.6 },
   normal: { speed: 400, error: 34, react: 0.45 },
   hard: { speed: 500, error: 16, react: 0.3 },
-} as const satisfies Record<string, CpuProfile>;
-
-export type CpuLevel = keyof typeof CPU_PROFILES;
+} as const satisfies Record<CpuLevel, CpuProfile>;
 
 /**
  * The Table Champion and Clean Sheet trophies are for beating the CPU at its normal strength or
- * harder. A win against the easy CPU still counts as a play and scores, but unlocks neither.
+ * harder (TROPHY_LEVELS). A win against the easy CPU still counts as a play and scores, but unlocks neither.
  */
-export const TROPHY_LEVELS: readonly CpuLevel[] = ['normal', 'hard'];
+export { type CpuLevel, TROPHY_LEVELS };

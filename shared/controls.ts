@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
+import { DEFAULT_KEYS, PLAYER_KEYS } from './default-keys';
 import { playRumble, STICK_PRESS } from './gamepad';
-import { DEFAULT_PAD_BUTTONS, getSettings, type RebindableAction, type SharedAction, sharedKeyCodes } from './settings';
+import { DEFAULT_PAD_BUTTONS, getSettings, type RebindableAction, sharedKeyCodes } from './settings';
 
 /**
  * Unified input for arcade games: keyboard, gamepad and on-screen touch controls behind one API.
@@ -26,27 +27,20 @@ export interface Binding {
   stick?: 'left' | 'right' | 'up' | 'down';
 }
 
+// The default keys are written once in shared/default-keys.ts, which the settings also read.
+const binding = (action: RebindableAction, stick?: Binding['stick']): Binding => ({ keys: [...DEFAULT_KEYS[action]], buttons: [DEFAULT_PAD_BUTTONS[action]], ...(stick && { stick }) });
 const DEFAULT_BINDINGS = {
-  left: { keys: ['LEFT', 'A'], buttons: [DEFAULT_PAD_BUTTONS.left], stick: 'left' },
-  right: { keys: ['RIGHT', 'D'], buttons: [DEFAULT_PAD_BUTTONS.right], stick: 'right' },
-  up: { keys: ['UP', 'W'], buttons: [DEFAULT_PAD_BUTTONS.up], stick: 'up' },
-  down: { keys: ['DOWN', 'S'], buttons: [DEFAULT_PAD_BUTTONS.down], stick: 'down' },
-  action: { keys: ['SPACE', 'ENTER'], buttons: [DEFAULT_PAD_BUTTONS.action] },
-  alt: { keys: ['SHIFT', 'X'], buttons: [DEFAULT_PAD_BUTTONS.alt] },
-  pause: { keys: ['P', 'ESC'], buttons: [DEFAULT_PAD_BUTTONS.pause] },
-  mute: { keys: ['M'], buttons: [DEFAULT_PAD_BUTTONS.mute] },
+  left: binding('left', 'left'),
+  right: binding('right', 'right'),
+  up: binding('up', 'up'),
+  down: binding('down', 'down'),
+  action: binding('action'),
+  alt: binding('alt'),
+  pause: binding('pause'),
+  mute: binding('mute'),
 } satisfies Record<RebindableAction, Binding>;
 
 export type DefaultAction = keyof typeof DEFAULT_BINDINGS;
-
-/**
- * Keyboard halves for local two-player games (each player also gets their own gamepad). Pause and
- * Mute are shared by both seats and follow the player's settings; see sharedKeyCodes().
- */
-const PLAYER_KEYS: Record<1 | 2, Record<Exclude<DefaultAction, SharedAction>, (string | number)[]>> = {
-  1: { left: ['A'], right: ['D'], up: ['W'], down: ['S'], action: ['SPACE'], alt: ['SHIFT'] },
-  2: { left: ['LEFT'], right: ['RIGHT'], up: ['UP'], down: ['DOWN'], action: ['ENTER'], alt: ['CTRL'] },
-};
 
 export interface ControlsOptions {
   /** Local multiplayer seat. Omit for single player (all default keys, first gamepad, custom bindings). */
@@ -108,7 +102,7 @@ export class ArcadeControls<Extra extends string = never> {
       const keys = this.options.player
         ? name === 'pause' || name === 'mute'
           ? sharedKeyCodes(name)
-          : PLAYER_KEYS[this.options.player][name]
+          : [...PLAYER_KEYS[this.options.player][name]]
         : custom[name]
           ? [custom[name]!.code]
           : b.keys;
@@ -182,6 +176,14 @@ export class ArcadeControls<Extra extends string = never> {
 
   get axisY(): number {
     return this.axis('y');
+  }
+
+  /**
+   * The analog stick alone, -1..1 on each axis, with no keys or d-pad mixed in: for games that point
+   * in the stick's direction (Golf's aim) rather than step with it.
+   */
+  get stick(): { x: number; y: number } {
+    return this.stickValue();
   }
 
   private axis(which: 'x' | 'y'): number {

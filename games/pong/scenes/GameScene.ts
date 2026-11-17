@@ -25,6 +25,7 @@ import { PauseController } from '../../../shared/pause';
 import { endRun, SCENE, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { burstEmitter, hex, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, PIXEL_FONT, sparkTexture } from '../../../shared/ui';
+import { cpuLabel, parseCpuLevel, versusRestartData } from '../../../shared/versus';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -73,7 +74,7 @@ export class GameScene extends Phaser.Scene {
 
   init(data: PongData): void {
     this.versus = data.players === 2;
-    this.cpuLevel = data.cpu && data.cpu in CPU_PROFILES ? data.cpu : 'normal';
+    this.cpuLevel = parseCpuLevel(data.cpu);
     this.live = false;
     this.over = false;
     this.rally = 0;
@@ -127,7 +128,7 @@ export class GameScene extends Phaser.Scene {
     this.rallyText = this.add.text(WIDTH / 2, HEIGHT - 34, '', { fontFamily: PIXEL_FONT, fontSize: '11px', color: hex(NEON.yellow) }).setOrigin(0.5);
 
     const humans = this.paddles.filter((p) => p.controls).map((p) => p.controls!);
-    this.pause = new PauseController(this, humans, { canPause: () => !this.over, restartData: this.versus ? { players: 2 } : { players: 1, cpu: this.cpuLevel } });
+    this.pause = new PauseController(this, humans, { canPause: () => !this.over, restartData: versusRestartData(this.versus, this.cpuLevel) });
     this.bindTouch();
     this.serve(Math.random() < 0.5 ? -1 : 1);
   }
@@ -263,7 +264,7 @@ export class GameScene extends Phaser.Scene {
       if (counts) unlock('pong.win');
       if (counts && other.score === 0) unlock('pong.shutout');
       const score = matchScore(you.score, other.score, won);
-      const cpuName = this.cpuLevel === 'normal' ? 'CPU' : `${this.cpuLevel.toUpperCase()} CPU`;
+      const cpuName = cpuLabel(this.cpuLevel);
       const detail = won ? `YOU BEAT THE ${cpuName} ${you.score}-${other.score}` : `${cpuName} WINS ${other.score}-${you.score}`;
       endRun(this, { gameId: GAME_ID, score, detail }, 900);
       return;

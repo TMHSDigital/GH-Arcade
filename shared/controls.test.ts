@@ -194,6 +194,18 @@ describe('axes', () => {
     expect(controls.axisY).toBe(-1);
   });
 
+  it('reads the stick alone, with no keys mixed in, from the seat\'s own pad', async () => {
+    const { controls, pads, press, frame } = await setup();
+    expect(controls.stick).toEqual({ x: 0, y: 0 });
+    press(KEY.RIGHT);
+    expect(controls.stick).toEqual({ x: 0, y: 0 });
+    pads.push(fakePad(0));
+    frame();
+    pads[0].leftStick.x = 0.3;
+    pads[0].leftStick.y = -0.8;
+    expect(controls.stick).toEqual({ x: 0.3, y: -0.8 });
+  });
+
   it('lets an on-screen stick beat a smaller pad value', async () => {
     const { controls, pads } = await setup();
     pads.push(fakePad(0));

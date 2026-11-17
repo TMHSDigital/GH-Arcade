@@ -6,6 +6,7 @@ import { buildMenu, SCENE } from '../../../shared/scenes';
 import { helpKeys } from '../../../shared/settings';
 import { loadJSON } from '../../../shared/storage';
 import { drawGrid, NEON, neonText, reducedMotion } from '../../../shared/ui';
+import { VERSUS_MODES } from '../../../shared/versus';
 
 /** Menu backdrop: a ghostly ridge with a tank on each side lobbing a shell over it. */
 export class MenuScene extends Phaser.Scene {
@@ -39,12 +40,7 @@ export class MenuScene extends Phaser.Scene {
       title: ['NEON', 'TANKS'],
       colors: [NEON.green, NEON.pink],
       help: `Aim ${helpKeys(['left', 'right'], '← → / A D')}   Power ${helpKeys(['up', 'down'], '↑ ↓ / W S')}   Fine ${helpKeys('alt', 'Shift')} / B   Fire ${helpKeys('action', 'Space')}   or drag from your tank\nBest of 3 rounds   2 players take turns on one device   Pause: ${helpKeys('pause', 'P')} / Start`,
-      modes: [
-        { label: 'VS CPU', data: { players: 1 } },
-        { label: 'EASY CPU', data: { players: 1, cpu: 'easy' } },
-        { label: 'HARD CPU', data: { players: 1, cpu: 'hard' } },
-        { label: '2 PLAYERS', data: { players: 2 } },
-      ],
+      modes: [...VERSUS_MODES],
     });
 
     const streak = readStreak(loadJSON<unknown>(STREAK_KEY, null));

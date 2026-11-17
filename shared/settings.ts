@@ -1,3 +1,4 @@
+import { DEFAULT_KEYS, keyCodesOf, PLAYER_KEYS } from './default-keys';
 import { PAD } from './gamepad';
 import { isRecord, loadJSON, onExternalChange, saveJSON } from './storage';
 
@@ -22,17 +23,8 @@ export const DEFAULT_KEY_LABELS: Record<RebindableAction, string> = {
   mute: 'M',
 };
 
-/** keyCodes behind the default keys above, for start prompts and for spotting clashes when rebinding. */
-export const DEFAULT_KEY_CODES: Record<RebindableAction, number[]> = {
-  left: [37, 65],
-  right: [39, 68],
-  up: [38, 87],
-  down: [40, 83],
-  action: [32, 13],
-  alt: [16, 88],
-  pause: [80, 27],
-  mute: [77],
-};
+/** keyCodes behind the default keys (DEFAULT_KEYS), for start prompts and for spotting clashes when rebinding. */
+export const DEFAULT_KEY_CODES = Object.fromEntries(REBINDABLE.map((a) => [a, keyCodesOf(DEFAULT_KEYS[a])])) as Record<RebindableAction, number[]>;
 
 /** The gamepad button behind each action by default (standard mapping). The left stick always moves as well. */
 export const DEFAULT_PAD_BUTTONS: Record<RebindableAction, number> = {
@@ -269,7 +261,7 @@ export function padButtonLabel(button: number): string {
 export type SharedAction = 'pause' | 'mute';
 
 /** keyCodes of the two keyboard halves in two-player modes: W A S D Space Shift, and the arrows Enter Ctrl. */
-const SEAT_KEY_CODES: readonly number[] = [87, 65, 83, 68, 32, 16, 38, 37, 40, 39, 13, 17];
+const SEAT_KEY_CODES: readonly number[] = ([1, 2] as const).flatMap((seat) => Object.values(PLAYER_KEYS[seat]).flatMap(keyCodesOf));
 
 /** The player's own key for a shared action, unless one of the two-player seats already uses that key. */
 function sharedBinding(action: SharedAction): KeyBinding | undefined {

@@ -3,6 +3,7 @@ import { GAME_ID, HEIGHT, WIDTH } from '../config';
 import { buildMenu, SCENE } from '../../../shared/scenes';
 import { helpKeys } from '../../../shared/settings';
 import { NEON, reducedMotion } from '../../../shared/ui';
+import { VERSUS_MODES } from '../../../shared/versus';
 
 /** Menu backdrop: two ghost paddles rallying a ball behind the title. */
 export class MenuScene extends Phaser.Scene {
@@ -19,12 +20,7 @@ export class MenuScene extends Phaser.Scene {
       title: ['NEON', 'PONG'],
       colors: [NEON.cyan, NEON.pink],
       help: `Solo: ${helpKeys(['up', 'down'], '↑ ↓ / W S')} / stick / drag vs the CPU    Two players: P1 W S or pad 1, P2 ↑ ↓ or pad 2\nFirst to 7 wins    Pause: ${helpKeys('pause', 'P')} / Start`,
-      modes: [
-        { label: 'VS CPU', data: { players: 1 } },
-        { label: 'EASY CPU', data: { players: 1, cpu: 'easy' } },
-        { label: 'HARD CPU', data: { players: 1, cpu: 'hard' } },
-        { label: '2 PLAYERS', data: { players: 2 } },
-      ],
+      modes: [...VERSUS_MODES],
     });
   }
 
