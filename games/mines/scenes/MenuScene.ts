@@ -21,7 +21,7 @@ export class MenuScene extends Phaser.Scene {
       gameId: GAME_ID,
       title: ['NEON', 'MINES'],
       colors: [NEON.green, NEON.pink],
-      help: `Mouse: left reveal, right flag    Touch: tap reveal, hold or FLAG mode to flag\n${helpKeys(['left', 'right', 'up', 'down'], 'Arrows')} move    ${helpKeys('action', 'Space')} reveal    ${helpKeys('alt', 'X')} / F flag    Pad: A / B    Pause: ${helpKeys('pause', 'P')} / Start`,
+      help: `Mouse: left reveal, right flag    Touch: tap reveal, hold or FLAG mode to flag\n${helpKeys(['left', 'right', 'up', 'down'], 'Arrows')} move    ${helpKeys('action', 'Space')} reveal    ${helpKeys('alt', 'X')} / F flag    T flag mode    Pad: A / B, X mode    Pause: ${helpKeys('pause', 'P')} / Start`,
       // The daily board is the same for everyone on a given (UTC) date; "?mode=daily" opens on it.
       modes: [
         ...DIFFICULTY_ORDER.map((id) => ({ label: DIFFICULTIES[id].label, data: { difficulty: id } })),

@@ -10,7 +10,7 @@
 [![Play now](https://img.shields.io/badge/PLAY%20NOW-tmhsdigital.github.io%2FGH--Arcade-ff2e97?style=for-the-badge&labelColor=05050d)](https://tmhsdigital.github.io/GH-Arcade/)
 
 [![Deploy](https://img.shields.io/github/actions/workflow/status/TMHSDigital/GH-Arcade/deploy.yml?branch=main&style=flat-square&label=deploy&labelColor=05050d)](https://github.com/TMHSDigital/GH-Arcade/actions/workflows/deploy.yml)
-[![Games](https://img.shields.io/badge/games-10-00f0ff?style=flat-square&labelColor=05050d)](#games)
+[![Games](https://img.shields.io/badge/games-17-00f0ff?style=flat-square&labelColor=05050d)](#games)
 [![PWA](https://img.shields.io/badge/PWA-offline%20ready-3dff8a?style=flat-square&labelColor=05050d)](#features)
 [![Phaser](https://img.shields.io/badge/Phaser-4.2-a45bff?style=flat-square&labelColor=05050d)](https://phaser.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6-3178c6?style=flat-square&logo=typescript&logoColor=white&labelColor=05050d)](https://www.typescriptlang.org)
@@ -170,12 +170,12 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | **Neon Maze** | Arrows or <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> steer (turns pressed early are taken at the next corner) | D-pad or stick steer | Swipe or drag to steer |
 | **Neon Pinball** | <kbd>←</kbd> <kbd>→</kbd>, <kbd>A</kbd> <kbd>D</kbd> or <kbd>Z</kbd> <kbd>/</kbd> flip, hold <kbd>Space</kbd> / <kbd>↓</kbd> and release to launch | D-pad, <kbd>LB</kbd> <kbd>RB</kbd> or triggers flip, hold <kbd>A</kbd> to launch | Hold the left or right half to flip, hold the right half (left with the left-handed layout) to launch |
 | **Neon Lander** | <kbd>←</kbd> <kbd>→</kbd> turn, <kbd>↑</kbd> / <kbd>Space</kbd> thrust | Stick turn, <kbd>A</kbd> or stick up thrust | On-screen stick and THRUST button |
-| **Neon Mines** | Arrows move the cursor, <kbd>Space</kbd> reveal, <kbd>F</kbd> flag, <kbd>T</kbd> flag mode (or click, right-click to flag) | D-pad or stick cursor, <kbd>A</kbd> reveal, <kbd>Y</kbd> flag, <kbd>X</kbd> flag mode | Tap to reveal, hold to flag, or the FLAG MODE button |
+| **Neon Mines** | Arrows move the cursor, <kbd>Space</kbd> reveal, <kbd>F</kbd> / <kbd>Shift</kbd> / <kbd>X</kbd> flag, <kbd>T</kbd> flag mode (or click, right-click to flag) | D-pad or stick cursor, <kbd>A</kbd> reveal, <kbd>Y</kbd> / <kbd>B</kbd> flag, <kbd>X</kbd> flag mode | Tap to reveal, hold to flag, or the FLAG MODE button |
 | **Neon Golf** | <kbd>←</kbd> <kbd>→</kbd> aim, <kbd>↑</kbd> <kbd>↓</kbd> fine aim, hold <kbd>Space</kbd> to charge and release to shoot (or drag with the mouse) | Stick or d-pad aim, hold <kbd>A</kbd> to charge | Drag back from the ball and release |
 | **Neon Crates** | Arrows or <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> move, <kbd>Z</kbd> / <kbd>Backspace</kbd> / <kbd>U</kbd> undo, <kbd>R</kbd> restart | D-pad move, <kbd>B</kbd> / <kbd>X</kbd> undo, <kbd>Y</kbd> restart | Swipe to move, UNDO and RESET buttons |
-| **Neon Match** | Arrows move the cursor, <kbd>Space</kbd> picks a gem, then an arrow swaps it (or drag with the mouse) | D-pad or stick cursor, <kbd>A</kbd> pick, <kbd>B</kbd> cancel | Drag a gem, or tap two neighbors |
+| **Neon Match** | Arrows move the cursor, <kbd>Space</kbd> picks a gem, then an arrow swaps it, <kbd>Shift</kbd> / <kbd>X</kbd> cancels (or drag with the mouse) | D-pad or stick cursor, <kbd>A</kbd> pick, <kbd>B</kbd> cancel | Drag a gem, or tap two neighbors |
 | **Neon Bubbles** | <kbd>←</kbd> <kbd>→</kbd> aim, <kbd>Space</kbd> fire, <kbd>Shift</kbd> / <kbd>X</kbd> swap (or aim with the mouse) | Stick aim, <kbd>A</kbd> fire, <kbd>B</kbd> swap | Drag to aim and lift to fire, tap NEXT to swap |
-| **Neon Tanks** | <kbd>←</kbd> <kbd>→</kbd> angle, <kbd>↑</kbd> <kbd>↓</kbd> power, <kbd>Shift</kbd> fine aim, <kbd>Space</kbd> fire | Stick or d-pad aim, <kbd>A</kbd> fire | Drag from your tank and release, or the on-screen buttons |
+| **Neon Tanks** | <kbd>←</kbd> <kbd>→</kbd> angle, <kbd>↑</kbd> <kbd>↓</kbd> power, <kbd>Shift</kbd> / <kbd>X</kbd> fine aim, <kbd>Space</kbd> fire | Stick or d-pad aim, hold <kbd>B</kbd> for fine aim, <kbd>A</kbd> fire | Drag from your tank and release, or the on-screen buttons |
 
 </details>
 
@@ -428,15 +428,14 @@ Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `co
 - [x] Hub navigation with the keyboard or a gamepad
 - [x] One-command game scaffolding with a shared toolkit
 - [x] Automatic GitHub Pages deploys
+- [x] Daily challenges with a shared seed in Neon Stack, Neon Hop, Neon Runner, Neon Snake, Astro Blaster and Star Siege
+- [x] Daily boards in Neon Lander, Neon Mines and Neon Bubbles
+- [x] A second maze layout for Neon Maze (levels alternate between the two)
 
 **Up next**
 
-- [x] Daily challenge with a shared seed (Neon Stack, Neon Hop, Neon Runner and Neon Snake)
-- [x] Daily challenges for more games: Astro Blaster and Star Siege joined Stack, Hop, Runner and Snake
-- [x] Daily boards in Neon Lander, Neon Mines and Neon Bubbles
 - [ ] Breakout level editor
 - [ ] More two-player modes
-- [x] A second maze layout for Neon Maze (levels alternate between the two)
 - [ ] More pinball tables and maze layouts
 
 Have an idea? [Open an issue](https://github.com/TMHSDigital/GH-Arcade/issues/new).

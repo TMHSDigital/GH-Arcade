@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { DOT_POINTS, GAME_ID, HEIGHT, ROUND_SECONDS, SPEED, WIDTH } from '../config';
 import { ArcadeControls } from '../../../shared/controls';
+import { frameSeconds } from '../../../shared/frame';
 import { PauseController } from '../../../shared/pause';
 import { endRun, SCENE } from '../../../shared/scenes';
 import { tone } from '../../../shared/sfx';
@@ -25,12 +26,18 @@ export class GameScene extends Phaser.Scene {
     super(SCENE.game);
   }
 
-  create(): void {
-    // Scenes are reused between runs, so reset state here rather than in field initialisers.
+  /**
+   * Scenes are reused between runs, so reset every run's state here rather than in field
+   * initialisers. `data` is what the menu or PLAY AGAIN started the scene with. For a Daily mode,
+   * read it with dailyRunFrom(data, GAME_ID) from shared/rng.ts and seed the run from its rng().
+   */
+  init(_data: object = {}): void {
     this.score = 0;
     this.timeLeft = ROUND_SECONDS;
     this.over = false;
+  }
 
+  create(): void {
     drawGrid(this, WIDTH, HEIGHT);
     if (!this.textures.exists('player')) {
       const g = this.add.graphics();
@@ -61,7 +68,8 @@ export class GameScene extends Phaser.Scene {
     if (p.isDown) this.physics.moveTo(this.player, p.x, p.y, SPEED);
     else this.player.setVelocity(this.controls.axisX * SPEED, this.controls.axisY * SPEED);
 
-    this.timeLeft -= deltaMs / 1000;
+    // frameSeconds caps a long frame (a background tab, a hitch), so time never jumps ahead.
+    this.timeLeft -= frameSeconds(deltaMs);
     this.hud.setText(`SCORE ${this.score}   TIME ${Math.max(0, Math.ceil(this.timeLeft))}`);
     if (this.timeLeft <= 0) this.finish();
   }

@@ -12,7 +12,9 @@ describe('levels', () => {
   });
 
   it('the last trophy asks for every level', () => {
-    expect(TROPHIES.find((t) => t.id === 'crates.all')?.threshold).toBe(LEVELS.length);
+    const all = TROPHIES.find((t) => t.id === 'crates.all');
+    expect(all?.threshold).toBe(LEVELS.length);
+    expect(all?.description).toBe(`Solve all ${LEVELS.length} levels`);
   });
 
   describe.each(LEVELS.map((def, i) => [i + 1, def.name, def] as const))('%i %s', (_n, _name, def) => {

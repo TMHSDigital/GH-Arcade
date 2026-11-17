@@ -38,7 +38,7 @@ export class MenuScene extends Phaser.Scene {
       gameId: GAME_ID,
       title: ['NEON', 'TANKS'],
       colors: [NEON.green, NEON.pink],
-      help: `Aim ${helpKeys(['left', 'right'], '← → / A D')}   Power ${helpKeys(['up', 'down'], '↑ ↓ / W S')}   Fire ${helpKeys('action', 'Space')}   or drag from your tank\nBest of 3 rounds   2 players take turns on one device   Pause: ${helpKeys('pause', 'P')} / Start`,
+      help: `Aim ${helpKeys(['left', 'right'], '← → / A D')}   Power ${helpKeys(['up', 'down'], '↑ ↓ / W S')}   Fine ${helpKeys('alt', 'Shift')} / B   Fire ${helpKeys('action', 'Space')}   or drag from your tank\nBest of 3 rounds   2 players take turns on one device   Pause: ${helpKeys('pause', 'P')} / Start`,
       modes: [
         { label: 'VS CPU', data: { players: 1 } },
         { label: 'EASY CPU', data: { players: 1, cpu: 'easy' } },

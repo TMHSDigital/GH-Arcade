@@ -55,6 +55,15 @@ describe('scaffold', () => {
     expect(existsSync(join(root, 'games', 'ctrl'))).toBe(false);
   });
 
+  it('starts the scene from the conventions every game follows', () => {
+    scaffold({ root, slug: 'space-dodge' });
+    const scene = gameFiles('space-dodge').find((f) => f.name === 'GameScene.ts')?.text ?? '';
+    // Run state is reset in init(data), and real time goes through frameSeconds (see shared/frame.ts).
+    expect(scene).toContain('init(');
+    expect(scene).toContain('frameSeconds(deltaMs)');
+    expect(scene).not.toContain('deltaMs / 1000');
+  });
+
   it('derives the title from the slug', () => {
     expect(scaffold({ root, slug: 'space-dodge' })).toEqual({ slug: 'space-dodge', title: 'Space Dodge' });
   });

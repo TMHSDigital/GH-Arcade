@@ -23,7 +23,7 @@ export class MenuScene extends Phaser.Scene {
       title: ['NEON', 'CRATES'],
       colors: [NEON.orange, NEON.green],
       startScene: SELECT_SCENE,
-      help: `Move: ${helpKeys(['left', 'right', 'up', 'down'], 'arrows / WASD')} / d-pad / swipe    Undo: Z    Restart: R\nPush every crate onto a target, one at a time. No pulling    Pause: ${helpKeys('pause', 'P')} / Start`,
+      help: `Move: ${helpKeys(['left', 'right', 'up', 'down'], 'arrows / WASD')} / d-pad / swipe    Undo: Z / pad B    Restart: R / pad Y\nPush every crate onto a target, one at a time. No pulling    Pause: ${helpKeys('pause', 'P')} / Start`,
     });
     const solved = solvedCount(loadProgress());
     if (solved > 0) neonText(this, WIDTH / 2, 350, `SOLVED ${solved} / ${LEVELS.length}`, 12, NEON.green);

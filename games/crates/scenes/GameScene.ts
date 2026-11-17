@@ -9,6 +9,7 @@ import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
 import { endRun, finishRun, SCENE } from '../../../shared/scenes';
+import { keyLabel } from '../../../shared/settings';
 import { tone } from '../../../shared/sfx';
 import { isTouchDevice, onSwipe, VirtualButton } from '../../../shared/touch';
 import { burstEmitter, drawGrid, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, reducedMotion, showBanner } from '../../../shared/ui';
@@ -416,7 +417,7 @@ export class GameScene extends Phaser.Scene {
     this.pushesText = this.add.text(450, 36, '0', HUD_STYLE);
     this.add.text(WIDTH - 150, 20, `PAR ${def.par}`, HUD_LABEL_STYLE);
     this.bestText = this.add.text(WIDTH - 150, 36, '', HUD_STYLE);
-    const help = isTouchDevice() ? 'SWIPE TO MOVE' : 'UNDO Z / BACKSPACE    RESTART R    PAUSE P';
+    const help = isTouchDevice() ? 'SWIPE TO MOVE' : `UNDO Z / BACKSPACE    RESTART R    PAUSE ${keyLabel('pause')}`;
     this.add.text(WIDTH / 2, HEIGHT - 30, help, HUD_LABEL_STYLE).setOrigin(0.5);
   }
 
