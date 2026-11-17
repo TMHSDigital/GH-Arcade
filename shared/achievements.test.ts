@@ -252,6 +252,24 @@ describe('best scores', () => {
     expect(storage.getItem('gh-arcade:match:mode-best')).toBeNull();
     expect(storage.getItem('gh-arcade:mines:best-times')).toBeNull();
   });
+
+  it('resetBestScores clears Crates level bests and the Tanks streak', async () => {
+    const { a, storage } = await fresh({
+      'gh-arcade:crates:best': '{"First Push":12}',
+      'gh-arcade:tanks-streak': '{"current":2,"best":4}',
+    });
+    a.resetBestScores();
+    expect(storage.getItem('gh-arcade:crates:best')).toBeNull();
+    expect(storage.getItem('gh-arcade:tanks-streak')).toBeNull();
+  });
+
+  it('every key a game saves is cleared with the best scores or kept on purpose', async () => {
+    const { a } = await fresh();
+    const { GAME_SAVE_KEYS } = await import('./backup');
+    // Saved keys that are not bests and so survive "reset best scores". Add a key here only on purpose.
+    const keptOnReset: string[] = [];
+    for (const key of Object.keys(GAME_SAVE_KEYS)) expect([...a.GAME_BEST_KEYS, ...keptOnReset], key).toContain(key);
+  });
 });
 
 describe('trophiesFor', () => {

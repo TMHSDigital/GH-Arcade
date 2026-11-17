@@ -2,6 +2,9 @@ import type { SaveKeyMerge } from '../../shared/backup';
 import type { TrophyDef } from '../../shared/trophy-types';
 import { STREAK_KEY } from './config';
 
+/** The vs-CPU win streak and best streak, cleared with the arcade's best scores. */
+export const BEST_KEYS = [STREAK_KEY];
+
 /** What this game saves for itself, so backups carry it: the vs-CPU win streak and best streak. */
 export const SAVE_KEYS: Record<string, SaveKeyMerge> = { [STREAK_KEY]: 'higher' };
 

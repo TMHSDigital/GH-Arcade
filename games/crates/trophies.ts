@@ -2,6 +2,9 @@ import type { SaveKeyMerge } from '../../shared/backup';
 import type { TrophyDef } from '../../shared/trophy-types';
 import { BEST_KEY } from './config';
 
+/** The fewest moves per level, cleared with the arcade's best scores. Every level stays open. */
+export const BEST_KEYS = [BEST_KEY];
+
 /** What this game saves for itself, so backups carry it: the fewest moves per level. */
 export const SAVE_KEYS: Record<string, SaveKeyMerge> = { [BEST_KEY]: 'lower' };
 
