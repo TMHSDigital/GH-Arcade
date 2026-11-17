@@ -105,10 +105,41 @@ export function drawGrid(scene: Phaser.Scene, width: number, height: number, ste
   for (let y = 0; y <= height; y += step) g.lineBetween(0, y, width, y);
 }
 
-/** Text that rises and fades, for score popups. */
+/** Popups that have finished, per scene and per size and color, ready to be shown again. */
+const popupPools = new WeakMap<Phaser.Scene, Map<string, Phaser.GameObjects.Text[]>>();
+
+function popupPool(scene: Phaser.Scene, key: string): Phaser.GameObjects.Text[] {
+  let pools = popupPools.get(scene);
+  if (!pools) {
+    pools = new Map();
+    popupPools.set(scene, pools);
+    // A restarted scene destroys its objects, so its pool goes with them.
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => popupPools.delete(scene));
+  }
+  let pool = pools.get(key);
+  if (!pool) pools.set(key, (pool = []));
+  return pool;
+}
+
+/**
+ * Text that rises and fades, for score popups. Finished popups are kept and shown again, so a
+ * burst of them (a multiball moment, a rock shattering) does not build and throw away a blurred
+ * Text each time; a reused one only redraws when its words differ.
+ */
 export function floatText(scene: Phaser.Scene, x: number, y: number, text: string, color: number, size = 12): void {
-  const t = neonText(scene, x, y, text, size, color).setDepth(20);
-  scene.tweens.add({ targets: t, y: y - 40, alpha: 0, duration: 700, ease: 'Cubic.easeOut', onComplete: () => t.destroy() });
+  const pool = popupPool(scene, `${size}|${color}`);
+  const t = (pool.pop()?.setText(text).setPosition(x, y).setAlpha(1).setVisible(true) ?? neonText(scene, x, y, text, size, color)).setDepth(20);
+  scene.tweens.add({
+    targets: t,
+    y: y - 40,
+    alpha: 0,
+    duration: 700,
+    ease: 'Cubic.easeOut',
+    onComplete: () => {
+      t.setVisible(false);
+      pool.push(t);
+    },
+  });
 }
 
 /**
