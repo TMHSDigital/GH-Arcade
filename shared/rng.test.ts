@@ -108,17 +108,33 @@ describe('daily challenge helpers', () => {
     expect(first(dailyRng('stack', '2026-11-13'))).toEqual(first(createRng('stack:2026-11-13')));
   });
 
-  it('dailyRunFrom gives the day and its seeded parts, or null for a normal game', () => {
+  /** Runs `body` with the clock stopped at `iso`, so "today" cannot change between two reads. */
+  const at = (iso: string, body: () => void) => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(new Date(iso));
+      body();
+    } finally {
+      vi.useRealTimers();
+    }
+  };
+
+  it('dailyRunFrom gives the day and its seeded parts, or null for a normal game', () => at('2026-11-13T12:00:00Z', () => {
     expect(dailyRunFrom(undefined, 'hop')).toBeNull();
     expect(dailyRunFrom({}, 'hop')).toBeNull();
     const run = dailyRunFrom({ daily: true }, 'hop')!;
+    expect(run.day).toBe('2026-11-13');
     expect(run.day).toBe(dailySeed());
     expect(run.rng().next()).toBe(dailyRng('hop', run.day).next());
     expect(run.rng('orbs').next()).toBe(dailyRng('hop', run.day, 'orbs').next());
     expect(run.rng('orbs').next()).not.toBe(run.rng('lanes:1').next());
-  });
+  }));
 
-  it('dailyRunFrom plays an earlier day named by the page address as a replay', () => {
+  it('dailyRunFrom is still the same day in the last millisecond before midnight UTC', () => at('2026-11-13T23:59:59.999Z', () => {
+    expect(dailyRunFrom({ daily: true }, 'hop')).toMatchObject({ day: '2026-11-13', past: false });
+  }));
+
+  it('dailyRunFrom plays an earlier day named by the page address as a replay', () => at('2026-11-13T12:00:00Z', () => {
     const today = dailySeed();
     const yesterday = new Date(Date.parse(`${today}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
     const linked = dailyRunFrom({ daily: true }, 'hop', `?mode=daily&day=${yesterday}`)!;
@@ -130,7 +146,7 @@ describe('daily challenge helpers', () => {
     expect(dailyRunFrom({ daily: true }, 'hop')).toMatchObject({ day: today, past: false });
     // The address alone does not start a daily.
     expect(dailyRunFrom({}, 'hop', `?day=${yesterday}`)).toBeNull();
-  });
+  }));
 
   it('diceFor rolls the same sequence for the same daily, part by part', () => {
     const run = dailyRunFrom({ daily: true }, 'astro')!;
