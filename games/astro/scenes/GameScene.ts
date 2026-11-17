@@ -37,7 +37,7 @@ import { dailyOutcome, type DailyRun, dailyRunFrom, type Dice, diceFor } from '.
 import { endRun, SCENE } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, VirtualButton, VirtualStick } from '../../../shared/touch';
-import { burstEmitter, dailyHudLabel, floatText, HUD_STYLE, NEON, showBanner, impact } from '../../../shared/ui';
+import { burstEmitter, dailyHudLabel, floatText, HUD_STYLE, NEON, reducedMotion, showBanner, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { addCounter, reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -500,7 +500,7 @@ export class GameScene extends Phaser.Scene {
       this.debris.push({ x: s.x, y: s.y, vx: s.vx * 0.3 + Math.cos(a) * v, vy: s.vy * 0.3 + Math.sin(a) * v, angle: a, spin: Phaser.Math.FloatBetween(-4, 4), len: Phaser.Math.Between(8, 16), life: 1.6 });
     }
     impact(this, this.controls, 300, 0.012);
-    this.cameras.main.flash(180, 0, 240, 255);
+    if (!reducedMotion()) this.cameras.main.flash(180, 0, 240, 255);
     noise(0.6, 0.14);
     tone({ freq: 300, toFreq: 40, duration: 0.7, type: 'sawtooth', volume: 0.08 });
     this.updateHud();

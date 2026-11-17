@@ -40,7 +40,7 @@ import { dailyOutcome, type DailyRun, dailyRunFrom, diceFor } from '../../../sha
 import { endRun, SCENE } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice } from '../../../shared/touch';
-import { addGlow, burstEmitter, dailyHudLabel, floatText, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, neonText, showBanner } from '../../../shared/ui';
+import { addGlow, burstEmitter, dailyHudLabel, floatText, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, reducedMotion, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -551,7 +551,7 @@ export class GameScene extends Phaser.Scene {
     this.burst.setParticleTint(ship.color);
     this.burst.explode(34, ship.img.x, PLAYER_Y);
     impact(this, ship.controls, 260, 0.01);
-    this.cameras.main.flash(160, 255, 46, 151);
+    if (!reducedMotion()) this.cameras.main.flash(160, 255, 46, 151);
     noise(0.5, 0.12);
     tone({ freq: 280, toFreq: 40, duration: 0.6, type: 'sawtooth', volume: 0.08 });
     if (this.ships.every((s) => s.lives <= 0)) this.endGame(`REACHED WAVE ${this.wave}`);

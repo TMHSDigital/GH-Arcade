@@ -48,7 +48,7 @@ import { PauseController } from '../../../shared/pause';
 import { dailyOutcome, type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
 import { endRun, SCENE } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
-import { burstEmitter, dailyHudLabel, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, neonText, sparkTexture, impact } from '../../../shared/ui';
+import { burstEmitter, dailyHudLabel, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, reducedMotion, neonText, sparkTexture, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { addCounter, reach } = trophiesFor<typeof TROPHIES>();
@@ -378,7 +378,7 @@ export class GameScene extends Phaser.Scene {
     this.burst.setParticleTint(NEON.cyan);
     this.burst.explode(40, PLAYER_X, Math.min(this.y, GROUND_Y) - PLAYER_H / 2);
     impact(this, this.controls, 300, 0.012);
-    this.cameras.main.flash(180, 255, 46, 151);
+    if (!reducedMotion()) this.cameras.main.flash(180, 255, 46, 151);
     noise(0.5, 0.12);
     tone({ freq: 400, toFreq: 50, duration: 0.7, type: 'sawtooth', volume: 0.08 });
     const metres = metresRun(this.distance);

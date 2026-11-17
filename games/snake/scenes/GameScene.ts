@@ -23,7 +23,7 @@ import { dailyOutcome, type DailyRun, dailyRunFrom, type Rng } from '../../../sh
 import { endRun, SCENE, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
 import { isTouchDevice, onSwipe } from '../../../shared/touch';
-import { burstEmitter, dailyHudLabel, fadeToScene, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, neonText, showBanner } from '../../../shared/ui';
+import { burstEmitter, dailyHudLabel, fadeToScene, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, reducedMotion, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -330,7 +330,7 @@ export class GameScene extends Phaser.Scene {
       260,
       0.012,
     );
-    this.cameras.main.flash(200, 255, 46, 151);
+    if (!reducedMotion()) this.cameras.main.flash(200, 255, 46, 151);
     noise(0.4, 0.12);
     tone({ freq: 320, toFreq: 50, duration: 0.6, type: 'sawtooth', volume: 0.08 });
     for (const p of dead) {

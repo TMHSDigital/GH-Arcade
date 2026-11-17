@@ -488,7 +488,7 @@ export class GameScene extends Phaser.Scene {
     this.pointerAiming = false;
     this.updateHud();
     impact(this, this.controls, 320, 0.012);
-    this.cameras.main.flash(200, 255, 46, 151);
+    if (!reducedMotion()) this.cameras.main.flash(200, 255, 46, 151);
     noise(0.4, 0.12);
     tone({ freq: 300, toFreq: 60, duration: 0.6, type: 'sawtooth', volume: 0.08 });
     // Dim the field from the bottom up.

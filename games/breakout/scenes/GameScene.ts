@@ -27,7 +27,7 @@ import { frameSeconds } from '../../../shared/frame';
 import { PauseController } from '../../../shared/pause';
 import { endRun, SCENE } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
-import { addGlow, burstEmitter, floatText, HUD_STYLE, neonText, PIXEL_FONT, showBanner, sparkTexture, impact } from '../../../shared/ui';
+import { addGlow, burstEmitter, floatText, HUD_STYLE, neonText, PIXEL_FONT, reducedMotion, showBanner, sparkTexture, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -417,7 +417,7 @@ export class GameScene extends Phaser.Scene {
     this.updateLives();
     this.updateHud();
     impact(this, this.controls, 250, 0.012);
-    this.cameras.main.flash(200, 255, 46, 151);
+    if (!reducedMotion()) this.cameras.main.flash(200, 255, 46, 151);
     noise(0.35, 0.12);
     tone({ freq: 300, toFreq: 60, duration: 0.5, type: 'sawtooth', volume: 0.08 });
 
