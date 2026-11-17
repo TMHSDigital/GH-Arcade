@@ -43,10 +43,10 @@ import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { frameMs } from '../../../shared/frame';
 import { PauseController } from '../../../shared/pause';
-import { createRng, type Rng } from '../../../shared/rng';
+import { createRng, dailyOutcome, type DailyRun, dailyRunFrom, getDailyBest, type Rng } from '../../../shared/rng';
 import { endRun, SCENE } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
-import { burstEmitter, drawGrid, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, neonText, reducedMotion, showBanner } from '../../../shared/ui';
+import { burstEmitter, dailyHudLabel, drawGrid, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, neonText, reducedMotion, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { addCounter, reach, unlock } = trophiesFor<typeof TROPHIES>();
@@ -68,6 +68,8 @@ const plus = (p: Pos, d: Pos): Pos => ({ r: p.r + d.r, c: p.c + d.c });
 
 export class GameScene extends Phaser.Scene {
   private mode: Mode = 'timed';
+  /** The daily challenge being played, or null in a normal game. */
+  private daily: DailyRun | null = null;
   private rng!: Rng;
   private board!: Board;
   /** 'idle' takes input; 'busy' while gems swap, clear or fall; 'over' once the run has ended. */
@@ -104,10 +106,14 @@ export class GameScene extends Phaser.Scene {
     super(SCENE.game);
   }
 
-  init(data: { mode?: Mode } = {}): void {
+  init(data: { mode?: Mode; daily?: boolean } = {}): void {
     // Scenes are reused between runs, so every field is reset here.
-    this.mode = data.mode === 'moves' ? 'moves' : 'timed';
-    this.rng = createRng(Date.now());
+    // Daily challenge: always Moves, so the result depends on choices rather than speed. The first
+    // fill, every refill and any reshuffle come from one sequence seeded by the date, so the same
+    // swaps give everyone the same boards.
+    this.daily = dailyRunFrom(data, GAME_ID);
+    this.mode = this.daily || data.mode === 'moves' ? 'moves' : 'timed';
+    this.rng = this.daily ? this.daily.rng('board') : createRng(Date.now());
     this.board = fillBoard(this.rng.next, SIZE);
     // Busy until the opening deal has landed (see create), so no swap races the deal's tweens.
     this.phase = 'busy';
@@ -115,7 +121,8 @@ export class GameScene extends Phaser.Scene {
     this.timeLeft = TIMED_SECONDS;
     this.movesLeft = MOVES;
     this.bestChain = 0;
-    this.modeBest = loadBests()[this.mode];
+    // A daily keeps its own best for the day (none for a replay of an earlier day), not the mode's.
+    this.modeBest = this.daily ? (this.daily.past ? 0 : getDailyBest(GAME_ID, this.daily.day)) : loadBests()[this.mode];
     this.shownSeconds = -1;
     this.sprites = new Map();
     this.selected = null;
@@ -184,6 +191,7 @@ export class GameScene extends Phaser.Scene {
     this.timeBar = this.add.graphics();
     this.add.text(x, 350, 'BEST CHAIN', HUD_LABEL_STYLE);
     this.chainText = this.add.text(x, 368, '-', HUD_STYLE);
+    if (this.daily) dailyHudLabel(this, x, 420, GAME_ID, this.daily, { narrow: true });
   }
 
   private makeSprite(gem: Gem, c: number, r: number): Phaser.GameObjects.Graphics {
@@ -576,12 +584,13 @@ export class GameScene extends Phaser.Scene {
     this.clearHint();
     this.select(null);
     reach('match.score', this.score);
-    const newBest = recordModeScore(this.mode, this.score);
+    // A daily run is recorded as the day's result by the game-over screen, not as a Moves best.
+    const newBest = !this.daily && recordModeScore(this.mode, this.score);
     showBanner(this, this.mode === 'timed' ? 'TIME UP' : 'OUT OF MOVES', NEON.pink, BOARD_Y + BOARD_PX / 2);
     tone({ freq: 660, toFreq: 220, duration: 0.6, type: 'triangle', volume: 0.08 });
     for (const sprite of this.sprites.values()) this.tweens.add({ targets: sprite, alpha: 0.25, duration: 600 });
     const label = this.mode === 'timed' ? 'TIMED' : 'MOVES';
     const chain = this.bestChain > 1 ? `   BEST CHAIN x${this.bestChain}` : '';
-    endRun(this, { gameId: GAME_ID, score: this.score, detail: `${newBest ? `NEW ${label} BEST` : label}${chain}` }, 1300);
+    endRun(this, { gameId: GAME_ID, score: this.score, detail: `${newBest ? `NEW ${label} BEST` : label}${chain}`, ...dailyOutcome(this.daily) }, 1300);
   }
 }

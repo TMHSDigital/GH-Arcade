@@ -4,6 +4,10 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 ## 2026-11-16
 
+### Added
+
+- Neon Match has a Daily mode: a Moves game on the same boards for everyone on a given UTC date, with its own result and streak.
+
 ### Changed
 
 - The arcade's fonts are served from the site itself instead of Google Fonts, so pages make no requests to any other host and the fonts work offline from the first visit.

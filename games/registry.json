@@ -182,7 +182,8 @@
     "description": "Swap glowing gems to line up three or more. Chain cascades, build line blasts and bombs, and race the clock or make every move count.",
     "tags": [
       "puzzle",
-      "arcade"
+      "arcade",
+      "daily"
     ],
     "accent": "#e05eff",
     "controls": "Drag or tap / arrows + Space / gamepad",

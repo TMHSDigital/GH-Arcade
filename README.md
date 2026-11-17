@@ -429,7 +429,7 @@ Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `co
 - [x] One-command game scaffolding with a shared toolkit
 - [x] Automatic GitHub Pages deploys
 - [x] Daily challenges with a shared seed in Neon Stack, Neon Hop, Neon Runner, Neon Snake, Astro Blaster and Star Siege
-- [x] Daily boards in Neon Lander, Neon Mines and Neon Bubbles
+- [x] Daily boards in Neon Lander, Neon Mines, Neon Bubbles and Neon Match
 - [x] A second maze layout for Neon Maze (levels alternate between the two)
 
 **Up next**
