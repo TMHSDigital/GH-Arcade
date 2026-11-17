@@ -109,7 +109,8 @@ export class GameScene extends Phaser.Scene {
     this.mode = data.mode === 'moves' ? 'moves' : 'timed';
     this.rng = createRng(Date.now());
     this.board = fillBoard(this.rng.next, SIZE);
-    this.phase = 'idle';
+    // Busy until the opening deal has landed (see create), so no swap races the deal's tweens.
+    this.phase = 'busy';
     this.score = 0;
     this.timeLeft = TIMED_SECONDS;
     this.movesLeft = MOVES;
@@ -148,6 +149,8 @@ export class GameScene extends Phaser.Scene {
         this.tweens.add({ targets: s, y: cellY(r), duration: 380 + (SIZE - r) * 25, delay: c * 35, ease: 'Cubic.easeOut' });
       }),
     );
+    // The last gem to land is the top one of the last column.
+    this.time.delayedCall(380 + SIZE * 25 + (SIZE - 1) * 35 + 30, () => this.settle());
     this.updateHud();
   }
 
