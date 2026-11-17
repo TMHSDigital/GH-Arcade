@@ -5,7 +5,7 @@ import { getHighScore, getStats, trophyProgress } from '../../shared/achievement
 import { DAILY_TAG, getDailyBest, playedDaily } from '../../shared/rng';
 import { loadJSON, saveJSON } from '../../shared/storage';
 import { initStorageNotice } from '../../shared/storage-notice';
-import { cardHref, lastPlayedSlug, type Sort, sorted, validSort, validTag } from './cards';
+import { type BestLabel, cardBest, cardHref, lastPlayedSlug, type Sort, sorted, validSort, validTag } from './cards';
 import { initDailyBanner } from './daily-banner';
 import { initDataPanel } from './data-panel';
 import { escapeHtml } from './html';
@@ -29,12 +29,18 @@ const sortSelect = document.querySelector<HTMLSelectElement>('#sort')!;
 let activeTag = validTag(loadJSON<unknown>('hub:tag', null), games);
 let sort: Sort = validSort(loadJSON<unknown>('hub:sort', 'featured'));
 
+// Games whose arcade score is not what a player would call their best (Golf's is a points total)
+// word it themselves through bestLabel in their trophies.ts.
+const bestLabels: Record<string, BestLabel | undefined> = Object.fromEntries(
+  Object.entries(import.meta.glob<{ bestLabel?: BestLabel }>('../../games/*/trophies.ts', { eager: true })).map(([path, mod]) => [path.split('/')[3], mod.bestLabel]),
+);
+
 function card(game: GameEntry, isLastPlayed: boolean): HTMLLIElement {
   const li = document.createElement('li');
   li.className = 'card';
   li.style.setProperty('--accent', game.accent);
 
-  const best = getHighScore(game.slug);
+  const best = cardBest(getHighScore(game.slug), bestLabels[game.slug]);
   const trophies = trophyProgress(game.slug);
   // Games with a daily challenge say whether today's has been played (the day is the UTC date, as in the games).
   // A day counts as played from its first finished run, even one that scored nothing.
@@ -53,7 +59,7 @@ function card(game: GameEntry, isLastPlayed: boolean): HTMLLIElement {
         <p>${escapeHtml(game.description)}</p>
         <div class="meta">
           ${game.tags.map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
-          ${best > 0 ? `<span class="best">Best ${best.toLocaleString()}</span>` : ''}
+          ${best ? `<span class="best">${escapeHtml(best)}</span>` : ''}
           ${trophies.total ? `<span class="trophies" title="Trophies unlocked">Trophies ${trophies.unlocked}/${trophies.total}</span>` : ''}
           ${dailyDone ? `<span class="daily done" title="Your best in today's daily challenge">Daily ${getDailyBest(game.slug).toLocaleString()}</span>` : ''}
           ${dailyWaiting ? '<span class="daily" title="Today\'s daily challenge is waiting: this card opens on it">Daily: not played</span>' : ''}

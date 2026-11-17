@@ -21,7 +21,8 @@ import { BOOST_DIRS, type Hole, HOLES, isSolidTile, parseHole, type Point, tileO
 import { type Ball, chargePower, dragShot, moverRect, type Rect, shotVelocity, step } from '../physics';
 import { atCap, resultName, roundScore, scorecardLines, summarize, toPar, withPenalty } from '../scoring';
 import type { TROPHIES } from '../trophies';
-import { trophiesFor } from '../../../shared/achievements';
+import { recordRound } from '../best';
+import { getHighScore, trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { frameSeconds } from '../../../shared/frame';
 import { PauseController } from '../../../shared/pause';
@@ -434,6 +435,8 @@ export class GameScene extends Phaser.Scene {
     }
     this.state = 'done';
     const summary = summarize(this.card, PARS);
+    // Before endRun, which may raise the arcade score that older saves read their best round from.
+    recordRound(summary.total, getHighScore(GAME_ID));
     endRun(this, {
       gameId: GAME_ID,
       score: roundScore(this.card),

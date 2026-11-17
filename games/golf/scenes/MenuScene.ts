@@ -1,13 +1,10 @@
 import Phaser from 'phaser';
 import { GAME_ID, HEIGHT, WIDTH } from '../config';
-import { HOLES } from '../holes';
-import { toPar, totalFromScore } from '../scoring';
+import { bestRoundText } from '../best';
 import { getHighScore } from '../../../shared/achievements';
 import { buildMenu, SCENE } from '../../../shared/scenes';
 import { helpKeys } from '../../../shared/settings';
 import { drawGrid, NEON, neonText, reducedMotion } from '../../../shared/ui';
-
-const PAR_TOTAL = HOLES.reduce((sum, h) => sum + h.par, 0);
 
 /** Menu backdrop: a faint green with a ball banking round it toward a cup. */
 export class MenuScene extends Phaser.Scene {
@@ -26,8 +23,8 @@ export class MenuScene extends Phaser.Scene {
       colors: [NEON.green, NEON.pink],
       help: `Aim and power: drag back from the ball and let go / ${helpKeys(['left', 'right'], 'arrows')} + hold ${helpKeys('action', 'Space')} / stick + A\n9 holes, fewest strokes wins    Pause: ${helpKeys('pause', 'P')} / Start`,
     });
-    const best = totalFromScore(getHighScore(GAME_ID), HOLES.length);
-    if (best > 0) neonText(this, WIDTH / 2, 350, `BEST ROUND ${best} (${toPar(best - PAR_TOTAL)})`, 12, NEON.green);
+    const best = bestRoundText(getHighScore(GAME_ID));
+    if (best) neonText(this, WIDTH / 2, 350, `BEST ROUND ${best}`, 12, NEON.green);
   }
 
   update(now: number): void {

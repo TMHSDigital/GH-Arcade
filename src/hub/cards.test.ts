@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import type { GameEntry } from '../../games/registry';
-import { cardHref, lastPlayedSlug, sorted, type StatsFor, validSort, validTag } from './cards';
+import { cardBest, cardHref, lastPlayedSlug, sorted, type StatsFor, validSort, validTag } from './cards';
+
+describe('cardBest', () => {
+  it('shows the arcade score, or nothing before a score', () => {
+    expect(cardBest(7100)).toBe(`Best ${(7100).toLocaleString()}`);
+    expect(cardBest(0)).toBeNull();
+  });
+
+  it('lets a game word its own best', () => {
+    expect(cardBest(7100, (s) => `Best round ${s / 100}`)).toBe('Best round 71');
+    expect(cardBest(7100, () => null)).toBeNull();
+  });
+});
 
 const game = (slug: string, title: string, tags: string[] = []): GameEntry => ({ slug, title, description: '', tags, accent: '#fff' });
 

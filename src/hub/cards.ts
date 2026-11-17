@@ -14,6 +14,15 @@ export type Sort = (typeof SORTS)[number];
 /** What the ordering needs to know about a game's history. */
 export type StatsFor = (slug: string) => { plays: number; lastPlayed?: number };
 
+/** A game's own wording for its best, from bestLabel in its trophies.ts: null when there is nothing to show. */
+export type BestLabel = (highScore: number) => string | null;
+
+/** The best shown on a card: the game's own wording when it has one, else the arcade score. */
+export function cardBest(highScore: number, label?: BestLabel): string | null {
+  if (label) return label(highScore);
+  return highScore > 0 ? `Best ${highScore.toLocaleString()}` : null;
+}
+
 /** Orders the cards. Ties (and games never played) keep their registry order, so the grid stays stable. */
 export function sorted(list: GameEntry[], sort: Sort, statsFor: StatsFor): GameEntry[] {
   if (sort === 'featured') return list;

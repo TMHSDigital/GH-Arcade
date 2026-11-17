@@ -300,7 +300,7 @@ describe('games\' own saved records', () => {
   };
 
   it('lists every key the games save', () => {
-    expect(Object.keys(GAME_SAVE_KEYS).sort()).toEqual(['crates:best', 'match:mode-best', 'mines:best-times', 'tanks-streak']);
+    expect(Object.keys(GAME_SAVE_KEYS).sort()).toEqual(['crates:best', 'golf:best-rounds', 'match:mode-best', 'mines:best-times', 'tanks-streak']);
   });
 
   it('round-trips through export and both restore and merge', () => {
