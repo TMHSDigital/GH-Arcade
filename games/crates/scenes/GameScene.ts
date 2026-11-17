@@ -7,6 +7,7 @@ import { DIRS, type Dir, type Level, liveCells, type MoveResult, parseLevel, Puz
 import type { TROPHIES } from '../trophies';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
+import { HoldRepeat } from '../../../shared/hold-repeat';
 import { PauseController } from '../../../shared/pause';
 import { endRun, finishRun, SCENE } from '../../../shared/scenes';
 import { keyLabel } from '../../../shared/settings';
@@ -61,8 +62,8 @@ export class GameScene extends Phaser.Scene {
   private queue: Array<Dir | 'undo'> = [];
   /** When the robot's current step animation ends (scene clock, ms). */
   private busyUntil = 0;
-  /** The held direction or undo, and when it next repeats. */
-  private held: { key: Dir | 'undo'; at: number } | null = null;
+  /** Holding a direction (or undo) repeats it once the robot has finished the step before. */
+  private readonly repeat = new HoldRepeat<Dir | 'undo'>([...DIRS, 'undo'], { delayMs: REPEAT_DELAY_MS, rateMs: STEP_MS });
   private readyAt = 0;
 
   constructor() {
@@ -73,7 +74,7 @@ export class GameScene extends Phaser.Scene {
     this.index = typeof data.level === 'number' && LEVELS[data.level] ? data.level : 0;
     this.phase = 'play';
     this.queue = [];
-    this.held = null;
+    this.repeat.reset();
     this.crates = [];
     this.buttons = [];
     this.busyUntil = 0;
@@ -120,12 +121,12 @@ export class GameScene extends Phaser.Scene {
 
   // ---------------------------------------------------------------- input
 
-  update(): void {
+  update(_time: number, deltaMs: number): void {
     // The scene clock, which the step timings below are measured on.
     const now = this.time.now;
     if (this.pause.isPaused || now < this.readyAt) return;
     if (this.phase !== 'play') return;
-    this.readInput(now);
+    this.readInput(now, deltaMs);
     if (now >= this.busyUntil && this.queue.length) {
       const next = this.queue.shift()!;
       if (next === 'undo') this.undo();
@@ -133,28 +134,15 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private readInput(now: number): void {
+  private readInput(now: number, deltaMs: number): void {
     const c = this.controls;
     if (c.justPressed('restart')) {
       this.restart();
       return;
     }
-    if (c.justPressed('undo')) this.press('undo', now);
-    for (const d of DIRS) if (c.justPressed(d)) this.press(d, now);
-
-    // Holding a direction (or undo) repeats it once the first step is done.
-    const key = this.held?.key;
-    const down = key === 'undo' ? c.isDown('undo') : key ? c.isDown(key) : false;
-    if (!down) this.held = null;
-    else if (this.held && now >= this.held.at && now >= this.busyUntil && this.queue.length === 0) {
-      this.enqueue(this.held.key);
-      this.held.at = now + STEP_MS;
-    }
-  }
-
-  private press(key: Dir | 'undo', now: number): void {
-    this.enqueue(key);
-    this.held = { key, at: now + REPEAT_DELAY_MS };
+    // A repeat waits for the step before it to finish, so a held key walks at the animation's pace.
+    const idle = now >= this.busyUntil && this.queue.length === 0;
+    for (const key of this.repeat.update(deltaMs, (k) => c.justPressed(k), (k) => c.isDown(k), idle)) this.enqueue(key);
   }
 
   private enqueue(key: Dir | 'undo'): void {
@@ -215,7 +203,7 @@ export class GameScene extends Phaser.Scene {
     if (this.puzzle.moves === 0) return;
     this.puzzle.restart();
     this.queue = [];
-    this.held = null;
+    this.repeat.reset();
     this.tweens.killTweensOf([this.robot, ...this.crates.map((c) => c.box)]);
     this.busyUntil = 0;
     this.robot.setPosition(this.cx(this.level.start.player), this.cy(this.level.start.player));

@@ -12,9 +12,10 @@
  * Cells are numbered row by row (index = y * width + x).
  */
 
-export type Dir = 'left' | 'right' | 'up' | 'down';
+import { type Dir, DIRS } from '../../shared/hold-repeat';
 
-export const DIRS: readonly Dir[] = ['left', 'right', 'up', 'down'];
+// The four directions are shared by every grid game.
+export { type Dir, DIRS };
 
 export const VEC: Record<Dir, { x: number; y: number }> = {
   left: { x: -1, y: 0 },

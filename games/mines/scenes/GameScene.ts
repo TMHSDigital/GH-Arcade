@@ -43,6 +43,7 @@ import { formatTime, lossScore, saveClearTime, winScore } from '../scoring';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { frameMs } from '../../../shared/frame';
+import { type Dir, DIR_STEP, DIRS, HoldRepeat } from '../../../shared/hold-repeat';
 import { PauseController } from '../../../shared/pause';
 import { dailyOutcome, type DailyRun, dailyRunFrom } from '../../../shared/rng';
 import { endRun, SCENE } from '../../../shared/scenes';
@@ -60,8 +61,6 @@ const PRESSED_FILL = 0x23235a;
 const OPEN_FILL = 0x07071a;
 const HUD_Y = 32;
 
-type Dir = 'left' | 'right' | 'up' | 'down';
-const DIRS: Record<Dir, [number, number]> = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] };
 
 export class GameScene extends Phaser.Scene {
   private diff: Difficulty = DIFFICULTIES.easy;
@@ -78,8 +77,7 @@ export class GameScene extends Phaser.Scene {
   /** The cursor shows once a key or gamepad moves it, and hides again on a click or tap. */
   private cursorShown = false;
   private hover = -1;
-  private heldDir: Dir | null = null;
-  private repeatIn = 0;
+  private readonly repeat = new HoldRepeat(DIRS, { delayMs: CURSOR_REPEAT_DELAY_MS, rateMs: CURSOR_REPEAT_MS });
 
   private flagMode = false;
   private placedFlag = false;
@@ -129,7 +127,7 @@ export class GameScene extends Phaser.Scene {
     this.diff = DIFFICULTIES[id];
     this.cursorShown = false;
     this.hover = -1;
-    this.heldDir = null;
+    this.repeat.reset();
     this.flagMode = false;
     this.placedFlag = false;
     this.started = false;
@@ -371,23 +369,7 @@ export class GameScene extends Phaser.Scene {
 
   private handleKeys(dt: number): void {
     const c = this.controls;
-    for (const dir of Object.keys(DIRS) as Dir[]) {
-      if (c.justPressed(dir)) {
-        this.heldDir = dir;
-        this.repeatIn = CURSOR_REPEAT_DELAY_MS;
-        this.stepCursor(dir);
-      }
-    }
-    if (this.heldDir) {
-      if (!c.isDown(this.heldDir)) this.heldDir = null;
-      else {
-        this.repeatIn -= dt;
-        if (this.repeatIn <= 0) {
-          this.repeatIn += CURSOR_REPEAT_MS;
-          this.stepCursor(this.heldDir);
-        }
-      }
-    }
+    for (const dir of this.repeat.update(dt, (d) => c.justPressed(d), (d) => c.isDown(d))) this.stepCursor(dir);
     if (c.justPressed('flagMode')) this.toggleFlagMode();
     const open = c.justPressed('action');
     const flag = c.justPressed('alt') || c.justPressed('flag');
@@ -406,7 +388,7 @@ export class GameScene extends Phaser.Scene {
       this.setCursorShown(true);
       return;
     }
-    const [dc, dr] = DIRS[dir];
+    const [dc, dr] = DIR_STEP[dir];
     const next = moveCursor(this.board, this.cursor, dc, dr);
     if (next === this.cursor) return;
     this.cursor = next;

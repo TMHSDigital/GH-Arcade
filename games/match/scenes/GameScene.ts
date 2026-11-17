@@ -42,6 +42,7 @@ import {
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { frameMs } from '../../../shared/frame';
+import { type Dir, DIR_STEP, DIRS, HoldRepeat } from '../../../shared/hold-repeat';
 import { PauseController } from '../../../shared/pause';
 import { createRng, dailyOutcome, type DailyRun, dailyRunFrom, getDailyBest, type Rng } from '../../../shared/rng';
 import { endRun, SCENE } from '../../../shared/scenes';
@@ -53,13 +54,8 @@ const { addCounter, reach, unlock } = trophiesFor<typeof TROPHIES>();
 
 const SIZE = 8;
 const BOARD_PX = SIZE * CELL;
-const DIRS: Record<'left' | 'right' | 'up' | 'down', Pos> = {
-  left: { r: 0, c: -1 },
-  right: { r: 0, c: 1 },
-  up: { r: -1, c: 0 },
-  down: { r: 1, c: 0 },
-};
-type Dir = keyof typeof DIRS;
+/** A step on the board in each direction, as rows and columns. */
+const OFFSET = (dir: Dir): Pos => ({ r: DIR_STEP[dir][1], c: DIR_STEP[dir][0] });
 
 const cellX = (c: number) => BOARD_X + c * CELL + CELL / 2;
 const cellY = (r: number) => BOARD_Y + r * CELL + CELL / 2;
@@ -86,8 +82,7 @@ export class GameScene extends Phaser.Scene {
   private selected: Pos | null = null;
   private cursor: Pos = { r: 3, c: 3 };
   private cursorShown = false;
-  private heldDir: Dir | null = null;
-  private heldMs = 0;
+  private readonly repeat = new HoldRepeat(DIRS, { delayMs: CURSOR_DELAY_MS, rateMs: CURSOR_REPEAT_MS });
   private drag: { cell: Pos; x: number; y: number } | null = null;
   private idleMs = 0;
   private hinted: Phaser.GameObjects.Graphics[] = [];
@@ -128,8 +123,7 @@ export class GameScene extends Phaser.Scene {
     this.selected = null;
     this.cursor = { r: 3, c: 3 };
     this.cursorShown = false;
-    this.heldDir = null;
-    this.heldMs = 0;
+    this.repeat.reset();
     this.drag = null;
     this.idleMs = 0;
     this.hinted = [];
@@ -232,7 +226,7 @@ export class GameScene extends Phaser.Scene {
       this.drag = null;
       const dir: Dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
       this.select(null);
-      this.trySwap(d.cell, plus(d.cell, DIRS[dir]));
+      this.trySwap(d.cell, plus(d.cell, OFFSET(dir)));
     });
     // Releases outside the canvas count too, so a finger that slides off the edge is not left dragging.
     const release = () => {
@@ -264,22 +258,8 @@ export class GameScene extends Phaser.Scene {
   /** Keyboard and gamepad: move the cursor, pick a gem with Action, then push a direction to swap. */
   private handleKeys(delta: number): void {
     const c = this.controls;
-    const pressed = (Object.keys(DIRS) as Dir[]).find((d) => c.justPressed(d));
-    const held = (Object.keys(DIRS) as Dir[]).find((d) => c.isDown(d));
-    let move: Dir | null = null;
-    if (pressed) {
-      move = pressed;
-      this.heldDir = pressed;
-      this.heldMs = 0;
-    } else if (held && held === this.heldDir && !this.selected) {
-      this.heldMs += delta;
-      if (this.heldMs >= CURSOR_DELAY_MS) {
-        this.heldMs -= CURSOR_REPEAT_MS;
-        move = held;
-      }
-    } else if (!held) {
-      this.heldDir = null;
-    }
+    // A held direction moves the cursor again, but never repeats a swap while a gem is picked.
+    const move: Dir | null = this.repeat.update(delta, (d) => c.justPressed(d), (d) => c.isDown(d), !this.selected).at(-1) ?? null;
 
     if (c.justPressed('alt')) this.select(null);
     if (c.justPressed('action')) {
@@ -298,7 +278,7 @@ export class GameScene extends Phaser.Scene {
     }
     if (this.selected) {
       const from = this.selected;
-      const to = plus(from, DIRS[move]);
+      const to = plus(from, OFFSET(move));
       this.select(null);
       if (inBounds(this.board, to)) {
         this.cursor = to;
@@ -306,7 +286,7 @@ export class GameScene extends Phaser.Scene {
       }
       return;
     }
-    const next = plus(this.cursor, DIRS[move]);
+    const next = plus(this.cursor, OFFSET(move));
     if (inBounds(this.board, next)) {
       this.cursor = next;
       tone({ freq: 300, duration: 0.02, type: 'square', volume: 0.02 });
