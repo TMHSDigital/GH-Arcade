@@ -34,6 +34,12 @@ All three must pass; pull requests run them automatically. The tests cover rules
 
 Tests live next to the code as `*.test.ts`. If you add logic that does not need Phaser (rules, scoring, level data), keep it in its own module and add a test for it.
 
+### Dependency overrides
+
+Each entry under `overrides` in `package.json` forces a newer version of a package than its parent asks for, and should come out as soon as upstream no longer needs it:
+
+- `workbox-build` > `glob ^14.0.6` (added in #110): workbox-build 7.4.1, the latest release, still asks for `glob ^11.0.1`, whose versions npm audit flags. Recheck on each workbox-build or vite-plugin-pwa release; when its own `glob` range reaches a patched version, delete the override, run `npm install`, and confirm `npm audit` stays clean and the built service worker precaches the same files.
+
 ## Conventions for games
 
 - **Use the shared toolkit.** Input goes through `ArcadeControls`, pausing through `PauseController`, menus through `buildMenu` and `OptionMenu`, and the end of a run through `endRun()`, which starts the shared game-over scene. The README has a table of what is in [`shared/`](shared).
