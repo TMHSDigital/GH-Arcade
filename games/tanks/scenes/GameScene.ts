@@ -51,7 +51,7 @@ import {
 } from '../ballistics';
 import { cpuShot } from '../cpu';
 import { fillGround, type Point, strokeLine } from '../draw';
-import { matchScore, matchWinner, nextStreak, other, readStreak, roundWinner } from '../match';
+import { applyDamage, countsForPlayer, matchScore, matchWinner, nextStreak, other, readStreak, roundWinner } from '../match';
 import { carveCrater, flattenAt, generateTerrain, type Heights } from '../terrain';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
@@ -511,9 +511,11 @@ export class GameScene extends Phaser.Scene {
     if (!falling && this.settleTime >= SETTLE_MIN_S) this.resolveTurn();
   }
 
+  /** Hurts `t`; `this.shooter` fired the shot behind it (the blast, or the crater it falls into). */
   private damage(t: Tank, amount: number, note?: string): void {
-    t.hp = Math.max(0, t.hp - amount);
-    if (t.seat === 1 && !this.versus) this.damageDealt += amount;
+    const { hp, dealt } = applyDamage(t.hp, amount);
+    t.hp = hp;
+    if (countsForPlayer(this.versus, t.seat, this.shooter)) this.damageDealt += dealt;
     const c = centerOf(t);
     floatText(this, c.x, c.y - 26, note ? `${note} -${amount}` : `-${amount}`, t.color, 11);
   }

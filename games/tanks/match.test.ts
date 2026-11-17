@@ -1,6 +1,39 @@
 import { describe, expect, it } from 'vitest';
 import { LEVEL_MULT, ROUNDS_TO_WIN } from './config';
-import { matchScore, matchWinner, nextStreak, other, readStreak, roundWinner } from './match';
+import { applyDamage, countsForPlayer, matchScore, matchWinner, nextStreak, other, readStreak, roundWinner } from './match';
+
+describe('applyDamage', () => {
+  it('takes the full hit off a tank that can take it', () => {
+    expect(applyDamage(80, 30)).toEqual({ hp: 50, dealt: 30 });
+  });
+
+  it('counts only the HP that was left on a finishing hit', () => {
+    expect(applyDamage(5, 55)).toEqual({ hp: 0, dealt: 5 });
+  });
+
+  it('deals nothing to a tank that is already destroyed', () => {
+    expect(applyDamage(0, 25)).toEqual({ hp: 0, dealt: 0 });
+  });
+});
+
+describe('countsForPlayer', () => {
+  it('counts the player\'s damage to the CPU', () => {
+    expect(countsForPlayer(false, 1, 0)).toBe(true);
+  });
+
+  it('never counts damage the CPU does to itself', () => {
+    expect(countsForPlayer(false, 1, 1)).toBe(false);
+  });
+
+  it('never counts damage to the player', () => {
+    expect(countsForPlayer(false, 0, 0)).toBe(false);
+    expect(countsForPlayer(false, 0, 1)).toBe(false);
+  });
+
+  it('never counts in two-player matches', () => {
+    expect(countsForPlayer(true, 1, 0)).toBe(false);
+  });
+});
 
 describe('roundWinner', () => {
   it('names the tank left standing, a draw when both fall, and nobody while both live', () => {

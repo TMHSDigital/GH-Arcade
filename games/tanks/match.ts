@@ -41,6 +41,23 @@ export function matchScore({ won, roundsWon, damageDealt, level }: MatchSummary)
   return base * LEVEL_MULT[level];
 }
 
+/**
+ * A hit on a tank with `hp` left: the HP after it and the damage it really did, which is never more
+ * than the HP there was, so overkill and hits on a destroyed tank add nothing.
+ */
+export function applyDamage(hp: number, amount: number): { hp: number; dealt: number } {
+  const dealt = Math.min(Math.max(0, amount), Math.max(0, hp));
+  return { hp: Math.max(0, hp - dealt), dealt };
+}
+
+/**
+ * Whether damage to the tank in seat `target`, caused by the shot from seat `cause`, counts toward
+ * the player's vs-CPU score: only damage the player (seat 0) does to the CPU (seat 1).
+ */
+export function countsForPlayer(versus: boolean, target: 0 | 1, cause: 0 | 1): boolean {
+  return !versus && target === 1 && cause === 0;
+}
+
 export interface Streak {
   current: number;
   best: number;
