@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { BOARD } from './config';
 import { LEVELS } from './levels';
-import { parseLevel, Puzzle } from './rules';
-import { liveCells, solve } from './solver';
+import { liveCells, parseLevel, Puzzle } from './rules';
+import { solve } from './solver';
 import { TROPHIES } from './trophies';
 
 describe('levels', () => {

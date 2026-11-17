@@ -1,5 +1,56 @@
 import { describe, expect, it } from 'vitest';
-import { cratesHome, isSolved, levelScore, parseLevel, Puzzle, step, tryMove } from './rules';
+import { cratesHome, isSolved, levelScore, liveCells, parseLevel, Puzzle, step, tryMove } from './rules';
+import { LEVELS } from './levels';
+
+describe('liveCells', () => {
+  // Cells by (x, y) in a parsed level.
+  const at = (level: ReturnType<typeof parseLevel>, x: number, y: number) => y * level.width + x;
+
+  it('marks non-target corners and target-less wall runs as stuck, and targets as live', () => {
+    const level = parseLevel([
+      '######',
+      '#    #',
+      '# $. #',
+      '#  @ #',
+      '######',
+    ]);
+    const live = liveCells(level);
+    expect(live[at(level, 3, 2)]).toBe(true); // the target
+    expect(live[at(level, 2, 2)]).toBe(true); // one push from the target
+    expect(live[at(level, 1, 1)]).toBe(false); // corner
+    expect(live[at(level, 4, 3)]).toBe(false); // corner
+    expect(live[at(level, 1, 2)]).toBe(false); // along the left wall, no target on it
+    expect(live[at(level, 3, 1)]).toBe(false); // along the top wall, no target on it
+  });
+
+  it('keeps a wall cell live when a target lies along that wall', () => {
+    const level = parseLevel([
+      '######',
+      '#.   #',
+      '# $  #',
+      '#  @ #',
+      '######',
+    ]);
+    const live = liveCells(level);
+    expect(live[at(level, 1, 1)]).toBe(true);
+    expect(live[at(level, 3, 1)]).toBe(true); // can be pushed left along the top wall to the target
+    expect(live[at(level, 4, 1)]).toBe(false); // the far corner still traps a crate
+  });
+
+  it('finds every non-target corner of the shipped levels stuck', () => {
+    for (const def of LEVELS.slice(0, 5)) {
+      const level = parseLevel(def.map);
+      const live = liveCells(level);
+      const open = (c: number) => level.floor[c] && !level.walls[c];
+      for (let c = 0; c < level.walls.length; c++) {
+        if (!open(c) || level.targets.includes(c)) continue;
+        const blockedX = level.walls[c - 1] || level.walls[c + 1];
+        const blockedY = level.walls[c - level.width] || level.walls[c + level.width];
+        if (blockedX && blockedY) expect(live[c], `${def.name} cell ${c}`).toBe(false);
+      }
+    }
+  });
+});
 
 /** A corridor: robot, crate, gap, target. */
 const LINE = ['#######', '#@$ . #', '#######'];

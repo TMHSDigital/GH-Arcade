@@ -3,7 +3,7 @@ import { BOARD, GAME_ID, HEIGHT, MAX_CELL, REPEAT_DELAY_MS, SOLVED_MS, STEP_MS, 
 import { EXTRA_CONTROLS } from '../controls';
 import { LEVELS } from '../levels';
 import { loadProgress, parCount, type Progress, recordSolve, saveProgress, solvedCount, totalScore } from '../progress';
-import { DIRS, type Dir, type Level, type MoveResult, parseLevel, Puzzle } from '../rules';
+import { DIRS, type Dir, type Level, liveCells, type MoveResult, parseLevel, Puzzle } from '../rules';
 import type { TROPHIES } from '../trophies';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
@@ -31,13 +31,16 @@ interface CrateView {
   box: Phaser.GameObjects.Container;
   body: Phaser.GameObjects.Image;
   glow: Phaser.GameObjects.Image;
-  home: boolean;
+  /** home: on a target. stuck: on a cell it can never be pushed to a target from. */
+  look: 'plain' | 'home' | 'stuck';
 }
 
 export class GameScene extends Phaser.Scene {
   private index = 0;
   private level!: Level;
   private puzzle!: Puzzle;
+  /** Cells a crate can still reach a target from (see liveCells). */
+  private live: boolean[] = [];
   private progress: Progress = {};
   private phase: Phase = 'play';
 
@@ -84,6 +87,7 @@ export class GameScene extends Phaser.Scene {
     const def = LEVELS[this.index];
     this.level = parseLevel(def.map);
     this.puzzle = new Puzzle(this.level);
+    this.live = liveCells(this.level);
 
     this.cell = Math.floor(Math.min(MAX_CELL, BOARD.width / this.level.width, BOARD.height / this.level.height));
     this.originX = Math.round(BOARD.x + (BOARD.width - this.cell * this.level.width) / 2);
@@ -301,19 +305,27 @@ export class GameScene extends Phaser.Scene {
     this.paintCrate(crate, false);
   }
 
-  /** Lights a crate green with a glow while it sits on a target; `announce` adds a chime and sparks. */
+  /**
+   * Lights a crate green with a glow while it sits on a target, and pink while it is stuck where it
+   * can never reach one. `announce` adds a chime and sparks, or a buzz and an UNDO hint.
+   */
   private paintCrate(crate: CrateView, announce: boolean): void {
     const home = this.level.targets.includes(crate.cell);
-    if (home === crate.home) return;
-    crate.home = home;
-    crate.body.setTint(home ? NEON.green : NEON.orange);
+    const look = home ? 'home' : this.live[crate.cell] ? 'plain' : 'stuck';
+    if (look === crate.look) return;
+    crate.look = look;
+    crate.body.setTint(home ? NEON.green : look === 'stuck' ? NEON.pink : NEON.orange);
     this.tweens.killTweensOf(crate.glow);
-    crate.glow.setTint(NEON.green);
-    if (home) {
-      crate.glow.setAlpha(0.9);
-      if (!reducedMotion()) this.tweens.add({ targets: crate.glow, alpha: 0.45, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    crate.glow.setTint(home ? NEON.green : NEON.pink);
+    if (look !== 'plain') {
+      crate.glow.setAlpha(home ? 0.9 : 0.6);
+      if (home && !reducedMotion()) this.tweens.add({ targets: crate.glow, alpha: 0.45, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     } else {
       crate.glow.setAlpha(0);
+    }
+    if (announce && look === 'stuck') {
+      this.time.delayedCall(STEP_MS, () => tone({ freq: 140, toFreq: 70, duration: 0.22, type: 'sawtooth', volume: 0.05 }));
+      showBanner(this, isTouchDevice() ? 'STUCK  TAP UNDO' : 'STUCK  UNDO Z', NEON.pink, HEIGHT / 2);
     }
     if (announce && home) {
       this.time.delayedCall(STEP_MS, () => {
@@ -400,7 +412,7 @@ export class GameScene extends Phaser.Scene {
       const box = this.add.container(0, 0, [glow, body]);
       glow.setScale(scale);
       body.setScale(scale);
-      const view: CrateView = { cell, box, body, glow, home: false };
+      const view: CrateView = { cell, box, body, glow, look: 'plain' };
       this.placeCrate(view, cell);
       return view;
     });

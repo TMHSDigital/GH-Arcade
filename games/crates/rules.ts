@@ -132,6 +132,31 @@ export function cratesHome(level: Level, state: State): number {
 }
 
 /**
+ * Cells a crate may stand on: the targets and every cell a crate can be pushed to a target from.
+ * A crate anywhere else (a corner, or along a wall with no target) can never be solved, so the game
+ * warns when one is pushed there and the solver never pushes one there.
+ */
+export function liveCells(level: Level): boolean[] {
+  const open = (c: number) => c !== -1 && !level.walls[c] && level.floor[c];
+  const live = level.walls.map(() => false);
+  const queue = [...level.targets];
+  for (const t of queue) live[t] = true;
+  while (queue.length) {
+    const c = queue.pop()!;
+    // Pull the crate from c one step in d: it lands on c + d and the robot stands one further on.
+    for (const d of DIRS) {
+      const to = step(level, c, d);
+      const robot = to === -1 ? -1 : step(level, to, d);
+      if (open(to) && open(robot) && !live[to]) {
+        live[to] = true;
+        queue.push(to);
+      }
+    }
+  }
+  return live;
+}
+
+/**
  * One level in play: the current state, the move and push counters and the undo history. Undo
  * steps back one move at a time and takes the counters back with it.
  */
