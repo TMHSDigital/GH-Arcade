@@ -8,7 +8,7 @@ import type { TROPHIES } from '../trophies';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
 import { PauseController } from '../../../shared/pause';
-import { endRun, SCENE } from '../../../shared/scenes';
+import { endRun, finishRun, SCENE } from '../../../shared/scenes';
 import { tone } from '../../../shared/sfx';
 import { isTouchDevice, onSwipe, VirtualButton } from '../../../shared/touch';
 import { burstEmitter, drawGrid, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, reducedMotion, showBanner } from '../../../shared/ui';
@@ -242,6 +242,8 @@ export class GameScene extends Phaser.Scene {
     if (moves <= def.par) unlock('crates.par');
     reach('crates.half', solvedCount(progress));
     reach('crates.all', solvedCount(progress));
+    // Every solve is a play with the score so far. The last level records it on the game-over screen instead (see next).
+    if (this.index + 1 < LEVELS.length) finishRun(GAME_ID, totalScore(progress));
 
     const atPar = moves <= def.par;
     const message = atPar ? 'PAR! PERFECT' : improved ? 'SOLVED  NEW BEST' : 'SOLVED';
