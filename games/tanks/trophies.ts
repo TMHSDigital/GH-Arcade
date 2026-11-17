@@ -15,6 +15,6 @@ export const SAVE_KEYS: Record<string, SaveKeyMerge> = { [STREAK_KEY]: 'higher' 
 export const TROPHIES = [
   { id: 'tanks.win', title: 'Tank Commander', description: 'Win a match against the CPU (not on easy)' },
   { id: 'tanks.longshot', title: 'Long Shot', description: 'Score a direct hit on a tank 500 pixels away', threshold: 500 },
-  { id: 'tanks.streak', title: 'Unstoppable', description: 'Win 3 matches in a row against the CPU', threshold: 3 },
+  { id: 'tanks.streak', title: 'Unstoppable', description: 'Win 3 matches in a row against the CPU (easy wins do not count)', threshold: 3 },
   { id: 'tanks.versus', title: 'Hot Seat', description: 'Finish a two-player match' },
 ] as const satisfies readonly TrophyDef[];

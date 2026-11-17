@@ -51,7 +51,7 @@ import {
 } from '../ballistics';
 import { cpuShot } from '../cpu';
 import { fillGround, type Point, strokeLine } from '../draw';
-import { applyDamage, countsForPlayer, matchScore, matchWinner, nextStreak, other, readStreak, roundWinner } from '../match';
+import { applyDamage, countsForPlayer, matchScore, matchWinner, other, readStreak, roundWinner, type Streak, streakAfter } from '../match';
 import { carveCrater, flattenAt, generateTerrain, type Heights } from '../terrain';
 import { trophiesFor } from '../../../shared/achievements';
 import { ArcadeControls } from '../../../shared/controls';
@@ -118,6 +118,9 @@ export class GameScene extends Phaser.Scene {
   private settleTime = 0;
   private cpuAttempts = 0;
   private damageDealt = 0;
+  /** The vs-CPU streak as it was when this match started, and whether the match has been saved as a loss yet. */
+  private streakBefore: Streak = { current: 0, best: 0 };
+  private streakStaked = false;
   private holdX = 0;
   private holdY = 0;
   private drag: { id: number; x: number; y: number } | null = null;
@@ -151,6 +154,8 @@ export class GameScene extends Phaser.Scene {
     this.phase = 'between';
     this.shell = null;
     this.damageDealt = 0;
+    this.streakBefore = readStreak(loadJSON<unknown>(STREAK_KEY, null));
+    this.streakStaked = false;
     this.drag = null;
     this.hint = { key: '', points: [] };
     this.buttons = [];
@@ -282,7 +287,7 @@ export class GameScene extends Phaser.Scene {
       this.drag = { id: p.id, x: p.x, y: p.y };
     });
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => {
-      if (!this.drag || p.id !== this.drag.id || this.phase !== 'aim') return;
+      if (this.pause.isPaused || !this.drag || p.id !== this.drag.id || this.phase !== 'aim') return;
       this.drag.x = p.x;
       this.drag.y = p.y;
       this.aimAt(p.x, p.y);
@@ -377,6 +382,11 @@ export class GameScene extends Phaser.Scene {
     this.phase = 'flight';
     this.drag = null;
     this.shooter = t.seat;
+    // Once a vs-CPU match is under way it counts as lost until it ends, so quitting cannot save a streak.
+    if (!this.versus && !this.streakStaked) {
+      this.streakStaked = true;
+      saveJSON(STREAK_KEY, streakAfter(this.streakBefore, this.cpuLevel, false));
+    }
     this.shell = launch(t, t.angle, t.power);
     this.stepAcc = 0;
     this.trail.setPosition(this.shell.x, this.shell.y);
@@ -571,7 +581,7 @@ export class GameScene extends Phaser.Scene {
     if (!this.versus) {
       const won = winner === 0;
       if (won && TROPHY_LEVELS.includes(this.cpuLevel)) unlock('tanks.win');
-      const streak = nextStreak(readStreak(loadJSON<unknown>(STREAK_KEY, null)), won);
+      const streak = streakAfter(this.streakBefore, this.cpuLevel, won);
       saveJSON(STREAK_KEY, streak);
       if (won) reach('tanks.streak', streak.current);
       const score = matchScore({ won, roundsWon: a, damageDealt: this.damageDealt, level: this.cpuLevel });

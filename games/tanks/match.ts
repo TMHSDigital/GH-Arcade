@@ -1,4 +1,4 @@
-import { type CpuLevel, LEVEL_MULT, ROUNDS_TO_WIN } from './config';
+import { type CpuLevel, LEVEL_MULT, ROUNDS_TO_WIN, TROPHY_LEVELS } from './config';
 
 /**
  * Who won a round once the smoke clears: the index of the tank still standing, 'draw' when both
@@ -70,6 +70,15 @@ export function readStreak(raw: unknown): Streak {
   const r = raw as Record<string, unknown>;
   const current = num(r.current);
   return { current, best: Math.max(current, num(r.best)) };
+}
+
+/**
+ * The streak after a vs-CPU match on `level`: one longer on a win, back to zero on a loss. A win
+ * against a CPU that earns no trophies (easy) keeps the streak going without making it longer.
+ */
+export function streakAfter(s: Streak, level: CpuLevel, won: boolean): Streak {
+  if (won && !TROPHY_LEVELS.includes(level)) return s;
+  return nextStreak(s, won);
 }
 
 /** The streak after a finished vs-CPU match: one longer on a win, back to zero on a loss. */

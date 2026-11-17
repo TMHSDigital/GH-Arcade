@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LEVEL_MULT, ROUNDS_TO_WIN } from './config';
-import { applyDamage, countsForPlayer, matchScore, matchWinner, nextStreak, other, readStreak, roundWinner } from './match';
+import { applyDamage, countsForPlayer, matchScore, matchWinner, nextStreak, other, readStreak, roundWinner, streakAfter } from './match';
 
 describe('applyDamage', () => {
   it('takes the full hit off a tank that can take it', () => {
@@ -13,6 +13,24 @@ describe('applyDamage', () => {
 
   it('deals nothing to a tank that is already destroyed', () => {
     expect(applyDamage(0, 25)).toEqual({ hp: 0, dealt: 0 });
+  });
+});
+
+describe('streakAfter', () => {
+  const s = { current: 2, best: 4 };
+
+  it('lengthens the streak on a normal or hard win', () => {
+    expect(streakAfter(s, 'normal', true)).toEqual({ current: 3, best: 4 });
+    expect(streakAfter({ current: 4, best: 4 }, 'hard', true)).toEqual({ current: 5, best: 5 });
+  });
+
+  it('keeps the streak going without lengthening it on an easy win', () => {
+    expect(streakAfter(s, 'easy', true)).toEqual(s);
+  });
+
+  it('breaks the streak on a loss at any level', () => {
+    expect(streakAfter(s, 'easy', false)).toEqual({ current: 0, best: 4 });
+    expect(streakAfter(s, 'hard', false)).toEqual({ current: 0, best: 4 });
   });
 });
 

@@ -99,7 +99,7 @@ export const CPU_PROFILES = {
 
 export type CpuLevel = keyof typeof CPU_PROFILES;
 
-/** Wins against the easy CPU still score and keep the streak going, but earn no Champion trophy. */
+/** Wins against the easy CPU still score and keep the streak going, but do not lengthen it and earn no trophy. */
 export const TROPHY_LEVELS: readonly CpuLevel[] = ['normal', 'hard'];
 
 /** Score multiplier for beating each CPU strength. */
