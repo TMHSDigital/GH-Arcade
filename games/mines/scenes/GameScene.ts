@@ -97,7 +97,7 @@ export class GameScene extends Phaser.Scene {
   /** Numbers waiting for their cell's flash, in the order they appear. */
   private pending: number[] = [];
   private pendingHead = 0;
-  private numbers: (Phaser.GameObjects.Text | undefined)[] = [];
+  private numbers: (Phaser.GameObjects.Image | undefined)[] = [];
   private detonated: boolean[] = [];
   private shownWrong: number[] = [];
   /** The win sweep: when it starts and ends on `clock`, or -1. */
@@ -155,6 +155,8 @@ export class GameScene extends Phaser.Scene {
     this.cell = Math.floor(Math.min(MAX_CELL, (WIDTH - 2 * BOARD_SIDE) / cols, (BOARD_BOTTOM - BOARD_TOP) / rows));
     this.ox = Math.floor((WIDTH - cols * this.cell) / 2);
     this.oy = BOARD_TOP + Math.floor((BOARD_BOTTOM - BOARD_TOP - rows * this.cell) / 2);
+    // Draw the eight numbers now, so the first flood only places images.
+    for (let n = 1; n < NUMBER_COLORS.length; n++) this.digitKey(n);
 
     let start = -1;
     if (this.daily) {
@@ -329,20 +331,13 @@ export class GameScene extends Phaser.Scene {
     const deepest = opened[opened.length - 1].depth;
     // Big floods play faster, so the wave never keeps the player waiting.
     const step = reducedMotion() ? 0 : Math.min(REVEAL_STEP_MS, REVEAL_MAX_MS / (deepest + 1));
-    const size = Math.max(14, Math.round(this.cell * 0.46));
     for (const { index, depth } of opened) {
       // Reduced motion: the cells open at once, with no flash.
       this.revealAt[index] = reducedMotion() ? this.clock - REVEAL_MS : this.clock + depth * step;
       const n = this.board.counts[index];
       if (n > 0) {
         const [x, y] = this.centre(index);
-        const color = hex(NUMBER_COLORS[n]);
-        this.numbers[index] = this.add
-          .text(x, y, String(n), { fontFamily: PIXEL_FONT, fontSize: `${size}px`, color })
-          .setOrigin(0.5)
-          .setShadow(0, 0, color, 8, false, true)
-          .setDepth(2)
-          .setVisible(false);
+        this.numbers[index] = this.add.image(x, y, this.digitKey(n)).setDepth(2).setVisible(false);
         this.pending.push(index);
       }
     }
@@ -422,6 +417,24 @@ export class GameScene extends Phaser.Scene {
   private setCursorShown(shown: boolean): void {
     this.cursorShown = shown;
     this.drawCursor();
+  }
+
+  /**
+   * The texture for the number `n` at this board's cell size, drawn once with its glow and shared
+   * by every cell that shows it. A Text per cell would cost a canvas, a measure and an upload each,
+   * all in the frame of a big flood.
+   */
+  private digitKey(n: number): string {
+    const size = Math.max(14, Math.round(this.cell * 0.46));
+    const key = `mines-digit-${size}-${n}`;
+    if (this.textures.exists(key)) return key;
+    const color = hex(NUMBER_COLORS[n]);
+    const text = this.make.text({ text: String(n), style: { fontFamily: PIXEL_FONT, fontSize: `${size}px`, color } }, false).setShadow(0, 0, color, 8, false, true);
+    const tex = this.textures.createCanvas(key, text.canvas.width, text.canvas.height);
+    tex?.context.drawImage(text.canvas, 0, 0);
+    tex?.refresh();
+    text.destroy();
+    return key;
   }
 
   private showPendingNumbers(): void {
