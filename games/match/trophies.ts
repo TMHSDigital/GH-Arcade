@@ -1,8 +1,12 @@
+import type { SaveKeyMerge } from '../../shared/backup';
 import type { TrophyDef } from '../../shared/trophy-types';
 import { MODE_BEST_KEY } from './best';
 
 /** The best per mode, cleared with the arcade's best scores. */
 export const BEST_KEYS = [MODE_BEST_KEY];
+
+/** What this game saves for itself, so backups carry it: the highest score per mode. */
+export const SAVE_KEYS: Record<string, SaveKeyMerge> = { [MODE_BEST_KEY]: 'higher' };
 
 /**
  * This game's trophies. The arcade collects every games/<slug>/trophies.ts automatically, so adding

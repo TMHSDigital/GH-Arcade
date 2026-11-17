@@ -16,6 +16,20 @@ const DAILY_SCORE = /^[a-z0-9]+(-[a-z0-9]+)*:daily:\d{4}-\d{2}-\d{2}$/;
 /** A game's daily challenge bests by day, e.g. "stack:daily" (shared/rng.ts). */
 const DAILY_RECORD = /^[a-z0-9]+(-[a-z0-9]+)*:daily$/;
 
+/**
+ * How a game's own saved record (an object of numbers, such as best times per difficulty) combines
+ * with another copy in a merge: field by field, keeping the lower or the higher number.
+ */
+export type SaveKeyMerge = 'lower' | 'higher';
+
+/**
+ * The keys games save for themselves, collected from SAVE_KEYS in every games/<slug>/trophies.ts,
+ * so a backup carries them and a restore or merge accepts them.
+ */
+const perGame = import.meta.glob<{ SAVE_KEYS?: Readonly<Record<string, SaveKeyMerge>> }>('../games/*/trophies.ts', { eager: true });
+export const GAME_SAVE_KEYS: Readonly<Record<string, SaveKeyMerge>> = Object.assign({}, ...Object.values(perGame).map((mod) => mod.SAVE_KEYS));
+const isGameKey = (key: string): boolean => Object.hasOwn(GAME_SAVE_KEYS, key);
+
 export interface Backup {
   app: typeof APP;
   version: number;
@@ -60,7 +74,8 @@ function problemWith(key: string, value: unknown): string | null {
     return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? null : `"${key}" is not a score`;
   }
   // Settings, trophies and daily results are checked field by field when they are loaded; here they only need the right shape.
-  if (key === 'settings' || key === 'trophies' || DAILY_RECORD.test(key)) return isRecord(value) ? null : `"${key}" is not an object`;
+  // A game's own records are also cleaned by the game when it reads them.
+  if (key === 'settings' || key === 'trophies' || DAILY_RECORD.test(key) || isGameKey(key)) return isRecord(value) ? null : `"${key}" is not an object`;
   if (key === 'hub:sort') return typeof value === 'string' ? null : `"${key}" is not text`;
   // The hub's tag filter: a tag, or null for "All".
   if (key === 'hub:tag') return typeof value === 'string' || value === null ? null : `"${key}" is not a tag`;
@@ -193,7 +208,7 @@ function mergeTrophies(here: unknown, there: unknown): Record<string, unknown> {
 /**
  * Adds the progress in a backup to what is saved on this device, instead of replacing it: trophies
  * and scores from both are kept (see mergeTrophies), per-day and older per-game best scores take
- * the higher value, and settings and hub preferences stay as they are here unless this device has
+ * the higher value, a game's own records keep the better value per field (see GAME_SAVE_KEYS), and settings and hub preferences stay as they are here unless this device has
  * none. The whole backup is checked first, so a file that is rejected changes nothing. Reload the
  * page after a successful merge.
  */
@@ -221,6 +236,13 @@ export function mergeBackup(raw: unknown): ImportResult {
         merged = Object.fromEntries(keysOf(a, b).sort().map((day) => [day, Math.max(count(a[day]), count(b[day]))]));
       }
       else if (HIGH_SCORE.test(key) || DAILY_SCORE.test(key)) merged = Math.max(count(here), count(value));
+      else if (isGameKey(key)) {
+        // A game's own records: the better number for each field either side has.
+        const a = numbers(here);
+        const b = numbers(value);
+        const pick = GAME_SAVE_KEYS[key] === 'lower' ? Math.min : Math.max;
+        merged = Object.fromEntries(keysOf(a, b).sort().map((field) => [field, field in a && field in b ? pick(a[field], b[field]) : (a[field] ?? b[field])]));
+      }
       // Settings and hub preferences belong to the device: only fill them in where there are none.
       else if (stored === null) merged = value;
       else continue;

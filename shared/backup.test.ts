@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { exportBackup, importBackup, mergeBackup } from './backup';
+import { exportBackup, GAME_SAVE_KEYS, importBackup, mergeBackup } from './backup';
 import { freshModules, installMemoryStorage, installWindow } from './test-utils';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -288,5 +288,61 @@ describe('daily results in a backup', () => {
     expect(mergeBackup(backup)).toEqual({ ok: true, keys: 1 });
     expect(JSON.parse(storage.data.get('gh-arcade:hop:daily')!)).toEqual({ '2026-11-11': 70, '2026-11-12': 500, '2026-11-13': 120 });
     expect(mergeBackup(backup)).toEqual({ ok: true, keys: 0 });
+  });
+});
+
+describe('games\' own saved records', () => {
+  const own = {
+    'gh-arcade:mines:best-times': JSON.stringify({ easy: 40, medium: 200 }),
+    'gh-arcade:crates:best': JSON.stringify({ 'First Push': 12 }),
+    'gh-arcade:match:mode-best': JSON.stringify({ timed: 5000, moves: 3000 }),
+    'gh-arcade:tanks-streak': JSON.stringify({ current: 2, best: 4 }),
+  };
+
+  it('lists every key the games save', () => {
+    expect(Object.keys(GAME_SAVE_KEYS).sort()).toEqual(['crates:best', 'match:mode-best', 'mines:best-times', 'tanks-streak']);
+  });
+
+  it('round-trips through export and both restore and merge', () => {
+    const storage = installMemoryStorage(own);
+    const backup = JSON.parse(JSON.stringify(exportBackup()));
+    storage.clear();
+    expect(importBackup(backup)).toEqual({ ok: true, keys: 4 });
+    for (const [key, text] of Object.entries(own)) expect(storage.data.get(key)).toBe(text);
+    storage.clear();
+    expect(mergeBackup(backup)).toEqual({ ok: true, keys: 4 });
+    for (const [key, text] of Object.entries(own)) expect(JSON.parse(storage.data.get(key)!)).toEqual(JSON.parse(text));
+  });
+
+  it('rejects a game record that is not an object', () => {
+    installMemoryStorage();
+    expect(importBackup(file({ 'crates:best': 12 })).ok).toBe(false);
+  });
+
+  it('merges keeping the better value per field', () => {
+    const storage = installMemoryStorage(own);
+    const backup = file({
+      'mines:best-times': { easy: 55, medium: 150, hard: 600 },
+      'crates:best': { 'First Push': 9, 'Corner': 30 },
+      'match:mode-best': { timed: 4000, moves: 3500 },
+      'tanks-streak': { current: 0, best: 6 },
+    });
+    expect(mergeBackup(backup)).toEqual({ ok: true, keys: 4 });
+    const read = (key: string) => JSON.parse(storage.data.get(`gh-arcade:${key}`)!);
+    expect(read('mines:best-times')).toEqual({ easy: 40, hard: 600, medium: 150 });
+    expect(read('crates:best')).toEqual({ 'Corner': 30, 'First Push': 9 });
+    expect(read('match:mode-best')).toEqual({ moves: 3500, timed: 5000 });
+    expect(read('tanks-streak')).toEqual({ best: 6, current: 2 });
+    expect(mergeBackup(backup)).toEqual({ ok: true, keys: 0 });
+  });
+
+  it('covers every game that saves data of its own', () => {
+    // A game that calls saveJSON must list what it saves as SAVE_KEYS in its trophies.ts, or its players' backups are rejected.
+    const sources = import.meta.glob<string>(['../games/*/**/*.ts', '!../games/**/*.test.ts'], { query: '?raw', import: 'default', eager: true });
+    const saving = new Set(Object.entries(sources).filter(([, text]) => text.includes('saveJSON(')).map(([path]) => path.split('/')[2]));
+    expect(saving.size).toBeGreaterThan(0);
+    for (const slug of saving) {
+      expect(Object.keys(GAME_SAVE_KEYS).some((key) => key.startsWith(`${slug}:`) || key.startsWith(`${slug}-`)), slug).toBe(true);
+    }
   });
 });

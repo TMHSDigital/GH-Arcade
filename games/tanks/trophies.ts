@@ -1,4 +1,9 @@
+import type { SaveKeyMerge } from '../../shared/backup';
 import type { TrophyDef } from '../../shared/trophy-types';
+import { STREAK_KEY } from './config';
+
+/** What this game saves for itself, so backups carry it: the vs-CPU win streak and best streak. */
+export const SAVE_KEYS: Record<string, SaveKeyMerge> = { [STREAK_KEY]: 'higher' };
 
 /**
  * This game's trophies. The arcade collects every games/<slug>/trophies.ts automatically, and the

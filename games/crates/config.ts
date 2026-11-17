@@ -1,5 +1,8 @@
 export const GAME_ID = 'crates';
 
+/** Saved fewest moves per solved level (see progress.ts). */
+export const BEST_KEY = `${GAME_ID}:best`;
+
 export const WIDTH = 800;
 export const HEIGHT = 600;
 

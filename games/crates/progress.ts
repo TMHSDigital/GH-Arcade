@@ -1,4 +1,4 @@
-import { GAME_ID } from './config';
+import { BEST_KEY } from './config';
 import { LEVELS } from './levels';
 import { levelScore } from './rules';
 import { isRecord, loadJSON, savedNumber, saveJSON } from '../../shared/storage';
@@ -9,7 +9,7 @@ import { isRecord, loadJSON, savedNumber, saveJSON } from '../../shared/storage'
  */
 export type Progress = Record<string, number>;
 
-const KEY = `${GAME_ID}:best`;
+const KEY = BEST_KEY;
 
 /** Checks the shape of saved progress: whole move counts above zero for known levels only. */
 export function cleanProgress(raw: unknown): Progress {
