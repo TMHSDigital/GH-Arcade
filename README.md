@@ -114,7 +114,7 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
       <p>A glowing table with pop bumpers, slingshots, a drop-target bank and rollover lanes. Light the lanes to raise the multiplier to ×5 across three balls.</p>
     </td>
     <td width="50%" valign="top">
-      <a href="https://tmhsdigital.github.io/GH-Arcade/games/lander/"><img src="public/thumbs/lander.jpg" alt="Neon Lander gameplay: a lander descending toward a glowing pad over jagged terrain" width="100%" /></a>
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/lander/"><img src=".github/assets/lander.gif" alt="Neon Lander gameplay: a lander easing down onto a glowing pad and touching down" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/lander/">Neon Lander</a></h3>
       <sub>ARCADE · DAILY</sub>
       <p>Ease a thrusting lander down onto a glowing pad over rough alien terrain. Land slow and upright to score, then face stronger gravity, narrower pads and wind.</p>
@@ -122,13 +122,13 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://tmhsdigital.github.io/GH-Arcade/games/mines/"><img src="public/thumbs/mines.jpg" alt="Neon Mines gameplay: a grid of revealed number clues and hidden cells" width="100%" /></a>
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/mines/"><img src=".github/assets/mines.gif" alt="Neon Mines gameplay: clearing an easy board with number clues and flags for a new best time" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/mines/">Neon Mines</a></h3>
       <sub>PUZZLE · 3 BOARD SIZES · DAILY</sub>
       <p>Clear a glowing minefield using the number clues. Easy, medium and hard boards with a best time for each, plus a daily board everyone shares.</p>
     </td>
     <td width="50%" valign="top">
-      <a href="https://tmhsdigital.github.io/GH-Arcade/games/golf/"><img src="public/thumbs/golf.jpg" alt="Neon Golf gameplay: a glowing ball on a walled mini golf green" width="100%" /></a>
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/golf/"><img src=".github/assets/golf.gif" alt="Neon Golf gameplay: a full-power shot banking around the Grand Tour hole for a hole in one" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/golf/">Neon Golf</a></h3>
       <sub>MINI GOLF · 9 HOLES</sub>
       <p>Nine mini golf holes with sand traps, water, boost pads and sliding blockers. Drag back, let fly, and sink it in as few strokes as you can.</p>
@@ -136,13 +136,13 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://tmhsdigital.github.io/GH-Arcade/games/crates/"><img src="public/thumbs/crates.jpg" alt="Neon Crates gameplay: a robot pushing a crate toward a target" width="100%" /></a>
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/crates/"><img src=".github/assets/crates.gif" alt="Neon Crates gameplay: a robot pushing three crates onto their targets at par" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/crates/">Neon Crates</a></h3>
       <sub>PUZZLE · 15 LEVELS</sub>
       <p>Push every crate onto a target across 15 hand-built warehouse puzzles. Push one at a time, never pull, undo freely and chase par on every level.</p>
     </td>
     <td width="50%" valign="top">
-      <a href="https://tmhsdigital.github.io/GH-Arcade/games/match/"><img src="public/thumbs/match.jpg" alt="Neon Match gameplay: a board of shaped neon gems" width="100%" /></a>
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/match/"><img src=".github/assets/match.gif" alt="Neon Match gameplay: gem swaps setting off chained cascades" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/match/">Neon Match</a></h3>
       <sub>PUZZLE · TIMED OR MOVES · DAILY</sub>
       <p>Swap glowing gems to line up three or more. Chain cascades, build line blasts and bombs, and race the clock or make every move count.</p>
@@ -150,13 +150,13 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://tmhsdigital.github.io/GH-Arcade/games/bubbles/"><img src="public/thumbs/bubbles.jpg" alt="Neon Bubbles gameplay: a launcher aiming at a field of colored bubbles" width="100%" /></a>
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/bubbles/"><img src=".github/assets/bubbles.gif" alt="Neon Bubbles gameplay: bank shots popping groups, then cutting a cluster loose" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/bubbles/">Neon Bubbles</a></h3>
       <sub>PUZZLE · ENDLESS · DAILY</sub>
       <p>Bank bubbles off the walls, pop groups of three and cut whole clusters loose for big bonuses before the ceiling creeps down.</p>
     </td>
     <td width="50%" valign="top">
-      <a href="https://tmhsdigital.github.io/GH-Arcade/games/tanks/"><img src="public/thumbs/tanks.jpg" alt="Neon Tanks gameplay: two tanks facing off across glowing hills" width="100%" /></a>
+      <a href="https://tmhsdigital.github.io/GH-Arcade/games/tanks/"><img src=".github/assets/tanks.gif" alt="Neon Tanks gameplay: the CPU and the player trading direct hits across the hills" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/tanks/">Neon Tanks</a></h3>
       <sub>ARTILLERY · 2-PLAYER HOT SEAT</sub>
       <p>Lob shells over destructible hills and read the wind. Take on the CPU at three difficulties or a friend in <b>two-player hot seat</b>, best of 3.</p>
