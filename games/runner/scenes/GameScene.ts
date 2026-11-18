@@ -48,10 +48,16 @@ import { PauseController } from '../../../shared/pause';
 import { dailyOutcome, type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
 import { endRun, SCENE } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
+import { bakeTexture, StampLayer } from '../../../shared/stamps';
 import { burstEmitter, dailyHudLabel, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, NEON, reducedMotion, neonText, sparkTexture, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
 const { addCounter, reach } = trophiesFor<typeof TROPHIES>();
+
+/** Room around a drone texture for its glow, which spills 4 px past the drone. */
+const DRONE_PAD = 4;
+/** Width of the runner's body while sliding. */
+const SLIDE_W = PLAYER_H * 0.9;
 
 interface Building {
   x: number;
@@ -94,6 +100,11 @@ export class GameScene extends Phaser.Scene {
   private far: Building[] = [];
   private mid: Building[] = [];
   private gfx!: Phaser.GameObjects.Graphics;
+  /** Drones and the runner's body are baked textures: a Graphics would rebuild their rounded rects every frame. */
+  private droneLayer!: StampLayer;
+  /** Coins and the runner's legs, above the drones. */
+  private fg!: Phaser.GameObjects.Graphics;
+  private runnerLayer!: StampLayer;
   private burst!: Phaser.GameObjects.Particles.ParticleEmitter;
   private trail!: Phaser.GameObjects.Particles.ParticleEmitter;
   private distText!: Phaser.GameObjects.Text;
@@ -138,7 +149,12 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.fadeIn(250, 5, 5, 13);
     this.far = this.makeSkyline(18, 60, 180);
     this.mid = this.makeSkyline(12, 90, 260);
-    this.gfx = this.add.graphics();
+    // Explicit depths, because the layers' Images are made after these Graphics: the scene and
+    // obstacles, then drones, then coins and legs, then the runner's body.
+    this.gfx = this.add.graphics().setDepth(-4);
+    this.droneLayer = new StampLayer(this, -3);
+    this.fg = this.add.graphics().setDepth(-2);
+    this.runnerLayer = new StampLayer(this, -1);
     this.burst = burstEmitter(this, 280, 600);
     this.trail = this.add
       .particles(0, 0, sparkTexture(this), {
@@ -449,27 +465,41 @@ export class GameScene extends Phaser.Scene {
       g.lineBetween(sx, GROUND_Y - b.h, sx + b.w, GROUND_Y);
     }
 
+    // Blinking warning lights.
+    const lights = Math.floor(this.elapsed / 200) % 2 === 0;
+    this.droneLayer.begin();
     for (const dr of this.drones) {
       const sx = dr.x - d + PLAYER_X;
       const bob = Math.sin(this.elapsed / 150 + dr.x) * 2;
       const top = DRONE_BOTTOM - DRONE_H + bob;
-      g.fillStyle(NEON.green, 0.15).fillRoundedRect(sx - 4, top - 4, dr.w + 8, DRONE_H + 8, 8);
-      g.fillStyle(0x062a14, 1).fillRoundedRect(sx, top, dr.w, DRONE_H, 6);
-      g.lineStyle(2, NEON.green, 1).strokeRoundedRect(sx, top, dr.w, DRONE_H, 6);
-      // Blinking warning lights.
-      if (Math.floor(this.elapsed / 200) % 2 === 0) g.fillStyle(NEON.pink, 1).fillCircle(sx + 10, top + DRONE_H / 2, 3).fillCircle(sx + dr.w - 10, top + DRONE_H / 2, 3);
+      this.droneLayer.stamp(this.droneTexture(dr.w, lights), sx - DRONE_PAD, top - DRONE_PAD);
       // Thin laser under the drone to show the danger zone.
       g.lineStyle(1, NEON.green, 0.35).lineBetween(sx + 6, DRONE_BOTTOM + bob + 3, sx + dr.w - 6, DRONE_BOTTOM + bob + 3);
     }
+    this.droneLayer.end();
 
+    const fg = this.fg.clear();
     for (const c of this.coins) {
       const sx = c.x - d + PLAYER_X;
       const squash = Math.abs(Math.sin(this.elapsed / 180 + c.x * 0.05));
-      g.fillStyle(NEON.yellow, 0.2).fillCircle(sx, c.y, 11);
-      g.fillStyle(NEON.yellow, 1).fillEllipse(sx, c.y, 4 + 10 * squash, 14);
+      fg.fillStyle(NEON.yellow, 0.2).fillCircle(sx, c.y, 11);
+      fg.fillStyle(NEON.yellow, 1).fillEllipse(sx, c.y, 4 + 10 * squash, 14);
     }
 
-    if (this.alive) this.drawRunner(g);
+    this.runnerLayer.begin();
+    if (this.alive) this.drawRunner(fg);
+    this.runnerLayer.end();
+  }
+
+  /** A drone of width `w`, with its warning lights on or off, baked once. */
+  private droneTexture(w: number, lights: boolean): string {
+    return bakeTexture(this, `runner-drone-${w}-${lights ? 'on' : 'off'}`, w + DRONE_PAD * 2, DRONE_H + DRONE_PAD * 2, (g) => {
+      const o = DRONE_PAD;
+      g.fillStyle(NEON.green, 0.15).fillRoundedRect(0, 0, w + 8, DRONE_H + 8, 8);
+      g.fillStyle(0x062a14, 1).fillRoundedRect(o, o, w, DRONE_H, 6);
+      g.lineStyle(2, NEON.green, 1).strokeRoundedRect(o, o, w, DRONE_H, 6);
+      if (lights) g.fillStyle(NEON.pink, 1).fillCircle(o + 10, o + DRONE_H / 2, 3).fillCircle(o + w - 10, o + DRONE_H / 2, 3);
+    });
   }
 
   private drawSkyline(g: Phaser.GameObjects.Graphics, buildings: Building[], scroll: number, color: number, windows: boolean): void {
@@ -489,14 +519,18 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  /** The runner: legs on `g`, and the body from a texture baked once, on the layer above. */
   private drawRunner(g: Phaser.GameObjects.Graphics): void {
     const x = PLAYER_X;
     const y = this.y;
     if (this.sliding) {
-      const w = PLAYER_H * 0.9;
-      g.fillStyle(NEON.cyan, 0.18).fillRoundedRect(x - w / 2 - 4, y - SLIDE_H - 4, w + 8, SLIDE_H + 8, 10);
-      g.fillStyle(NEON.cyan, 1).fillRoundedRect(x - w / 2, y - SLIDE_H, w, SLIDE_H, 9);
-      g.fillStyle(NEON.bg, 1).fillRoundedRect(x + w / 2 - 14, y - SLIDE_H + 5, 10, 6, 2);
+      const w = SLIDE_W;
+      const key = bakeTexture(this, 'runner-slide', Math.ceil(w + 8), SLIDE_H + 8, (t) => {
+        t.fillStyle(NEON.cyan, 0.18).fillRoundedRect(0, 0, w + 8, SLIDE_H + 8, 10);
+        t.fillStyle(NEON.cyan, 1).fillRoundedRect(4, 4, w, SLIDE_H, 9);
+        t.fillStyle(NEON.bg, 1).fillRoundedRect(w - 10, 9, 10, 6, 2);
+      });
+      this.runnerLayer.stamp(key, x - w / 2 - 4, y - SLIDE_H - 4);
       return;
     }
     const top = y - PLAYER_H;
@@ -505,11 +539,15 @@ export class GameScene extends Phaser.Scene {
     g.lineStyle(5, NEON.purple, 1);
     g.lineBetween(x - 4, y - 16, x - 4 + swing, y);
     g.lineBetween(x + 4, y - 16, x + 4 - swing, y);
-    g.fillStyle(NEON.cyan, 0.18).fillRoundedRect(x - PLAYER_W / 2 - 4, top - 4, PLAYER_W + 8, PLAYER_H - 10, 12);
-    g.fillStyle(NEON.cyan, 1).fillRoundedRect(x - PLAYER_W / 2, top, PLAYER_W, PLAYER_H - 16, 10);
-    // Visor.
-    g.fillStyle(NEON.bg, 1).fillRoundedRect(x + 1, top + 7, 11, 7, 2);
-    g.fillStyle(NEON.pink, 1).fillRect(x + 3, top + 9, 7, 3);
+    const key = bakeTexture(this, 'runner-stand', PLAYER_W + 8, PLAYER_H - 10, (t) => {
+      const cx = PLAYER_W / 2 + 4;
+      t.fillStyle(NEON.cyan, 0.18).fillRoundedRect(0, 0, PLAYER_W + 8, PLAYER_H - 10, 12);
+      t.fillStyle(NEON.cyan, 1).fillRoundedRect(4, 4, PLAYER_W, PLAYER_H - 16, 10);
+      // Visor.
+      t.fillStyle(NEON.bg, 1).fillRoundedRect(cx + 1, 11, 11, 7, 2);
+      t.fillStyle(NEON.pink, 1).fillRect(cx + 3, 13, 7, 3);
+    });
+    this.runnerLayer.stamp(key, x - PLAYER_W / 2 - 4, top - 4);
   }
 
   private updateHud(): void {

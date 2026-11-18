@@ -22,6 +22,7 @@ import { PauseController } from '../../../shared/pause';
 import { dailyOutcome, type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
 import { endRun, SCENE, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
+import { bakeTexture, StampLayer } from '../../../shared/stamps';
 import { isTouchDevice, onSwipe } from '../../../shared/touch';
 import { burstEmitter, dailyHudLabel, fadeToScene, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, reducedMotion, neonText, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
@@ -65,6 +66,22 @@ function starPoints(cx: number, cy: number, points: number, outer: number, inner
   return out;
 }
 
+/** Room around a segment texture for its glow, which spills 3 px past the cell. */
+const SEGMENT_PAD = 3;
+
+/**
+ * A white segment (glow and body) baked once, for the head or the rest; the scene tints each
+ * one to its place in the gradient. The head sits closer to the cell's edge and is rounder.
+ */
+function segmentTexture(scene: Phaser.Scene, head: boolean): string {
+  return bakeTexture(scene, head ? 'snake-head' : 'snake-segment', CELL + SEGMENT_PAD * 2, CELL + SEGMENT_PAD * 2, (g) => {
+    const o = SEGMENT_PAD;
+    const inset = head ? 1 : 3;
+    g.fillStyle(0xffffff, 0.16).fillRoundedRect(o - 3, o - 3, CELL + 6, CELL + 6, 8);
+    g.fillStyle(0xffffff, 1).fillRoundedRect(o + inset, o + inset, CELL - inset * 2, CELL - inset * 2, head ? 7 : 5);
+  });
+}
+
 /** A straight snake with its head at (x, y), trailing away from `dir`. */
 function line(x: number, y: number, dir: Cell): Cell[] {
   return Array.from({ length: START_LENGTH }, (_, i) => ({ x: x - dir.x * i, y: y - dir.y * i }));
@@ -91,7 +108,9 @@ export class GameScene extends Phaser.Scene {
   private eaten = 0;
   private score = 0;
 
-  private body!: Phaser.GameObjects.Graphics;
+  /** Segments as tinted Images baked once, since a Graphics would rebuild every rounded rect each frame. */
+  private segmentLayer!: StampLayer;
+  private eyes!: Phaser.GameObjects.Graphics;
   private items!: Phaser.GameObjects.Graphics;
   private burst!: Phaser.GameObjects.Particles.ParticleEmitter;
   private scoreText!: Phaser.GameObjects.Text;
@@ -126,8 +145,10 @@ export class GameScene extends Phaser.Scene {
   create(): void {
     this.cameras.main.fadeIn(250, 5, 5, 13);
     this.drawField();
-    this.items = this.add.graphics();
-    this.body = this.add.graphics();
+    // Explicit depths, because the segment Images are made after these: food, then segments, then eyes.
+    this.items = this.add.graphics().setDepth(-3);
+    this.segmentLayer = new StampLayer(this, -2);
+    this.eyes = this.add.graphics().setDepth(-1);
     this.burst = burstEmitter(this, 260);
 
     const midY = Math.floor(ROWS / 2);
@@ -432,7 +453,9 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    const g = this.body.clear();
+    const g = this.eyes.clear();
+    const layer = this.segmentLayer;
+    layer.begin();
     for (const p of this.players) {
       const total = p.segments.length;
       const lerp = p.alive ? t : 1;
@@ -441,13 +464,11 @@ export class GameScene extends Phaser.Scene {
         const from = p.prev[i] ?? cur;
         const x = Phaser.Math.Linear(from.x, cur.x, lerp) * CELL;
         const y = FIELD_TOP + Phaser.Math.Linear(from.y, cur.y, lerp) * CELL;
-        const color = this.segmentColor(p, i, total);
-        const inset = i === 0 ? 1 : 3;
-        g.fillStyle(color, 0.16).fillRoundedRect(x - 3, y - 3, CELL + 6, CELL + 6, 8);
-        g.fillStyle(color, 1).fillRoundedRect(x + inset, y + inset, CELL - inset * 2, CELL - inset * 2, i === 0 ? 7 : 5);
+        layer.stamp(segmentTexture(this, i === 0), x - SEGMENT_PAD, y - SEGMENT_PAD, 1, this.segmentColor(p, i, total));
         if (i === 0) this.drawEyes(g, p, x, y);
       }
     }
+    layer.end();
   }
 
   private drawEyes(g: Phaser.GameObjects.Graphics, p: Player, x: number, y: number): void {

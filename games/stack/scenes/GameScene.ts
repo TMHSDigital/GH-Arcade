@@ -46,6 +46,7 @@ import { PauseController } from '../../../shared/pause';
 import { endRun, SCENE } from '../../../shared/scenes';
 import { dailyOutcome, type DailyRun, dailyRunFrom } from '../../../shared/rng';
 import { noise, tone } from '../../../shared/sfx';
+import { bakeTexture, StampLayer } from '../../../shared/stamps';
 import { isTouchDevice, VirtualButton } from '../../../shared/touch';
 import { burstEmitter, dailyHudLabel, HUD_LABEL_STYLE, HUD_STYLE, NEON, neonText, showBanner, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
@@ -59,6 +60,10 @@ const BOARD_H = VISIBLE_ROWS * CELL;
 const LEFT_PANEL_X = BOARD_X - 30 - 150;
 const RIGHT_PANEL_X = BOARD_X + BOARD_W + 30;
 const CLEAR_NAMES = ['', 'SINGLE', 'DOUBLE', 'TRIPLE', 'QUAD!'];
+/** Color of the cells greyed out by the game-over animation. */
+const GREY = 0x3a3a55;
+/** Room around a cell texture for its glow, which spills 1 px past the cell. */
+const CELL_PAD = 1;
 
 export class GameScene extends Phaser.Scene {
   private board: Board = emptyBoard();
@@ -89,6 +94,8 @@ export class GameScene extends Phaser.Scene {
   private drag: { lastX: number; lastY: number; startY: number; t: number; moved: boolean } | null = null;
 
   private gfx!: Phaser.GameObjects.Graphics;
+  /** Cells, ghost and previews, as baked Images under `gfx` (which keeps the line-clear flash on top). */
+  private cells!: StampLayer;
   private burst!: Phaser.GameObjects.Particles.ParticleEmitter;
   private scoreText!: Phaser.GameObjects.Text;
   private levelText!: Phaser.GameObjects.Text;
@@ -125,6 +132,7 @@ export class GameScene extends Phaser.Scene {
   create(): void {
     this.cameras.main.fadeIn(250, 5, 5, 13);
     this.drawStatic();
+    this.cells = new StampLayer(this, -1);
     this.gfx = this.add.graphics();
     this.burst = burstEmitter(this, 320, 700);
 
@@ -475,28 +483,30 @@ export class GameScene extends Phaser.Scene {
 
   private render(): void {
     const g = this.gfx.clear();
+    this.cells.begin();
 
     for (let y = HIDDEN_ROWS; y < ROWS; y++) {
       for (let x = 0; x < COLS; x++) {
         const t = this.board[y][x];
         if (!t) continue;
-        const color = y >= ROWS - this.greyRows ? 0x3a3a55 : PIECE_COLORS[t];
-        this.drawCell(g, BOARD_X + x * CELL, BOARD_Y + (y - HIDDEN_ROWS) * CELL, CELL, color, 1);
+        const color = y >= ROWS - this.greyRows ? GREY : PIECE_COLORS[t];
+        this.drawCell(BOARD_X + x * CELL, BOARD_Y + (y - HIDDEN_ROWS) * CELL, CELL, color, 1);
       }
     }
 
     if (this.state === 'playing') {
       const color = PIECE_COLORS[this.piece.type];
       const ghostY = this.piece.y + dropDistance(this.board, this.piece);
+      const ghost = bakeTexture(this, `stack-ghost-${color}`, CELL, CELL, (t) => t.lineStyle(2, color, 0.45).strokeRoundedRect(2, 2, CELL - 4, CELL - 4, 4));
       for (const c of cellsOf({ ...this.piece, y: ghostY })) {
         if (c.y < HIDDEN_ROWS) continue;
-        g.lineStyle(2, color, 0.45).strokeRoundedRect(BOARD_X + c.x * CELL + 2, BOARD_Y + (c.y - HIDDEN_ROWS) * CELL + 2, CELL - 4, CELL - 4, 4);
+        this.cells.stamp(ghost, BOARD_X + c.x * CELL, BOARD_Y + (c.y - HIDDEN_ROWS) * CELL);
       }
       // Pulse slightly as the lock timer runs out.
       const lockAlpha = 1 - (this.lockTimer / LOCK_DELAY_MS) * 0.35;
       for (const c of cellsOf(this.piece)) {
         if (c.y < HIDDEN_ROWS) continue;
-        this.drawCell(g, BOARD_X + c.x * CELL, BOARD_Y + (c.y - HIDDEN_ROWS) * CELL, CELL, color, lockAlpha);
+        this.drawCell(BOARD_X + c.x * CELL, BOARD_Y + (c.y - HIDDEN_ROWS) * CELL, CELL, color, lockAlpha);
       }
     }
 
@@ -504,18 +514,24 @@ export class GameScene extends Phaser.Scene {
       if (y >= HIDDEN_ROWS) g.fillStyle(0xffffff, 0.85).fillRect(BOARD_X, BOARD_Y + (y - HIDDEN_ROWS) * CELL, BOARD_W, CELL);
     }
 
-    if (this.holdType) this.drawMini(g, this.holdType, LEFT_PANEL_X + 75, BOARD_Y + 85, this.canHold ? 1 : 0.35);
-    this.bag.peek(NEXT_PREVIEW).forEach((t, i) => this.drawMini(g, t, RIGHT_PANEL_X + 75, BOARD_Y + 85 + i * 90, i === 0 ? 1 : 0.7));
+    if (this.holdType) this.drawMini(this.holdType, LEFT_PANEL_X + 75, BOARD_Y + 85, this.canHold ? 1 : 0.35);
+    this.bag.peek(NEXT_PREVIEW).forEach((t, i) => this.drawMini(t, RIGHT_PANEL_X + 75, BOARD_Y + 85 + i * 90, i === 0 ? 1 : 0.7));
+    this.cells.end();
   }
 
-  private drawCell(g: Phaser.GameObjects.Graphics, x: number, y: number, size: number, color: number, alpha: number): void {
-    g.fillStyle(color, 0.18 * alpha).fillRoundedRect(x - 1, y - 1, size + 2, size + 2, 5);
-    g.fillStyle(color, 0.9 * alpha).fillRoundedRect(x + 2, y + 2, size - 4, size - 4, 4);
-    g.fillStyle(0xffffff, 0.35 * alpha).fillRoundedRect(x + 4, y + 4, size - 8, Math.max(size * 0.18, 3), 2);
+  /** A cell of `size` with its top-left at (x, y), from a texture baked once per size and color. */
+  private drawCell(x: number, y: number, size: number, color: number, alpha: number): void {
+    const key = bakeTexture(this, `stack-cell-${size}-${color}`, size + CELL_PAD * 2, size + CELL_PAD * 2, (g) => {
+      const o = CELL_PAD;
+      g.fillStyle(color, 0.18).fillRoundedRect(o - 1, o - 1, size + 2, size + 2, 5);
+      g.fillStyle(color, 0.9).fillRoundedRect(o + 2, o + 2, size - 4, size - 4, 4);
+      g.fillStyle(0xffffff, 0.35).fillRoundedRect(o + 4, o + 4, size - 8, Math.max(size * 0.18, 3), 2);
+    });
+    this.cells.stamp(key, x - CELL_PAD, y - CELL_PAD, alpha);
   }
 
   /** Small centered preview of a piece for the hold and next panels. */
-  private drawMini(g: Phaser.GameObjects.Graphics, type: PieceType, cx: number, cy: number, alpha: number): void {
+  private drawMini(type: PieceType, cx: number, cy: number, alpha: number): void {
     const m = ROTATIONS[type][0];
     const cells: { x: number; y: number }[] = [];
     m.forEach((row, r) => row.forEach((v, c) => v && cells.push({ x: c, y: r })));
@@ -526,7 +542,7 @@ export class GameScene extends Phaser.Scene {
     const size = 20;
     const ox = cx - ((maxX - minX + 1) * size) / 2;
     const oy = cy - ((maxY - minY + 1) * size) / 2;
-    for (const c of cells) this.drawCell(g, ox + (c.x - minX) * size, oy + (c.y - minY) * size, size, PIECE_COLORS[type], alpha);
+    for (const c of cells) this.drawCell(ox +(c.x - minX) * size, oy + (c.y - minY) * size, size, PIECE_COLORS[type], alpha);
   }
 
   private updateHud(): void {

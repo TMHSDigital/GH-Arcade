@@ -41,6 +41,7 @@ import { PauseController } from '../../../shared/pause';
 import { dailyOutcome, type DailyRun, dailyRunFrom, type Rng } from '../../../shared/rng';
 import { endRun, SCENE } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
+import { bakeTexture, StampLayer } from '../../../shared/stamps';
 import { onSwipe } from '../../../shared/touch';
 import { burstEmitter, dailyHudLabel, floatText, HUD_STYLE, NEON, showBanner, impact } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
@@ -77,6 +78,11 @@ export class GameScene extends Phaser.Scene {
   private over = false;
   private busy = false;
 
+  /** Lane backgrounds and docks, under the items. */
+  private laneGfx!: Phaser.GameObjects.Graphics;
+  /** Logs, turtles and vehicles, as Images of baked textures. */
+  private items!: StampLayer;
+  /** The edge mask, hopper, timer bar and lives, above the items. */
   private gfx!: Phaser.GameObjects.Graphics;
   private burst!: Phaser.GameObjects.Particles.ParticleEmitter;
   private scoreText!: Phaser.GameObjects.Text;
@@ -104,7 +110,10 @@ export class GameScene extends Phaser.Scene {
 
   create(): void {
     this.cameras.main.fadeIn(250, 5, 5, 13);
-    this.gfx = this.add.graphics();
+    // Explicit depths, because the item Images are made after these Graphics.
+    this.laneGfx = this.add.graphics().setDepth(-3);
+    this.items = new StampLayer(this, -2);
+    this.gfx = this.add.graphics().setDepth(-1);
     this.burst = burstEmitter(this, 240, 600);
     const style = HUD_STYLE;
     this.scoreText = this.add.text(WIDTH / 2, 24, '0', style).setOrigin(0.5).setDepth(10);
@@ -289,8 +298,11 @@ export class GameScene extends Phaser.Scene {
   // ---------------------------------------------------------------- render
 
   private render(): void {
-    const g = this.gfx.clear();
+    // Lanes go under the items, and everything after the items (the edge mask, the hopper and
+    // the HUD) goes on `gfx` above them.
+    const g = this.laneGfx.clear();
     const gx = GRID_X;
+    this.items.begin();
 
     for (const lane of this.lanes) {
       const y = rowY(lane.row);
@@ -327,9 +339,16 @@ export class GameScene extends Phaser.Scene {
       for (const it of lane.items) {
         const x = gx + it.x;
         if (x > gx + GRID_W || x + it.w < gx) continue;
-        this.drawItem(g, lane, it, x, y);
+        this.stampItem(lane, it, x, y);
       }
     }
+    this.items.end();
+    this.drawTop();
+  }
+
+  private drawTop(): void {
+    const g = this.gfx.clear();
+    const gx = GRID_X;
     // Hide anything that slid past the grid edges.
     g.fillStyle(NEON.bg, 1).fillRect(0, GRID_Y, gx, rowY(11) - GRID_Y).fillRect(gx + GRID_W, GRID_Y, WIDTH - gx - GRID_W, rowY(11) - GRID_Y);
 
@@ -357,43 +376,57 @@ export class GameScene extends Phaser.Scene {
     for (let i = 0; i < Math.min(this.lives, 5); i++) this.drawHopper(g, livesX + i * 30, 24, 'up', NEON.cyan, 0.55);
   }
 
-  private drawItem(g: Phaser.GameObjects.Graphics, lane: Lane, it: Item, x: number, y: number): void {
+  /**
+   * Places a lane item, with its top-left at (x, y), from textures baked once per kind, width and
+   * direction: the items move every frame, and a Graphics would rebuild every rounded rect and circle.
+   */
+  private stampItem(lane: Lane, it: Item, x: number, y: number): void {
     const goingRight = lane.speed > 0;
+    const w = it.w;
     switch (lane.item) {
       case 'log': {
-        g.fillStyle(NEON.purple, 0.2).fillRoundedRect(x - 2, y + 6, it.w + 4, CELL - 12, 10);
-        g.fillStyle(0x2b1650, 1).fillRoundedRect(x, y + 8, it.w, CELL - 16, 9);
-        g.lineStyle(2, NEON.purple, 1).strokeRoundedRect(x, y + 8, it.w, CELL - 16, 9);
-        for (let i = 1; i < it.w / CELL; i++) g.lineBetween(x + i * CELL, y + 14, x + i * CELL, y + CELL - 14);
+        // The glow spills 2 px past each end.
+        const key = bakeTexture(this, `hop-log-${w}`, w + 4, CELL, (g) => {
+          g.fillStyle(NEON.purple, 0.2).fillRoundedRect(0, 6, w + 4, CELL - 12, 10);
+          g.fillStyle(0x2b1650, 1).fillRoundedRect(2, 8, w, CELL - 16, 9);
+          g.lineStyle(2, NEON.purple, 1).strokeRoundedRect(2, 8, w, CELL - 16, 9);
+          for (let i = 1; i < w / CELL; i++) g.lineBetween(2 + i * CELL, 14, 2 + i * CELL, CELL - 14);
+        });
+        this.items.stamp(key, x - 2, y);
         break;
       }
       case 'turtle': {
         const under = submerged(it, this.level, this.elapsed);
         const warn = this.level >= 2 && Math.sin(this.elapsed / 900 + it.phase) > 0.45;
-        for (let i = 0; i < it.w / CELL; i++) {
-          const cx = x + i * CELL + CELL / 2;
-          const cy = y + CELL / 2;
+        const look = under ? 'under' : warn ? 'warn' : 'up';
+        const key = bakeTexture(this, `hop-turtle-${look}-${goingRight ? 'r' : 'l'}`, CELL, CELL, (g) => {
+          const c = CELL / 2;
           if (under) {
-            g.lineStyle(1, NEON.green, 0.3).strokeCircle(cx, cy, 12);
-            continue;
+            g.lineStyle(1, NEON.green, 0.3).strokeCircle(c, c, 12);
+            return;
           }
-          g.fillStyle(NEON.green, warn ? 0.45 : 0.9).fillCircle(cx, cy, 16);
-          g.lineStyle(2, 0x0b2a1c, 1).strokeCircle(cx, cy, 9);
-          g.fillStyle(NEON.green, 1).fillCircle(cx + (goingRight ? 17 : -17), cy, 5);
-        }
+          g.fillStyle(NEON.green, warn ? 0.45 : 0.9).fillCircle(c, c, 16);
+          g.lineStyle(2, 0x0b2a1c, 1).strokeCircle(c, c, 9);
+          g.fillStyle(NEON.green, 1).fillCircle(c + (goingRight ? 17 : -17), c, 5);
+        });
+        for (let i = 0; i < w / CELL; i++) this.items.stamp(key, x + i * CELL, y);
         break;
       }
       default: {
-        const color = lane.item === 'truck' ? NEON.orange : lane.item === 'racer' ? NEON.pink : NEON.yellow;
-        const top = y + 9;
-        const h = CELL - 18;
-        g.fillStyle(color, 0.2).fillRoundedRect(x, top - 3, it.w, h + 6, 8);
-        g.fillStyle(0x140a1e, 1).fillRoundedRect(x + 3, top, it.w - 6, h, 6);
-        g.lineStyle(2, color, 1).strokeRoundedRect(x + 3, top, it.w - 6, h, 6);
-        // Headlights point the way it's driving.
-        const hx = goingRight ? x + it.w - 8 : x + 8;
-        g.fillStyle(0xffffff, 1).fillCircle(hx, top + 6, 3).fillCircle(hx, top + h - 6, 3);
-        if (lane.item === 'truck') g.lineBetween(goingRight ? x + it.w - 22 : x + 22, top + 3, goingRight ? x + it.w - 22 : x + 22, top + h - 3);
+        const kind = lane.item ?? 'car';
+        const key = bakeTexture(this, `hop-${kind}-${w}-${goingRight ? 'r' : 'l'}`, w, CELL, (g) => {
+          const color = kind === 'truck' ? NEON.orange : kind === 'racer' ? NEON.pink : NEON.yellow;
+          const top = 9;
+          const h = CELL - 18;
+          g.fillStyle(color, 0.2).fillRoundedRect(0, top - 3, w, h + 6, 8);
+          g.fillStyle(0x140a1e, 1).fillRoundedRect(3, top, w - 6, h, 6);
+          g.lineStyle(2, color, 1).strokeRoundedRect(3, top, w - 6, h, 6);
+          // Headlights point the way it's driving.
+          const hx = goingRight ? w - 8 : 8;
+          g.fillStyle(0xffffff, 1).fillCircle(hx, top + 6, 3).fillCircle(hx, top + h - 6, 3);
+          if (kind === 'truck') g.lineBetween(goingRight ? w - 22 : 22, top + 3, goingRight ? w - 22 : 22, top + h - 3);
+        });
+        this.items.stamp(key, x, y);
       }
     }
   }
