@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { drawGem } from '../art';
+import { gemTexture } from '../art';
 import { loadBests, type Mode, recordModeScore } from '../best';
 import {
   BOARD_X,
@@ -78,14 +78,14 @@ export class GameScene extends Phaser.Scene {
   private modeBest = 0;
   private shownSeconds = -1;
 
-  private sprites = new Map<number, Phaser.GameObjects.Graphics>();
+  private sprites = new Map<number, Phaser.GameObjects.Image>();
   private selected: Pos | null = null;
   private cursor: Pos = { r: 3, c: 3 };
   private cursorShown = false;
   private readonly repeat = new HoldRepeat(DIRS, { delayMs: CURSOR_DELAY_MS, rateMs: CURSOR_REPEAT_MS });
   private drag: { cell: Pos; x: number; y: number } | null = null;
   private idleMs = 0;
-  private hinted: Phaser.GameObjects.Graphics[] = [];
+  private hinted: Phaser.GameObjects.Image[] = [];
 
   private overlay!: Phaser.GameObjects.Graphics;
   private burst!: Phaser.GameObjects.Particles.ParticleEmitter;
@@ -188,11 +188,10 @@ export class GameScene extends Phaser.Scene {
     if (this.daily) dailyHudLabel(this, x, 420, GAME_ID, this.daily, { narrow: true });
   }
 
-  private makeSprite(gem: Gem, c: number, r: number): Phaser.GameObjects.Graphics {
-    const g = this.add.graphics({ x: cellX(c), y: cellY(r) }).setDepth(5);
-    drawGem(g, gem.color, gem.special, CELL);
-    this.sprites.set(gem.id, g);
-    return g;
+  private makeSprite(gem: Gem, c: number, r: number): Phaser.GameObjects.Image {
+    const img = this.add.image(cellX(c), cellY(r), gemTexture(this, gem.color, gem.special, CELL)).setDepth(5);
+    this.sprites.set(gem.id, img);
+    return img;
   }
 
   // ---------------------------------------------------------------- input

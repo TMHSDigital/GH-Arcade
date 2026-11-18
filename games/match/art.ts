@@ -43,11 +43,35 @@ function shapeFill(g: Phaser.GameObjects.Graphics, color: number, r: number): vo
   }
 }
 
-/** Draws a gem centered on the graphics object's origin. `size` is the cell size. */
+/**
+ * Half the side of a gem texture. The widest parts (the bomb's spikes and the triangle's halo) reach
+ * about 0.55 of a cell from the center, plus half a line width.
+ */
+function gemHalf(size: number): number {
+  return Math.ceil(size * 0.62);
+}
+
+/**
+ * Returns the texture key for one gem look, drawing it the first time it is asked for. Gems are
+ * Images of these textures rather than Graphics: Phaser rebuilds and triangulates a Graphics'
+ * shapes on every frame, while a texture is drawn once.
+ */
+export function gemTexture(scene: Phaser.Scene, color: number, special: Special, size: number): string {
+  const key = `match-gem-${color}-${special}-${size}`;
+  if (scene.textures.exists(key)) return key;
+  const half = gemHalf(size);
+  const g = scene.make.graphics({}, false);
+  g.translateCanvas(half, half);
+  drawGem(g, color, special, size);
+  g.generateTexture(key, half * 2, half * 2);
+  g.destroy();
+  return key;
+}
+
+/** Draws a gem centered on the current origin of `g`. `size` is the cell size. */
 export function drawGem(g: Phaser.GameObjects.Graphics, color: number, special: Special, size: number): void {
   const tint = GEM_TINTS[color] ?? 0xffffff;
   const r = size * 0.36;
-  g.clear();
   // Soft halo, then the body, then a bright core: reads as a glow without a filter.
   g.fillStyle(tint, 0.14);
   shapeFill(g, color, r * 1.28);

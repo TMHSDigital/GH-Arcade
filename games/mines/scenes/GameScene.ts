@@ -107,6 +107,7 @@ export class GameScene extends Phaser.Scene {
   private longPress: Phaser.Time.TimerEvent | null = null;
 
   private gfx!: Phaser.GameObjects.Graphics;
+  private tiles: Phaser.GameObjects.Image[] = [];
   private cursorGfx!: Phaser.GameObjects.Graphics;
   private burst!: Phaser.GameObjects.Particles.ParticleEmitter;
   private timeText!: Phaser.GameObjects.Text;
@@ -170,6 +171,14 @@ export class GameScene extends Phaser.Scene {
     this.cursor = start >= 0 ? start : Math.floor(rows / 2) * cols + Math.floor(cols / 2);
 
     this.drawFrame();
+    const hidden = this.tileKey(false);
+    this.tileKey(true);
+    this.tiles = [];
+    for (let i = 0; i < size; i++) {
+      const x = this.ox + (i % cols) * this.cell;
+      const y = this.oy + Math.floor(i / cols) * this.cell;
+      this.tiles.push(this.add.image(x, y, hidden).setOrigin(0).setDepth(-0.5));
+    }
     this.gfx = this.add.graphics();
     this.cursorGfx = this.add.graphics().setDepth(5);
     if (!reducedMotion()) this.tweens.add({ targets: this.cursorGfx, alpha: 0.45, duration: 520, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
@@ -568,6 +577,9 @@ export class GameScene extends Phaser.Scene {
       const y = this.oy + r * s;
       const cx = x + s / 2;
       const cy = y + s / 2;
+      // Hidden tiles are Images of a texture drawn once; every other look turns the image off.
+      const tile = this.tiles[i];
+      tile.setVisible(false);
 
       if (this.detonated[i]) {
         const first = i === board.exploded;
@@ -596,8 +608,7 @@ export class GameScene extends Phaser.Scene {
       }
 
       const pressed = this.press?.index === i && !this.press.consumed;
-      g.fillStyle(pressed ? PRESSED_FILL : HIDDEN_FILL, 1).fillRoundedRect(x + 2, y + 2, s - 4, s - 4, radius);
-      g.lineStyle(1, NEON.purple, pressed ? 0.95 : 0.5).strokeRoundedRect(x + 2, y + 2, s - 4, s - 4, radius);
+      tile.setTexture(this.tileKey(pressed)).setVisible(true);
       if (board.flagged[i]) {
         this.drawFlag(g, cx, cy, s, won ? NEON.green : NEON.pink);
         if (lost && this.shownWrong.includes(i)) {
@@ -607,6 +618,23 @@ export class GameScene extends Phaser.Scene {
         }
       }
     }
+  }
+
+  /**
+   * The hidden tile, plain or pressed, drawn once per cell size. Phaser rebuilds a Graphics' shapes
+   * every frame, which for a full Hard board of rounded rects is the scene's main cost.
+   */
+  private tileKey(pressed: boolean): string {
+    const s = this.cell;
+    const key = `mines-tile-${s}-${pressed ? 'pressed' : 'hidden'}`;
+    if (this.textures.exists(key)) return key;
+    const radius = Math.max(2, s * 0.12);
+    const g = this.make.graphics({}, false);
+    g.fillStyle(pressed ? PRESSED_FILL : HIDDEN_FILL, 1).fillRoundedRect(2, 2, s - 4, s - 4, radius);
+    g.lineStyle(1, NEON.purple, pressed ? 0.95 : 0.5).strokeRoundedRect(2, 2, s - 4, s - 4, radius);
+    g.generateTexture(key, s, s);
+    g.destroy();
+    return key;
   }
 
   private drawFlag(g: Phaser.GameObjects.Graphics, cx: number, cy: number, s: number, color: number): void {

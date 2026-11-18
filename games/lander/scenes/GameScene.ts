@@ -60,6 +60,15 @@ const CALLOUT_ALT = 170;
 const GREEN = hex(NEON.green);
 const PINK = hex(NEON.pink);
 const MUTED: string = HUD_LABEL_STYLE.color;
+/** Line width and alpha of a neon line's two strokes: the glow, then the bright core. */
+const NEON_PASSES = [
+  [7, 0.14],
+  [2, 1],
+] as const;
+/** The HUD shows at most this many spare landers. */
+const MAX_SPARES = 6;
+/** Side of the spare-lander icon texture, with room for the glow. */
+const SPARE_SIZE = 30;
 
 /** Drops every bit whose life has run out, in place (no new array each frame). */
 function age(bits: Bit[], dt: number, gravity: number): void {
@@ -99,6 +108,7 @@ export class GameScene extends Phaser.Scene {
 
   private terrainGfx!: Phaser.GameObjects.Graphics;
   private gfx!: Phaser.GameObjects.Graphics;
+  private spares: Phaser.GameObjects.Image[] = [];
   private burst!: Phaser.GameObjects.Particles.ParticleEmitter;
   private scoreText!: Phaser.GameObjects.Text;
   private stageText!: Phaser.GameObjects.Text;
@@ -134,6 +144,7 @@ export class GameScene extends Phaser.Scene {
     this.drawStars();
     this.terrainGfx = this.add.graphics();
     this.gfx = this.add.graphics();
+    this.drawSpares();
     this.burst = burstEmitter(this, 240, 800);
 
     this.scoreText = this.add.text(WIDTH / 2, 24, '0', HUD_STYLE).setOrigin(0.5).setDepth(100);
@@ -165,12 +176,35 @@ export class GameScene extends Phaser.Scene {
     this.startStage(1);
   }
 
+  /**
+   * The starfield never moves, so it is drawn into a texture once per run: Phaser rebuilds a
+   * Graphics' circles on every frame. A new run draws a new field over the old texture's key.
+   */
   private drawStars(): void {
-    const g = this.add.graphics().setDepth(-10);
+    const key = 'lander-stars';
+    if (this.textures.exists(key)) this.textures.remove(key);
+    const h = Math.ceil(HEIGHT * 0.7) + 2;
+    const g = this.make.graphics({}, false);
     for (let i = 0; i < 90; i++) {
       g.fillStyle(0xffffff, Phaser.Math.FloatBetween(0.1, 0.5));
       g.fillCircle(Phaser.Math.Between(0, WIDTH), Phaser.Math.Between(0, HEIGHT * 0.7), Phaser.Math.FloatBetween(0.5, 1.4));
     }
+    g.generateTexture(key, WIDTH, h);
+    g.destroy();
+    this.add.image(0, 0, key).setOrigin(0).setDepth(-10);
+  }
+
+  /** A spare-lander icon for the HUD, drawn once; `render` only shows as many as there are lives. */
+  private drawSpares(): void {
+    const key = 'lander-spare';
+    if (!this.textures.exists(key)) {
+      const g = this.make.graphics({}, false);
+      this.drawLander(g, SPARE_SIZE / 2, SPARE_SIZE / 2, 0, 0.6, NEON.cyan);
+      g.generateTexture(key, SPARE_SIZE, SPARE_SIZE);
+      g.destroy();
+    }
+    this.spares = [];
+    for (let i = 0; i < MAX_SPARES; i++) this.spares.push(this.add.image(WIDTH - 28 - i * 26, 52, key).setVisible(false));
   }
 
   // ---------------------------------------------------------------- stages
@@ -379,7 +413,7 @@ export class GameScene extends Phaser.Scene {
 
   /** Neon line: a wide faint stroke for glow, then a thin bright one. */
   private neonPath(g: Phaser.GameObjects.Graphics, points: { x: number; y: number }[], color: number, closed = true, alpha = 1): void {
-    for (const [w, a] of [[7, 0.14], [2, 1]] as const) {
+    for (const [w, a] of NEON_PASSES) {
       g.lineStyle(w, color, a * alpha).beginPath();
       g.moveTo(points[0].x, points[0].y);
       for (let i = 1; i < points.length; i++) g.lineTo(points[i].x, points[i].y);
@@ -450,7 +484,7 @@ export class GameScene extends Phaser.Scene {
     g.lineStyle(1, NEON.cyan, 0.5).strokeRect(70, top, 130, 10);
 
     // Spare landers under the stage counter.
-    for (let i = 0; i < Math.min(this.lives, 6); i++) this.drawLander(g, WIDTH - 28 - i * 26, 52, 0, 0.6, NEON.cyan);
+    this.spares.forEach((icon, i) => icon.setVisible(i < this.lives));
   }
 
   private drawLander(g: Phaser.GameObjects.Graphics, x: number, y: number, angle: number, scale: number, legs: number): void {
