@@ -29,6 +29,7 @@ import { PauseController } from '../../../shared/pause';
 import { endRun, SCENE } from '../../../shared/scenes';
 import { keyLabel } from '../../../shared/settings';
 import { noise, tone } from '../../../shared/sfx';
+import { bakeTexture, StampLayer } from '../../../shared/stamps';
 import { isTouchDevice } from '../../../shared/touch';
 import {
   blinkingPrompt,
@@ -48,6 +49,8 @@ const { unlock, reach } = trophiesFor<typeof TROPHIES>();
 const PARS = HOLES.map((h) => h.par);
 /** Ball positions kept for the glowing trail, one per frame. */
 const TRAIL = 14;
+/** Radius of the white disc texture that every round dot here is scaled from. */
+const DISC_R = 16;
 /** The power meter in the HUD. */
 const METER = { x: WIDTH - 196, y: 15, w: 176, h: 14 };
 
@@ -93,6 +96,7 @@ export class GameScene extends Phaser.Scene {
   private courseGfx!: Phaser.GameObjects.Graphics;
   private padGfx!: Phaser.GameObjects.Graphics;
   private gfx!: Phaser.GameObjects.Graphics;
+  private discs!: StampLayer;
   private burst!: Phaser.GameObjects.Particles.ParticleEmitter;
   private holeText!: Phaser.GameObjects.Text;
   private nameText!: Phaser.GameObjects.Text;
@@ -124,6 +128,8 @@ export class GameScene extends Phaser.Scene {
     this.courseGfx = this.add.graphics();
     this.padGfx = this.add.graphics();
     this.gfx = this.add.graphics().setDepth(5);
+    // The trail, aim dots and ball, over `gfx` and under the cup's ring.
+    this.discs = new StampLayer(this, 5.5);
     this.burst = burstEmitter(this, 220, 600);
     if (!reducedMotion()) this.tweens.add({ targets: this.padGfx, alpha: 0.45, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
@@ -540,6 +546,7 @@ export class GameScene extends Phaser.Scene {
 
     const bx = GRID_X + this.ball.x;
     const by = GRID_Y + this.ball.y;
+    this.discs.begin();
     if (this.ballVisible) {
       // The trail: recent positions, oldest faintest and smallest.
       this.trail[this.trailHead * 2] = bx;
@@ -549,7 +556,7 @@ export class GameScene extends Phaser.Scene {
       for (let i = 0; i < this.trailLength; i++) {
         const k = (this.trailHead - this.trailLength + i + TRAIL) % TRAIL;
         const f = (i + 1) / this.trailLength;
-        g.fillStyle(NEON.cyan, f * 0.35).fillCircle(this.trail[k * 2], this.trail[k * 2 + 1], BALL_RADIUS * (0.3 + 0.6 * f));
+        this.disc(this.trail[k * 2], this.trail[k * 2 + 1], BALL_RADIUS * (0.3 + 0.6 * f), NEON.cyan, f * 0.35);
       }
     }
 
@@ -558,7 +565,7 @@ export class GameScene extends Phaser.Scene {
       const cos = Math.cos(this.aimAngle);
       const sin = Math.sin(this.aimAngle);
       for (let d = 16; d < lineLength; d += 12) {
-        g.fillStyle(NEON.yellow, 0.9 - (d / lineLength) * 0.6).fillCircle(bx + cos * d, by + sin * d, 2.5);
+        this.disc(bx + cos * d, by + sin * d, 2.5, NEON.yellow, 0.9 - (d / lineLength) * 0.6);
       }
       if (this.dragFrom) {
         // Where the pull started, so a touch player sees how far back they have dragged.
@@ -569,13 +576,23 @@ export class GameScene extends Phaser.Scene {
 
     if (this.ballVisible) {
       const scale = 1 - this.sink.t * 0.6;
-      g.fillStyle(NEON.white, 0.18 * scale).fillCircle(bx, by, (BALL_RADIUS + 6) * scale);
-      g.fillStyle(NEON.white, 1).fillCircle(bx, by, BALL_RADIUS * scale);
+      this.disc(bx, by, (BALL_RADIUS + 6) * scale, NEON.white, 0.18 * scale);
+      this.disc(bx, by, BALL_RADIUS * scale, NEON.white, 1);
     }
+    this.discs.end();
 
     const color = this.power < 0.5 ? NEON.green : this.power < 0.8 ? NEON.yellow : NEON.pink;
     g.fillStyle(0x1a1a33, 1).fillRect(METER.x, METER.y, METER.w, METER.h);
     if (this.power > 0) g.fillStyle(color, 1).fillRect(METER.x, METER.y, METER.w * this.power, METER.h);
     g.lineStyle(1, NEON.muted, 0.6).strokeRect(METER.x, METER.y, METER.w, METER.h);
+  }
+
+  /**
+   * A filled circle of radius `r` centred on (x, y): one white disc baked once, then scaled and
+   * tinted, since a Graphics would rebuild every circle of the trail and aim line each frame.
+   */
+  private disc(x: number, y: number, r: number, color: number, alpha: number): void {
+    const key = bakeTexture(this, 'golf-disc', DISC_R * 2, DISC_R * 2, (g) => g.fillStyle(0xffffff, 1).fillCircle(DISC_R, DISC_R, DISC_R));
+    this.discs.stamp(key, x - r, y - r, alpha, color).setScale(r / DISC_R);
   }
 }

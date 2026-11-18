@@ -60,6 +60,7 @@ import { PauseController } from '../../../shared/pause';
 import { createRng, type Rng } from '../../../shared/rng';
 import { endRun, SCENE, showMatchResult } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
+import { bakeTexture, StampLayer } from '../../../shared/stamps';
 import { loadJSON, saveJSON } from '../../../shared/storage';
 import { isTouchDevice, VirtualButton } from '../../../shared/touch';
 import { drawGrid, floatText, hex, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, PIXEL_FONT, showBanner, sparkTexture } from '../../../shared/ui';
@@ -133,6 +134,8 @@ export class GameScene extends Phaser.Scene {
   private buttons: VirtualButton[] = [];
   private terrainGfx!: Phaser.GameObjects.Graphics;
   private gfx!: Phaser.GameObjects.Graphics;
+  private hintDots!: StampLayer;
+  private pips!: StampLayer;
   private trail!: Phaser.GameObjects.Particles.ParticleEmitter;
   private debris!: Phaser.GameObjects.Particles.ParticleEmitter;
   private sparks!: Phaser.GameObjects.Particles.ParticleEmitter;
@@ -169,6 +172,9 @@ export class GameScene extends Phaser.Scene {
     drawGrid(this, WIDTH, HEIGHT);
     this.terrainGfx = this.add.graphics();
     this.gfx = this.add.graphics().setDepth(5);
+    // The hint goes under the tanks on `gfx`, and the pips over the HUD bars it draws.
+    this.hintDots = new StampLayer(this, 4.5);
+    this.pips = new StampLayer(this, 5.5);
     this.trail = this.add
       .particles(0, 0, sparkTexture(this), {
         lifespan: 380,
@@ -628,7 +634,9 @@ export class GameScene extends Phaser.Scene {
     const active = this.tanks[this.turn];
     const aiming = this.phase === 'aim' || this.phase === 'cpu';
 
-    if (this.phase === 'aim' && !this.versus && this.cpuLevel === 'easy') this.drawHint(g, active);
+    this.hintDots.begin();
+    if (this.phase === 'aim' && !this.versus && this.cpuLevel === 'easy') this.drawHint(active);
+    this.hintDots.end();
     if (this.drag) {
       const pv = pivotOf(active);
       g.lineStyle(2, active.color, 0.35).lineBetween(pv.x, pv.y, this.drag.x, this.drag.y);
@@ -645,7 +653,7 @@ export class GameScene extends Phaser.Scene {
     this.drawHud(g, aiming ? active : null);
   }
 
-  private drawHint(g: Phaser.GameObjects.Graphics, t: Tank): void {
+  private drawHint(t: Tank): void {
     const key = `${t.angle.toFixed(1)}:${t.power.toFixed(1)}:${this.wind}`;
     if (this.hint.key !== key) {
       const points: { x: number; y: number }[] = [];
@@ -658,7 +666,9 @@ export class GameScene extends Phaser.Scene {
       });
       this.hint = { key, points };
     }
-    this.hint.points.forEach((p, i) => g.fillStyle(t.color, 0.8 - (i / this.hint.points.length) * 0.6).fillCircle(p.x, p.y, 2));
+    // A white dot baked once and tinted, since a Graphics would rebuild every circle each frame.
+    const dot = bakeTexture(this, 'tanks-hint-dot', 4, 4, (d) => d.fillStyle(0xffffff, 1).fillCircle(2, 2, 2));
+    this.hint.points.forEach((p, i) => this.hintDots.stamp(dot, p.x - 2, p.y - 2, 0.8 - (i / this.hint.points.length) * 0.6, t.color));
   }
 
   private drawTank(g: Phaser.GameObjects.Graphics, t: Tank, active: boolean): void {
@@ -683,6 +693,10 @@ export class GameScene extends Phaser.Scene {
 
   private drawHud(g: Phaser.GameObjects.Graphics, active: Tank | null): void {
     g.lineStyle(1, NEON.purple, 0.4).lineBetween(0, HUD_H, WIDTH, HUD_H);
+    // Won and unwon pips, baked white and tinted to each tank.
+    const won = bakeTexture(this, 'tanks-pip-won', 12, 12, (p) => p.fillStyle(0xffffff, 1).fillCircle(6, 6, 5));
+    const open = bakeTexture(this, 'tanks-pip-open', 14, 14, (p) => p.lineStyle(1.5, 0xffffff, 0.6).strokeCircle(7, 7, 5));
+    this.pips.begin();
     for (const t of this.tanks) {
       const left = t.seat === 0;
       const x = left ? 20 : WIDTH - 200;
@@ -693,10 +707,11 @@ export class GameScene extends Phaser.Scene {
       // Round wins as pips under the bar.
       for (let i = 0; i < ROUNDS_TO_WIN; i++) {
         const px = left ? x + 6 + i * 18 : x + 174 - i * 18;
-        if (i < this.rounds[t.seat]) g.fillStyle(t.color, 1).fillCircle(px, 54, 5);
-        else g.lineStyle(1.5, t.color, 0.6).strokeCircle(px, 54, 5);
+        if (i < this.rounds[t.seat]) this.pips.stamp(won, px - 6, 48, 1, t.color);
+        else this.pips.stamp(open, px - 7, 47, 1, t.color);
       }
     }
+    this.pips.end();
 
     // Wind: an arrow that points and stretches with it.
     if (this.wind !== 0) {

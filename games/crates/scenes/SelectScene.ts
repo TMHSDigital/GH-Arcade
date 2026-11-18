@@ -5,6 +5,7 @@ import { firstUnsolved, loadProgress, parCount, solvedCount, totalScore } from '
 import { ArcadeControls } from '../../../shared/controls';
 import { SCENE } from '../../../shared/scenes';
 import { tone } from '../../../shared/sfx';
+import { bakeTexture, StampLayer } from '../../../shared/stamps';
 import { keyLabel } from '../../../shared/settings';
 import { isTouchDevice } from '../../../shared/touch';
 import { drawGrid, fadeToScene, hex, HUD_LABEL_STYLE, NEON, neonText, PIXEL_FONT } from '../../../shared/ui';
@@ -16,6 +17,8 @@ const TILE_W = 128;
 const TILE_H = 104;
 const GAP = 16;
 const TOP = 130;
+/** Room around a tile texture for the selected tile's wide glow stroke. */
+const TILE_PAD = 4;
 
 /**
  * Level select: a grid of every level, solved ones lit green with their best moves. Every level is
@@ -24,7 +27,7 @@ const TOP = 130;
  */
 export class SelectScene extends Phaser.Scene {
   private selected = 0;
-  private gfx!: Phaser.GameObjects.Graphics;
+  private tiles!: StampLayer;
   private controls!: ArcadeControls;
   private solved: boolean[] = [];
   private leaving = false;
@@ -48,7 +51,8 @@ export class SelectScene extends Phaser.Scene {
     neonText(this, WIDTH / 2, 60, 'SELECT LEVEL', 24, NEON.orange);
     const summary = `SOLVED ${solvedCount(progress)} / ${LEVELS.length}    AT PAR ${parCount(progress)}    SCORE ${totalScore(progress).toLocaleString()}`;
     this.add.text(WIDTH / 2, 96, summary, HUD_LABEL_STYLE).setOrigin(0.5);
-    this.gfx = this.add.graphics();
+    // Under the tile labels, which are made before the tile Images.
+    this.tiles = new StampLayer(this, -1);
 
     LEVELS.forEach((def, i) => {
       const { x, y } = this.tileCenter(i);
@@ -105,17 +109,25 @@ export class SelectScene extends Phaser.Scene {
   }
 
   private paint(): void {
-    const g = this.gfx.clear();
+    this.tiles.begin();
     LEVELS.forEach((_def, i) => {
       const { x, y } = this.tileCenter(i);
-      const on = i === this.selected;
-      const color = on ? NEON.yellow : this.solved[i] ? NEON.green : NEON.purple;
-      const left = x - TILE_W / 2;
-      const top = y - TILE_H / 2;
+      this.tiles.stamp(this.tileTexture(i === this.selected, this.solved[i]), x - TILE_W / 2 - TILE_PAD, y - TILE_H / 2 - TILE_PAD);
+    });
+    this.tiles.end();
+  }
+
+  /** A level tile, baked once per look: a Graphics would rebuild every tile's rounded rects each frame. */
+  private tileTexture(on: boolean, solved: boolean): string {
+    const key = `crates-tile-${on ? 'on' : 'off'}-${solved ? 'solved' : 'open'}`;
+    return bakeTexture(this, key, TILE_W + TILE_PAD * 2, TILE_H + TILE_PAD * 2, (g) => {
+      const color = on ? NEON.yellow : solved ? NEON.green : NEON.purple;
+      const left = TILE_PAD;
+      const top = TILE_PAD;
       g.fillStyle(color, on ? 0.14 : 0.06).fillRoundedRect(left, top, TILE_W, TILE_H, 10);
       if (on) g.lineStyle(8, color, 0.2).strokeRoundedRect(left, top, TILE_W, TILE_H, 10);
       g.lineStyle(2, color, on ? 1 : 0.6).strokeRoundedRect(left, top, TILE_W, TILE_H, 10);
-      if (this.solved[i]) {
+      if (solved) {
         // A small tick in the corner of a solved level.
         const cx = left + TILE_W - 22;
         const cy = top + 16;

@@ -19,6 +19,11 @@ class FakeImage extends FakeGameObject {
     this.tint = tint;
     return this;
   }
+  scale = 1;
+  setScale(scale: number): this {
+    this.scale = scale;
+    return this;
+  }
 }
 
 class FakeGraphics {
@@ -36,6 +41,8 @@ class FakeGraphics {
 
 function fakeScene() {
   const images: FakeImage[] = [];
+  /** Images made off the display list, for a Container. */
+  const made: FakeImage[] = [];
   const keys = new Set<string>();
   const graphics: FakeGraphics[] = [];
   const scene = {
@@ -47,6 +54,11 @@ function fakeScene() {
       },
     },
     make: {
+      image: ({ x, y, key }: { x: number; y: number; key: string }) => {
+        const image = new FakeImage(x, y, key);
+        made.push(image);
+        return image;
+      },
       graphics: () => {
         const g = new FakeGraphics(keys);
         graphics.push(g);
@@ -57,7 +69,7 @@ function fakeScene() {
       exists: (key: string) => keys.has(key),
     },
   };
-  return { scene, images, graphics };
+  return { scene, images, made, graphics };
 }
 
 afterEach(() => {
@@ -85,7 +97,7 @@ describe('StampLayer', () => {
 
     layer.begin();
     layer.stamp('a', 1, 2);
-    layer.stamp('b', 3, 4, 0.5, 0xff0000);
+    layer.stamp('b', 3, 4, 0.5, 0xff0000).setScale(2);
     layer.stamp('a', 5, 6);
     layer.end();
     expect(images).toHaveLength(3);
@@ -97,9 +109,24 @@ describe('StampLayer', () => {
     layer.end();
     expect(images).toHaveLength(3);
     expect(images[0]).toMatchObject({ x: 7, y: 8, alpha: 1, visible: true, texture: { key: 'b' } });
-    // The reused Image drops the last frame's alpha and tint.
-    expect(images[1]).toMatchObject({ x: 9, y: 10, alpha: 1, tint: 0xffffff, texture: { key: 'a' } });
+    // The reused Image drops the last frame's alpha, tint and scale.
+    expect(images[1]).toMatchObject({ x: 9, y: 10, alpha: 1, tint: 0xffffff, scale: 1, texture: { key: 'a' } });
     expect(images.map((i) => i.visible)).toEqual([true, true, false]);
+  });
+
+  it('puts its Images in the parent Container when given one', async () => {
+    const { StampLayer } = await import('./stamps');
+    const { scene, images, made } = fakeScene();
+    const children: FakeImage[] = [];
+    const parent = { add: (child: FakeImage) => children.push(child) };
+    type Args = ConstructorParameters<typeof StampLayer>;
+    const layer = new StampLayer(scene as unknown as Args[0], 0, parent as unknown as Args[2]);
+    layer.begin();
+    layer.stamp('a', 1, 2);
+    layer.end();
+    expect(images).toHaveLength(0);
+    expect(children).toEqual(made);
+    expect(children[0]).toMatchObject({ x: 1, y: 2, texture: { key: 'a' } });
   });
 
   it('only creates Images when a frame needs more than any frame before', async () => {

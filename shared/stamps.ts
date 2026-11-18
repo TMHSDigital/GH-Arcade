@@ -31,9 +31,15 @@ export class StampLayer {
   private readonly images: Phaser.GameObjects.Image[] = [];
   private used = 0;
 
+  /**
+   * With a `parent`, the Images go into that Container, so they draw where it does in the display
+   * list and positions are relative to it. A Container draws its children in the order added, so
+   * `depth` then has no effect.
+   */
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly depth = 0,
+    private readonly parent?: Phaser.GameObjects.Container,
   ) {}
 
   begin(): void {
@@ -47,13 +53,21 @@ export class StampLayer {
   stamp(key: string, x: number, y: number, alpha = 1, tint = 0xffffff): Phaser.GameObjects.Image {
     let image = this.images[this.used];
     if (!image) {
-      image = this.scene.add.image(x, y, key).setOrigin(0).setDepth(this.depth);
+      if (this.parent) {
+        // Phaser's typings for this config leave out `key`, which make.image does read.
+        image = this.scene.make.image({ x, y, key } as Phaser.Types.GameObjects.GameObjectConfig, false);
+        this.parent.add(image);
+      } else {
+        image = this.scene.add.image(x, y, key);
+      }
+      image.setOrigin(0).setDepth(this.depth);
       this.images.push(image);
     } else if (image.texture.key !== key) {
       image.setTexture(key);
     }
     this.used++;
-    return image.setPosition(x, y).setAlpha(alpha).setTint(tint).setVisible(true);
+    // Scale is reset too, for callers that scale the Image this returns (about its top-left).
+    return image.setPosition(x, y).setAlpha(alpha).setTint(tint).setScale(1).setVisible(true);
   }
 
   end(): void {

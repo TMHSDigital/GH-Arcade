@@ -31,6 +31,7 @@ import { PauseController } from '../../../shared/pause';
 import { dailyOutcome, type DailyRun, dailyRunFrom, type Dice, diceFor } from '../../../shared/rng';
 import { endRun, SCENE } from '../../../shared/scenes';
 import { noise, tone } from '../../../shared/sfx';
+import { bakeTexture, StampLayer } from '../../../shared/stamps';
 import { burstEmitter, dailyHudLabel, drawGrid, floatText, HUD_LABEL_STYLE, HUD_STYLE, impact, NEON, reducedMotion, showBanner } from '../../../shared/ui';
 import type { TROPHIES } from '../trophies';
 
@@ -83,8 +84,9 @@ export class GameScene extends Phaser.Scene {
   private guideKey = '';
 
   private field!: Phaser.GameObjects.Container;
-  private guide!: Phaser.GameObjects.Graphics;
-  private barrel!: Phaser.GameObjects.Graphics;
+  /** The aim guide's dots and landing ring, as tinted Images in a Container over the field. */
+  private guide!: StampLayer;
+  private barrel!: Phaser.GameObjects.Image;
   private loseLine!: Phaser.GameObjects.Graphics;
   private meter!: Phaser.GameObjects.Graphics;
   private loaded?: BubbleSprite;
@@ -131,9 +133,8 @@ export class GameScene extends Phaser.Scene {
     this.drawFrame();
 
     this.field = this.add.container(FIELD_X, FIELD_Y);
-    this.guide = this.add.graphics({ x: FIELD_X, y: FIELD_Y });
-    this.barrel = this.add.graphics({ x: LAUNCHER.x, y: LAUNCHER.y });
-    this.drawBarrel();
+    this.guide = new StampLayer(this, 0, this.add.container(FIELD_X, FIELD_Y));
+    this.barrel = this.makeBarrel();
     this.burst = burstEmitter(this, 260, 520);
 
     this.createHud();
@@ -165,19 +166,29 @@ export class GameScene extends Phaser.Scene {
     for (let x = FIELD_X; x < FIELD_X + FIELD_W; x += 16) this.loseLine.lineStyle(2, NEON.pink, 1).lineBetween(x, LOSE_LINE_Y, x + 8, LOSE_LINE_Y);
     this.loseLine.setAlpha(0.35);
 
-    // Launcher base and the next-bubble cradle.
-    const base = this.add.graphics();
-    base.lineStyle(2, NEON.cyan, 0.8).strokeCircle(LAUNCHER.x, LAUNCHER.y, R + 8);
-    base.lineStyle(6, NEON.cyan, 0.12).strokeCircle(LAUNCHER.x, LAUNCHER.y, R + 8);
-    base.lineStyle(2, NEON.muted, 0.6).strokeCircle(NEXT_SLOT.x, NEXT_SLOT.y, R * 0.8 + 6);
+    // Launcher base and the next-bubble cradle, baked once: a Graphics rebuilds its circles every frame.
+    const outer = R + 12;
+    const launcher = bakeTexture(this, 'bubbles-launcher', outer * 2, outer * 2, (g) => {
+      g.lineStyle(2, NEON.cyan, 0.8).strokeCircle(outer, outer, R + 8);
+      g.lineStyle(6, NEON.cyan, 0.12).strokeCircle(outer, outer, R + 8);
+    });
+    this.add.image(LAUNCHER.x, LAUNCHER.y, launcher);
+    const cradle = Math.ceil(R * 0.8 + 8);
+    const next = bakeTexture(this, 'bubbles-cradle', cradle * 2, cradle * 2, (g) => {
+      g.lineStyle(2, NEON.muted, 0.6).strokeCircle(cradle, cradle, R * 0.8 + 6);
+    });
+    this.add.image(NEXT_SLOT.x, NEXT_SLOT.y, next);
     this.add.text(NEXT_SLOT.x, NEXT_SLOT.y + R + 10, 'NEXT', HUD_LABEL_STYLE).setOrigin(0.5);
   }
 
-  private drawBarrel(): void {
+  private makeBarrel(): Phaser.GameObjects.Image {
     // Drawn pointing straight up; rotation follows the aim.
-    this.barrel.clear();
-    this.barrel.fillStyle(NEON.cyan, 0.15).fillRoundedRect(-8, -R - 34, 16, 26, 4);
-    this.barrel.lineStyle(2, NEON.cyan, 1).strokeRoundedRect(-8, -R - 34, 16, 26, 4);
+    const key = bakeTexture(this, 'bubbles-barrel', 18, 28, (g) => {
+      g.fillStyle(NEON.cyan, 0.15).fillRoundedRect(1, 1, 16, 26, 4);
+      g.lineStyle(2, NEON.cyan, 1).strokeRoundedRect(1, 1, 16, 26, 4);
+    });
+    // The barrel turns about the launcher's centre, which is this point of the texture.
+    return this.add.image(LAUNCHER.x, LAUNCHER.y, key).setDisplayOrigin(9, R + 35);
   }
 
   private createHud(): void {
@@ -263,19 +274,25 @@ export class GameScene extends Phaser.Scene {
     const key = hidden ? 'hidden' : `${this.aim.toFixed(4)}|${this.queue[0]}|${this.fieldVersion}`;
     if (key === this.guideKey) return;
     this.guideKey = key;
-    this.guide.clear();
-    if (hidden) return;
+    this.guide.begin();
+    if (!hidden) this.stampGuide();
+    this.guide.end();
+  }
 
+  private stampGuide(): void {
     const shot = simulateShot(this.grid, { x: LAUNCH_X, y: LAUNCH_Y }, this.aim, { r: R, collide: COLLIDE, maxBounces: 1 });
     const color = BUBBLE_COLORS[this.queue[0]];
     const length = pathLength(shot.path);
+    // White shapes baked once, tinted to the next bubble's color.
+    const dot = bakeTexture(this, 'bubbles-guide-dot', 6, 6, (g) => g.fillStyle(0xffffff, 1).fillCircle(3, 3, 2.5));
     for (let d = R + 10; d < length; d += 14) {
       const p = pointAlong(shot.path, d);
-      this.guide.fillStyle(color, 0.9 - 0.6 * (d / length)).fillCircle(p.x, p.y, 2.5);
+      this.guide.stamp(dot, p.x - 3, p.y - 3, 0.9 - 0.6 * (d / length), color);
     }
     if (shot.landing) {
       const c = cellCenter(this.grid, shot.landing.row, shot.landing.col, R);
-      this.guide.lineStyle(2, color, 0.45).strokeCircle(c.x, c.y, R - 2);
+      const ring = bakeTexture(this, 'bubbles-guide-ring', R * 2, R * 2, (g) => g.lineStyle(2, 0xffffff, 0.45).strokeCircle(R, R, R - 2));
+      this.guide.stamp(ring, c.x - R, c.y - R, 1, color);
     }
   }
 
