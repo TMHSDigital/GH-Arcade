@@ -35,7 +35,11 @@ No accounts. No ads. Keyboard, touch or gamepad, solo or with a friend. Install 
 
 ## Games
 
+<p align="center"><b>17 games</b> · <b>10</b> with a daily challenge · <b>4</b> with two-player modes · <b>71</b> trophies to earn</p>
+
 ### Neon Breakout
+
+<sub>ARCADE · 5 LEVELS · POWER-UPS</sub>
 
 <p align="center">
   <a href="https://tmhsdigital.github.io/GH-Arcade/games/breakout/">
@@ -50,11 +54,13 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/snake/"><img src=".github/assets/snake.gif" alt="Neon Snake gameplay: a glowing snake chasing food across a grid" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/snake/">Neon Snake</a></h3>
+      <sub>ARCADE · 2-PLAYER VERSUS · DAILY</sub>
       <p>Eat, grow and speed up, and grab the timed bonus stars before they fade. Or go head to head in <b>two-player versus</b>: first to win three rounds.</p>
     </td>
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/stack/"><img src=".github/assets/stack.gif" alt="Neon Stack gameplay: falling blocks locking into place and clearing lines" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/stack/">Neon Stack</a></h3>
+      <sub>PUZZLE · DAILY</sub>
       <p>The falling-block puzzler, done properly: wall kicks, a ghost piece, hold, a three-piece preview, lock delay, combos and back-to-back quads.</p>
     </td>
   </tr>
@@ -62,11 +68,13 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/astro/"><img src=".github/assets/astro.gif" alt="Astro Blaster gameplay: a vector ship shooting splitting space rocks" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/astro/">Astro Blaster</a></h3>
+      <sub>SHOOTER · DAILY</sub>
       <p>Thrust, drift and blast through waves of splitting space rocks in glowing vector style. A saucer hunts you from wave 3, and hyperspace gets you out of a jam.</p>
     </td>
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/runner/"><img src=".github/assets/runner.gif" alt="Neon Runner gameplay: a runner jumping over pits in a synthwave city" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/runner/">Neon Runner</a></h3>
+      <sub>ENDLESS · DAILY</sub>
       <p>Sprint through a synthwave city. Jump, double jump, slide and dive past barriers, drones and pits while the pace keeps climbing.</p>
     </td>
   </tr>
@@ -74,11 +82,13 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/siege/"><img src=".github/assets/siege.gif" alt="Star Siege gameplay: two cannons firing up at a marching alien formation" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/siege/">Star Siege</a></h3>
+      <sub>SHOOTER · 2-PLAYER CO-OP · DAILY</sub>
       <p>Hold the line against marching alien waves behind crumbling shields, and snipe the mothership for bonus points. Play solo or in <b>two-player co-op</b>.</p>
     </td>
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/hop/"><img src=".github/assets/hop.gif" alt="Neon Hop gameplay: a hopper crossing traffic and riding logs to a dock" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/hop/">Neon Hop</a></h3>
+      <sub>ARCADE · DAILY</sub>
       <p>Dodge four lanes of traffic, then ride drifting logs and diving turtles across the river to fill all five docks before the timer runs out.</p>
     </td>
   </tr>
@@ -86,23 +96,27 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/pong/"><img src=".github/assets/pong.gif" alt="Neon Pong gameplay: two glowing paddles rallying a ball" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/pong/">Neon Pong</a></h3>
+      <sub>CLASSIC · 2-PLAYER VERSUS</sub>
       <p>The original paddle duel. Where the ball meets the paddle sets its angle, a moving paddle adds spin, and every hit speeds it up. First to 7 against the CPU, or in <b>two-player versus</b>.</p>
     </td>
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/maze/"><img src=".github/assets/maze.gif" alt="Neon Maze gameplay: a runner clearing dots while chasers close in, then turning on them after a power cell" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/maze/">Neon Maze</a></h3>
-      <p>Clear the maze while four chasers close in, each with its own tactics. Each level moves on to the next maze layout. Grab a power cell and turn the hunt around for points that double with every catch.</p>
+      <sub>ARCADE · 2 MAZES</sub>
+      <p>Clear the maze while four chasers close in, each with its own tactics. Grab a power cell to turn the hunt around for points that double with every catch, and clear a level to switch to the other maze layout.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/pinball/"><img src=".github/assets/pinball.gif" alt="Neon Pinball gameplay: a ball flipped into glowing bumpers on a neon table" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/pinball/">Neon Pinball</a></h3>
-      <p>A glowing table with pop bumpers, slingshots, a drop-target bank and rollover lanes. Light the lanes to raise the multiplier to x5 across three balls.</p>
+      <sub>ACTION · 3 BALLS</sub>
+      <p>A glowing table with pop bumpers, slingshots, a drop-target bank and rollover lanes. Light the lanes to raise the multiplier to ×5 across three balls.</p>
     </td>
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/lander/"><img src="public/thumbs/lander.jpg" alt="Neon Lander gameplay: a lander descending toward a glowing pad over jagged terrain" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/lander/">Neon Lander</a></h3>
+      <sub>ARCADE · DAILY</sub>
       <p>Ease a thrusting lander down onto a glowing pad over rough alien terrain. Land slow and upright to score, then face stronger gravity, narrower pads and wind.</p>
     </td>
   </tr>
@@ -110,11 +124,13 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/mines/"><img src="public/thumbs/mines.jpg" alt="Neon Mines gameplay: a grid of revealed number clues and hidden cells" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/mines/">Neon Mines</a></h3>
+      <sub>PUZZLE · 3 BOARD SIZES · DAILY</sub>
       <p>Clear a glowing minefield using the number clues. Easy, medium and hard boards with a best time for each, plus a daily board everyone shares.</p>
     </td>
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/golf/"><img src="public/thumbs/golf.jpg" alt="Neon Golf gameplay: a glowing ball on a walled mini golf green" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/golf/">Neon Golf</a></h3>
+      <sub>MINI GOLF · 9 HOLES</sub>
       <p>Nine mini golf holes with sand traps, water, boost pads and sliding blockers. Drag back, let fly, and sink it in as few strokes as you can.</p>
     </td>
   </tr>
@@ -122,11 +138,13 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/crates/"><img src="public/thumbs/crates.jpg" alt="Neon Crates gameplay: a robot pushing a crate toward a target" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/crates/">Neon Crates</a></h3>
+      <sub>PUZZLE · 15 LEVELS</sub>
       <p>Push every crate onto a target across 15 hand-built warehouse puzzles. Push one at a time, never pull, undo freely and chase par on every level.</p>
     </td>
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/match/"><img src="public/thumbs/match.jpg" alt="Neon Match gameplay: a board of shaped neon gems" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/match/">Neon Match</a></h3>
+      <sub>PUZZLE · TIMED OR MOVES · DAILY</sub>
       <p>Swap glowing gems to line up three or more. Chain cascades, build line blasts and bombs, and race the clock or make every move count.</p>
     </td>
   </tr>
@@ -134,11 +152,13 @@ The classic brick-breaker, rebuilt with a synthwave glow. Five hand-built levels
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/bubbles/"><img src="public/thumbs/bubbles.jpg" alt="Neon Bubbles gameplay: a launcher aiming at a field of colored bubbles" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/bubbles/">Neon Bubbles</a></h3>
+      <sub>PUZZLE · ENDLESS · DAILY</sub>
       <p>Bank bubbles off the walls, pop groups of three and cut whole clusters loose for big bonuses before the ceiling creeps down.</p>
     </td>
     <td width="50%" valign="top">
       <a href="https://tmhsdigital.github.io/GH-Arcade/games/tanks/"><img src="public/thumbs/tanks.jpg" alt="Neon Tanks gameplay: two tanks facing off across glowing hills" width="100%" /></a>
       <h3><a href="https://tmhsdigital.github.io/GH-Arcade/games/tanks/">Neon Tanks</a></h3>
+      <sub>ARTILLERY · 2-PLAYER HOT SEAT</sub>
       <p>Lob shells over destructible hills and read the wind. Take on the CPU at three difficulties or a friend in <b>two-player hot seat</b>, best of 3.</p>
     </td>
   </tr>
@@ -201,7 +221,7 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | **Neon Golf** | `(11 - strokes) × 100` per hole, so fewer strokes always score higher. Water costs a penalty stroke and each hole is capped at 10. |
 | **Neon Crates** | Up to 1,000 per level, scaled by par over your moves. |
 | **Neon Match** | Each match scores by its size, multiplied by the cascade chain. Line gems clear a row or column, bombs clear the area around them. |
-| **Neon Bubbles** | Popped bubbles score, dropped ones score a growing bonus each, a streak of popping shots multiplies up to x4, and clearing the field pays a big bonus. |
+| **Neon Bubbles** | Popped bubbles score, dropped ones score a growing bonus each, a streak of popping shots multiplies up to ×4, and clearing the field pays a big bonus. |
 | **Neon Tanks** | No score: win two rounds to take the match. Wins against the CPU build a saved streak. |
 
 **Breakout power-ups:** green **W** widens the paddle for 12 seconds, purple **M** splits the ball into three, yellow **S** slows the ball to 70% for 8 seconds, and the rare pink **+** is an extra life.
@@ -224,10 +244,10 @@ Every game also supports <kbd>P</kbd> / <kbd>Esc</kbd> / <kbd>Start</kbd> to pau
 | **Installable, works offline** | Install GH Arcade as an app from the hub. After one visit, every game plays with no connection. |
 | **Keyboard, touch or gamepad** | Every game supports all three. Plug in a controller and it just works, including pause on <kbd>Start</kbd>. If a controller disconnects mid-run, the game pauses. |
 | **Two-player** | Neon Snake and Neon Pong have versus modes and Star Siege has co-op, on one keyboard or two gamepads. Neon Tanks is a hot-seat duel, taking turns on one device. |
-| **Daily challenges** | Neon Stack, Neon Hop, Neon Runner, Neon Snake, Astro Blaster, Star Siege, Neon Lander, Neon Mines and Neon Bubbles have a Daily mode: the same game for everyone on a given UTC date, with its own best score and a streak. (In Snake the food and bonus stars follow a shared sequence, so runs match for as long as players steer the same way; in Astro Blaster and Star Siege the rocks, the saucer, the alien fire and the mothership do. Lander shares its terrain, pads and wind, Mines its board, and Bubbles its starting field, its new rows and the bubbles it deals.) The hub counts down to the next challenge (midnight UTC), a card whose daily is still waiting opens the game on DAILY, and a shared daily result links to it (`games/<slug>/?mode=daily`). |
+| **Daily challenges** | Ten games have a Daily mode: the same run for everyone on a given UTC date, with its own best score and a streak. The hub counts down to the next one (midnight UTC), a card whose daily is still waiting opens straight on DAILY, and a shared result links back to it (`games/<slug>/?mode=daily`). <details><summary>What each daily shares</summary>Stack, Hop and Runner are seeded from the date. Snake shares its food and bonus stars, so runs match as long as players steer the same way. Astro Blaster and Star Siege share the rocks, saucer, alien fire and mothership. Lander shares its terrain, pads and wind; Mines and Match their boards; Bubbles its starting field, new rows and the bubbles it deals.</details> |
 | **Pause menu and game over** | Every game pauses into a menu: resume, restart, settings (volume, sound, motion, colors and gamepad rumble), main menu or back to the arcade. Game over shows the trophies you just earned, with Play again, Menu and Arcade options. |
 | **Page controls** | On-screen pause and fullscreen buttons, a loading indicator, and a hint to rotate your phone for games that play best in landscape. The screen stays on during a run, even when you play with a gamepad, and may sleep again once you pause or the run ends. |
-| **Couch-friendly hub** | Browse the cabinets with the arrow keys or a gamepad: <kbd>A</kbd> opens a game, <kbd>LB</kbd> <kbd>RB</kbd> switch filters, <kbd>Y</kbd> shows trophies and <kbd>Start</kbd> opens settings. Inside a panel, up and down move between its controls (and scroll it), left and right change a slider, <kbd>A</kbd> presses a button or ticks a box, and <kbd>B</kbd> closes it. |
+| **Couch-friendly hub** | Browse the cabinets with the arrow keys or a gamepad: <kbd>A</kbd> opens a game, <kbd>LB</kbd> <kbd>RB</kbd> switch filters, <kbd>Y</kbd> shows trophies and <kbd>Start</kbd> opens settings. Panels work the same way, and <kbd>B</kbd> closes them. |
 | **Trophies and stats** | 71 trophies across the arcade, with plays and best scores per game in the Trophies panel. Saved on your device, no sign-up. |
 | **Settings and accessibility** | Volume, reduced motion (no shake or flashes), a colorblind-friendly palette, rebindable keys and gamepad buttons, gamepad rumble on impacts (can be turned off), and touch options: button size, a left-handed layout and vibration. |
 | **Zero-asset audio** | Sound effects are synthesized live with the Web Audio API, so there are no audio files to download. |
@@ -417,7 +437,7 @@ Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `co
 **Shipped**
 
 - [x] Arcade hub with tag filters, thumbnails and saved high scores
-- [x] Seventeen games: Neon Breakout, Neon Snake, Neon Stack, Astro Blaster, Neon Runner, Star Siege, Neon Hop, Neon Pong, Neon Maze, Neon Pinball, Neon Lander, Neon Mines, Neon Golf, Neon Crates, Neon Match, Neon Bubbles and Neon Tanks
+- [x] [Seventeen games](#games), from Neon Breakout to Neon Tanks
 - [x] Gamepad support in every game
 - [x] Installable PWA with offline play
 - [x] Settings screen: volume, colorblind-friendly palette and reduced motion
@@ -428,8 +448,7 @@ Each game folder has the same shape: `index.html`, `main.ts` (boots Phaser), `co
 - [x] Hub navigation with the keyboard or a gamepad
 - [x] One-command game scaffolding with a shared toolkit
 - [x] Automatic GitHub Pages deploys
-- [x] Daily challenges with a shared seed in Neon Stack, Neon Hop, Neon Runner, Neon Snake, Astro Blaster and Star Siege
-- [x] Daily boards in Neon Lander, Neon Mines, Neon Bubbles and Neon Match
+- [x] Daily challenges with a shared seed in ten games
 - [x] A second maze layout for Neon Maze (levels alternate between the two)
 
 **Up next**
