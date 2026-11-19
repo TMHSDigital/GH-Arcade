@@ -405,8 +405,8 @@ GH-Arcade/
 │   ├── bubbles/            # Neon Bubbles (hex grid in grid.ts)
 │   └── tanks/              # Neon Tanks (terrain, ballistics and the CPU)
 ├── shared/                 # Toolkit shared by all games (controls, pause, touch, scenes, ui, ...)
-├── public/                 # Favicon, app icons and hub thumbnails, copied as-is
-├── build/                  # Shared game-page HTML and toolbar generation
+├── public/                 # Favicon, app icons, hub thumbnails and the share image, copied as-is
+├── build/                  # Shared page head tags (titles, link previews, CSP) and game-page HTML
 ├── scripts/new-game.mjs    # Game scaffolder
 ├── vite.config.ts          # Multi-page build, game auto-discovery and the PWA service worker
 └── .github/workflows/      # Pull-request checks, build and deploy to GitHub Pages

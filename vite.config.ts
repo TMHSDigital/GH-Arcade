@@ -77,6 +77,8 @@ export default defineConfig({
         skipWaiting: true,
         clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,svg,png,jpg,woff2}'],
+        // Only link previews fetch the share image, so it does not need to work offline.
+        globIgnores: ['social.jpg'],
         // Raised from Workbox's 2 MB default so the ~1.5 MB shared Phaser chunk keeps fitting as it grows.
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         // Multi-page site: every page is precached by its own URL, so no single-page fallback.

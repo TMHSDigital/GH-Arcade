@@ -4,6 +4,10 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 
 ## 2026-11-18
 
+### Added
+
+- Links to the arcade and to each game now show a preview when shared: the game's title, description and screenshot (a grid of games for the hub). Every page also has a meta description and a canonical URL for search engines.
+
 ### Fixed
 
 - A new version of the arcade now takes over as soon as it has downloaded: the hub reloads into it and says "Arcade updated", and a game in progress says the update loads next time. Before, an update waited until every arcade tab and the installed app were closed.

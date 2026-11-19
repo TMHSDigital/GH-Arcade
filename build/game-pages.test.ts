@@ -3,10 +3,11 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { HtmlTagDescriptor, IndexHtmlTransformContext } from 'vite';
 import registry from '../games/registry.json';
-import { CONTENT_SECURITY_POLICY, gamePages, gamePageTags, gameSlugOf } from './game-pages';
+import { CONTENT_SECURITY_POLICY, gamePages, gamePageTags, gameSlugOf, SITE_IMAGE, SITE_URL } from './game-pages';
 
 const gamesDir = resolve(import.meta.dirname, '..', 'games');
-const games = registry as { slug: string; title: string }[];
+const publicDir = resolve(gamesDir, '..', 'public');
+const games = registry as { slug: string; title: string; description: string; thumbnail?: string }[];
 
 /** Runs the plugin's HTML hook for a file, as Vite would. */
 function tagsFor(filename: string, dev = false): HtmlTagDescriptor[] {
@@ -18,6 +19,12 @@ function tagsFor(filename: string, dev = false): HtmlTagDescriptor[] {
 
 const find = (tags: HtmlTagDescriptor[], tag: string, attrs: Record<string, string> = {}) =>
   tags.find((t) => t.tag === tag && Object.entries(attrs).every(([k, v]) => t.attrs?.[k] === v));
+
+/** The content of a <meta> found by its name or property. */
+const meta = (tags: HtmlTagDescriptor[], id: string) =>
+  (find(tags, 'meta', { name: id }) ?? find(tags, 'meta', { property: id }))?.attrs?.content as string | undefined;
+
+const snake = { slug: 'snake', title: 'Neon Snake', description: 'Eat and grow.', thumbnail: 'thumbs/snake.jpg' };
 
 describe('gameSlugOf', () => {
   it('finds the game for a page, on any path style', () => {
@@ -32,7 +39,7 @@ describe('gameSlugOf', () => {
 });
 
 describe('gamePageTags', () => {
-  const tags = gamePageTags('Neon Snake');
+  const tags = gamePageTags(snake);
 
   it('adds the title, icons, viewport and theme color to the head, and nothing from another host', () => {
     expect(find(tags, 'title')?.children).toBe('Neon Snake · GH Arcade');
@@ -40,8 +47,27 @@ describe('gamePageTags', () => {
     expect(find(tags, 'link', { rel: 'apple-touch-icon' })).toBeDefined();
     expect(find(tags, 'meta', { name: 'viewport' })).toBeDefined();
     expect(find(tags, 'meta', { name: 'theme-color' })).toBeDefined();
-    expect(JSON.stringify(tags)).not.toMatch(/https?:/);
+    for (const url of JSON.stringify(tags).match(/https?:[^"]*/g) ?? []) expect(url.startsWith(SITE_URL)).toBe(true);
     for (const t of tags.filter((t) => ['title', 'meta', 'link'].includes(t.tag))) expect(t.injectTo).toBe('head');
+  });
+
+  it('adds the description, a canonical URL and a link preview with the game thumbnail', () => {
+    const url = 'https://tmhsdigital.github.io/GH-Arcade/games/snake/';
+    expect(meta(tags, 'description')).toBe('Eat and grow.');
+    expect(find(tags, 'link', { rel: 'canonical' })?.attrs?.href).toBe(url);
+    expect(meta(tags, 'og:url')).toBe(url);
+    expect(meta(tags, 'og:title')).toBe('Neon Snake · GH Arcade');
+    expect(meta(tags, 'og:description')).toBe('Eat and grow.');
+    expect(meta(tags, 'og:image')).toBe('https://tmhsdigital.github.io/GH-Arcade/thumbs/snake.jpg');
+    expect(meta(tags, 'og:type')).toBe('website');
+    expect(meta(tags, 'og:site_name')).toBe('GH Arcade');
+    expect(meta(tags, 'twitter:card')).toBe('summary_large_image');
+  });
+
+  it('falls back to a generic description and the arcade image', () => {
+    const bare = gamePageTags({ slug: 'new', title: 'New Game' });
+    expect(meta(bare, 'description')).toContain('New Game');
+    expect(meta(bare, 'og:image')).toBe(SITE_URL + SITE_IMAGE);
   });
 
   it('adds the back link and the loading placeholder to the body', () => {
@@ -50,21 +76,30 @@ describe('gamePageTags', () => {
   });
 
   it('escapes the title', () => {
-    const title = find(gamePageTags('Tom & <Jerry>'), 'title')?.children;
+    const title = find(gamePageTags({ slug: 'tom', title: 'Tom & <Jerry>' }), 'title')?.children;
     expect(title).toBe('Tom &#38; &#60;Jerry&#62; · GH Arcade');
   });
 });
 
 describe('gamePages plugin', () => {
-  it.each(games)('titles $slug from the registry', ({ slug, title }) => {
+  it.each(games)('titles and describes $slug from the registry, with an image that exists', ({ slug, title, description, thumbnail }) => {
     const tags = tagsFor(resolve(gamesDir, slug, 'index.html'))!;
     expect(find(tags, 'title')?.children).toBe(`${title} · GH Arcade`);
+    expect(meta(tags, 'description')).toBe(description);
+    const image = meta(tags, 'og:image')!;
+    expect(image).toBe(SITE_URL + (thumbnail ?? SITE_IMAGE));
+    expect(existsSync(resolve(publicDir, image.slice(SITE_URL.length)))).toBe(true);
   });
 
-  it('adds nothing but the security policy to the hub', () => {
+  it('gives the hub the security policy, a description and a link preview, and nothing game-specific', () => {
     const tags = tagsFor(resolve(gamesDir, '..', 'index.html'));
-    expect(tags).toHaveLength(1);
     expect(tags[0].attrs?.['http-equiv']).toBe('Content-Security-Policy');
+    expect(meta(tags, 'description')).toContain(`${games.length} free`);
+    expect(find(tags, 'link', { rel: 'canonical' })?.attrs?.href).toBe(SITE_URL);
+    expect(meta(tags, 'og:image')).toBe(SITE_URL + SITE_IMAGE);
+    expect(existsSync(resolve(publicDir, SITE_IMAGE))).toBe(true);
+    expect(find(tags, 'title')).toBeUndefined();
+    expect(find(tags, 'a', { class: 'back-to-arcade' })).toBeUndefined();
   });
 
   it('falls back to the slug for a game that is not registered yet', () => {
@@ -82,7 +117,7 @@ describe('Content-Security-Policy', () => {
   });
 
   it('is left out in the dev server, which needs inline scripts for hot reload', () => {
-    expect(tagsFor(resolve(gamesDir, '..', 'index.html'), true)).toEqual([]);
+    expect(tagsFor(resolve(gamesDir, '..', 'index.html'), true).some((t) => t.attrs?.['http-equiv'])).toBe(false);
     expect(tagsFor(resolve(gamesDir, 'snake', 'index.html'), true).some((t) => t.attrs?.['http-equiv'])).toBe(false);
   });
 

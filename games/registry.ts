@@ -8,7 +8,10 @@ export interface GameEntry {
   tags: string[];
   accent: string;
   controls?: string;
-  /** Optional 16:9 screenshot in public/, e.g. thumbs/snake.jpg. Without one the card shows the title's first letter. */
+  /**
+   * Optional 16:9 screenshot in public/, e.g. thumbs/snake.jpg. It is the hub card's image and the game page's
+   * link preview. Without one the card shows the title's first letter and the preview uses public/social.jpg.
+   */
   thumbnail?: string;
 }
 
