@@ -71,6 +71,11 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // A new version takes over as soon as it is installed, so shared/pwa.ts can reload the hub into it.
+        // The plugin only turns these on by itself when it injects the registration, and it does not here
+        // (injectRegister: false), so without them an update waits until every arcade tab is closed.
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,svg,png,jpg,woff2}'],
         // Raised from Workbox's 2 MB default so the ~1.5 MB shared Phaser chunk keeps fitting as it grows.
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,

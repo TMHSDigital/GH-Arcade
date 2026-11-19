@@ -2,6 +2,12 @@
 
 Notable changes to GH Arcade, newest first. The site deploys from `main` on every push, so there are no version numbers; entries are grouped by date. The [roadmap](README.md#roadmap) lists what is planned.
 
+## 2026-11-18
+
+### Fixed
+
+- A new version of the arcade now takes over as soon as it has downloaded: the hub reloads into it and says "Arcade updated", and a game in progress says the update loads next time. Before, an update waited until every arcade tab and the installed app were closed.
+
 ## 2026-11-16
 
 ### Added
