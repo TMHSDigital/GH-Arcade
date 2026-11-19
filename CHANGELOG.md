@@ -7,6 +7,7 @@ Notable changes to GH Arcade, newest first. The site deploys from `main` on ever
 ### Added
 
 - Links to the arcade and to each game now show a preview when shared: the game's title, description and screenshot (a grid of games for the hub). Every page also has a meta description and a canonical URL for search engines.
+- A missing or mistyped address on the site shows an arcade-style "No cabinet" page with a link back to the hub, instead of GitHub's generic 404.
 
 ### Fixed
 

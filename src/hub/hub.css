@@ -111,6 +111,12 @@ body {
   transition: background 0.15s, box-shadow 0.15s;
 }
 
+/* The same look on a link (404.html). */
+a.install {
+  display: inline-block;
+  text-decoration: none;
+}
+
 .install span {
   margin-left: 8px;
   color: var(--muted);

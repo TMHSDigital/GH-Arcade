@@ -56,6 +56,12 @@ export function gameSlugOf(filename: string): string | null {
   return filename.replace(/\\/g, '/').match(/\/games\/([^/]+)\/index\.html$/)?.[1] ?? null;
 }
 
+/** True for an index.html outside games/: the hub. Not for other pages such as 404.html. */
+export function isHubPage(filename: string): boolean {
+  const path = filename.replace(/\\/g, '/');
+  return path.endsWith('/index.html') && !path.includes('/games/');
+}
+
 /**
  * The description, canonical URL and link-preview tags (Open Graph, read by X/Twitter too) for a
  * page. Vite escapes attribute values itself.
@@ -112,7 +118,7 @@ export function hubTags(gameCount: number): HtmlTagDescriptor[] {
 
 /**
  * Vite plugin: applies gamePageTags to every games/<slug>/index.html, titled from the registry,
- * and hubTags to the hub (the only other page).
+ * and hubTags to the hub. Other pages (404.html) get only the security policy.
  */
 export function gamePages(games: GameInfo[]): Plugin {
   const bySlug = new Map(games.map((g) => [g.slug, g]));
@@ -125,7 +131,7 @@ export function gamePages(games: GameInfo[]): Plugin {
         // The dev server needs inline scripts and a websocket for hot reload, so the policy is build-only.
         const csp = ctx.server ? [] : [cspTag()];
         const slug = gameSlugOf(ctx.filename);
-        if (!slug) return [...csp, ...hubTags(games.length)];
+        if (!slug) return isHubPage(ctx.filename) ? [...csp, ...hubTags(games.length)] : csp;
         // A game that is not in the registry yet still gets a sensible title.
         return [...csp, ...gamePageTags(bySlug.get(slug) ?? { slug, title: slug })];
       },

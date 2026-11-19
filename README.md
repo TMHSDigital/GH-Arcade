@@ -383,6 +383,7 @@ Every push to `main` publishes the site automatically:
 ```
 GH-Arcade/
 ├── index.html              # Arcade hub page
+├── 404.html                # "No cabinet" page GitHub Pages shows for missing addresses
 ├── src/hub/                # Hub script and styles (cards, filters, install, settings and trophies panels)
 ├── games/
 │   ├── registry.json       # The list of games shown on the hub

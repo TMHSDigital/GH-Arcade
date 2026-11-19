@@ -102,6 +102,12 @@ describe('gamePages plugin', () => {
     expect(find(tags, 'a', { class: 'back-to-arcade' })).toBeUndefined();
   });
 
+  it('gives the 404 page only the security policy, so it never claims the hub as its canonical URL', () => {
+    const tags = tagsFor(resolve(gamesDir, '..', '404.html'));
+    expect(tags).toHaveLength(1);
+    expect(tags[0].attrs?.['http-equiv']).toBe('Content-Security-Policy');
+  });
+
   it('falls back to the slug for a game that is not registered yet', () => {
     expect(find(tagsFor('/repo/games/brand-new/index.html')!, 'title')?.children).toBe('brand-new · GH Arcade');
   });
@@ -131,6 +137,19 @@ describe('Content-Security-Policy', () => {
     expect(directives['style-src']).toEqual(["'self'"]);
     expect(CONTENT_SECURITY_POLICY).not.toMatch(/https?:/);
     expect(CONTENT_SECURITY_POLICY).not.toContain('unsafe');
+  });
+});
+
+describe('404.html', () => {
+  const html = readFileSync(resolve(gamesDir, '..', '404.html'), 'utf8');
+
+  it('links back to the hub by an absolute path, since it is served at any depth', () => {
+    expect(html).toContain('href="/GH-Arcade/"');
+    expect(html).not.toMatch(/href="\.\.?\//);
+  });
+
+  it('keeps itself out of search results', () => {
+    expect(html).toContain('<meta name="robots" content="noindex" />');
   });
 });
 

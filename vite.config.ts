@@ -29,6 +29,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         hub: resolve(root, 'index.html'),
+        // GitHub Pages serves dist/404.html for any missing address on the site.
+        notFound: resolve(root, '404.html'),
         ...discoverGames(),
       },
       output: {
