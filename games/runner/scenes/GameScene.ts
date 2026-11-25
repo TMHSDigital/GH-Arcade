@@ -54,6 +54,13 @@ import type { TROPHIES } from '../trophies';
 
 const { addCounter, reach } = trophiesFor<typeof TROPHIES>();
 
+const sunFrom = Phaser.Display.Color.ValueToColor(NEON.yellow);
+const sunTo = Phaser.Display.Color.ValueToColor(NEON.pink);
+const SUN_BAND_COLORS = Array.from({ length: 12 }, (_, i) => {
+  const color = Phaser.Display.Color.Interpolate.ColorWithColor(sunFrom, sunTo, 11, i);
+  return Phaser.Display.Color.GetColor(color.r, color.g, color.b);
+});
+
 /** Room around a drone texture for its glow, which spills 4 px past the drone. */
 const DRONE_PAD = 4;
 /** Width of the runner's body while sliding. */
@@ -416,13 +423,7 @@ export class GameScene extends Phaser.Scene {
       const yy = sunY - 110 + i * 18;
       if (i > 5 && i % 2 === 1) continue;
       const half = Math.sqrt(Math.max(0, 110 * 110 - (yy + 7 - sunY) ** 2));
-      const c = Phaser.Display.Color.Interpolate.ColorWithColor(
-        Phaser.Display.Color.ValueToColor(NEON.yellow),
-        Phaser.Display.Color.ValueToColor(NEON.pink),
-        11,
-        i,
-      );
-      g.fillStyle(Phaser.Display.Color.GetColor(c.r, c.g, c.b), 0.85).fillRect(sunX - half, yy, half * 2, 14);
+      g.fillStyle(SUN_BAND_COLORS[i], 0.85).fillRect(sunX - half, yy, half * 2, 14);
     }
 
     this.drawSkyline(g, this.far, d * 0.12, 0x2b1250, false);

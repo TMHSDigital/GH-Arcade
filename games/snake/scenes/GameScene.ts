@@ -56,12 +56,11 @@ export interface SnakeGameData {
 const cellX = (x: number) => x * CELL + CELL / 2;
 const cellY = (y: number) => FIELD_TOP + y * CELL + CELL / 2;
 
-function starPoints(cx: number, cy: number, points: number, outer: number, inner: number, rotation: number): Phaser.Math.Vector2[] {
-  const out: Phaser.Math.Vector2[] = [];
+function setStarPoints(out: Phaser.Math.Vector2[], cx: number, cy: number, points: number, outer: number, inner: number, rotation: number): Phaser.Math.Vector2[] {
   for (let i = 0; i < points * 2; i++) {
     const r = i % 2 === 0 ? outer : inner;
     const a = rotation - Math.PI / 2 + (i * Math.PI) / points;
-    out.push(new Phaser.Math.Vector2(cx + Math.cos(a) * r, cy + Math.sin(a) * r));
+    out[i].setTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
   }
   return out;
 }
@@ -105,6 +104,7 @@ export class GameScene extends Phaser.Scene {
 
   private food!: Cell;
   private bonus: { cell: Cell; expiresAt: number } | null = null;
+  private readonly bonusStarPoints = Array.from({ length: 10 }, () => new Phaser.Math.Vector2(0, 0));
   private eaten = 0;
   private score = 0;
 
@@ -447,7 +447,7 @@ export class GameScene extends Phaser.Scene {
       // Blink during the last second and a half.
       if (left > 0.25 || Math.floor(this.elapsed / 120) % 2 === 0) {
         items.fillStyle(NEON.yellow, 0.2).fillCircle(bx, by, 16 * pulse);
-        items.fillStyle(NEON.yellow, 1).fillPoints(starPoints(bx, by, 5, 11, 5, this.elapsed / 900), true);
+        items.fillStyle(NEON.yellow, 1).fillPoints(setStarPoints(this.bonusStarPoints, bx, by, 5, 11, 5, this.elapsed / 900), true);
         items.lineStyle(2, NEON.yellow, 0.8).beginPath();
         items.arc(bx, by, 17, -Math.PI / 2, -Math.PI / 2 + left * Math.PI * 2).strokePath();
       }
