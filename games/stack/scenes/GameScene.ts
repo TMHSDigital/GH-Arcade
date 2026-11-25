@@ -55,6 +55,35 @@ const { addCounter, reach, unlock } = trophiesFor<typeof TROPHIES>();
 
 type Extra = keyof typeof EXTRA_CONTROLS;
 
+type MiniCell = { x: number; y: number };
+type MiniLayout = { cells: MiniCell[]; minX: number; maxX: number; minY: number; maxY: number };
+const MINI_LAYOUTS = new Map<PieceType, MiniLayout>();
+
+function miniLayout(type: PieceType): MiniLayout {
+  const cached = MINI_LAYOUTS.get(type);
+  if (cached) return cached;
+
+  const cells: MiniCell[] = [];
+  const matrix = ROTATIONS[type][0];
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (let y = 0; y < matrix.length; y++) {
+    for (let x = 0; x < matrix[y].length; x++) {
+      if (!matrix[y][x]) continue;
+      cells.push({ x, y });
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+    }
+  }
+  const layout = { cells, minX, maxX, minY, maxY };
+  MINI_LAYOUTS.set(type, layout);
+  return layout;
+}
+
 const BOARD_W = COLS * CELL;
 const BOARD_H = VISIBLE_ROWS * CELL;
 const LEFT_PANEL_X = BOARD_X - 30 - 150;
@@ -532,13 +561,7 @@ export class GameScene extends Phaser.Scene {
 
   /** Small centered preview of a piece for the hold and next panels. */
   private drawMini(type: PieceType, cx: number, cy: number, alpha: number): void {
-    const m = ROTATIONS[type][0];
-    const cells: { x: number; y: number }[] = [];
-    m.forEach((row, r) => row.forEach((v, c) => v && cells.push({ x: c, y: r })));
-    const minX = Math.min(...cells.map((c) => c.x));
-    const maxX = Math.max(...cells.map((c) => c.x));
-    const minY = Math.min(...cells.map((c) => c.y));
-    const maxY = Math.max(...cells.map((c) => c.y));
+    const { cells, minX, maxX, minY, maxY } = miniLayout(type);
     const size = 20;
     const ox = cx - ((maxX - minX + 1) * size) / 2;
     const oy = cy - ((maxY - minY + 1) * size) / 2;
